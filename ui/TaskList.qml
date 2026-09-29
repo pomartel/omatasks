@@ -132,7 +132,7 @@ FocusScope {
         var focused = Window.activeFocusItem;
         if (focused && focused.cursorPosition !== undefined) return;
         var ctrl = !!(event.modifiers & Qt.ControlModifier), key = event.key;
-        var task = keyboardTask(), tabs = ["today", "inbox", "upcoming"];
+        var task = keyboardTask(), tabs = ["today", "upcoming", "inbox"];
         if (key === Qt.Key_P) { settingsOpen = !settingsOpen; event.accepted = true; return; }
         if (setupVisible) {
             if (key === Qt.Key_T) { service.openTodoist(); event.accepted = true; }
@@ -177,7 +177,7 @@ FocusScope {
         anchors.top: parent.top; width: parent.width
         height: Style.space(28); spacing: Style.space(4)
         Repeater {
-            model: [{id: "today", title: "Aujourd’hui"}, {id: "inbox", title: "Inbox"}, {id: "upcoming", title: "Bientôt"}]
+            model: [{id: "today", title: "Aujourd’hui"}, {id: "upcoming", title: "Bientôt"}, {id: "inbox", title: "Inbox"}]
             Action {
                 required property var modelData
                 Layout.fillWidth: true
@@ -185,7 +185,7 @@ FocusScope {
                 Layout.minimumWidth: 0
                 text: modelData.title
                 tip: modelData.id === "inbox" ? "Tâches sans date dans tous les projets" : modelData.title
-                iconName: root.width >= Style.space(480) ? modelData.id : ""
+                iconName: modelData.id
                 iconDay: root.service.now.getDate()
                 bold: true
                 selected: root.view === modelData.id && !root.settingsOpen

@@ -32,7 +32,7 @@ Les erreurs de synchronisation transitoires déclenchent des essais espacés de 
 
 | Touche | Action |
 | --- | --- |
-| Tab / Maj+Tab ou ← / → | Parcourir Aujourd’hui, Inbox, Bientôt |
+| Tab / Maj+Tab ou ← / → | Parcourir Aujourd’hui, Bientôt, Inbox |
 | a / d / i | Ouvrir Aujourd’hui, Bientôt, Inbox |
 | ↑ / ↓ ou k / j | Sélectionner une tâche |
 | Entrée / e | Modifier la tâche sélectionnée |

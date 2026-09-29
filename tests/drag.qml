@@ -66,7 +66,9 @@ ShellRoot {
             keyClick(Qt.Key_D); compare(taskList.view,"upcoming");
             keyClick(Qt.Key_I); compare(taskList.view,"inbox");
             keyClick(Qt.Key_A); compare(taskList.view,"today");
+            keyClick(Qt.Key_Tab); compare(taskList.view,"upcoming");
             keyClick(Qt.Key_Tab); compare(taskList.view,"inbox");
+            keyClick(Qt.Key_Backtab); compare(taskList.view,"upcoming");
             keyClick(Qt.Key_Backtab); compare(taskList.view,"today");
             keyClick(Qt.Key_P); compare(taskList.settingsOpen,true);
             keyClick(Qt.Key_Escape); compare(taskList.settingsOpen,false);
