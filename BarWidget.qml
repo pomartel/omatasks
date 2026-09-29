@@ -33,12 +33,29 @@ Panel {
             id: readout
             anchors.centerIn: parent
             columns: button.vertical ? 1 : 2
-            spacing: Style.space(5)
-            Tasks.TodoistIcon { color: button.foreground; width: Style.space(14); height: width }
+            spacing: Style.space(4)
+            TextMetrics {
+                id: yadmIconMetrics
+                text: "Y"
+                font.family: button.fontFamily
+                font.pixelSize: Style.bar.iconFont
+                font.bold: true
+            }
+            Item {
+                width: yadmIconMetrics.tightBoundingRect.height
+                height: taskCount.implicitHeight
+                Tasks.TodoistIcon {
+                    color: button.foreground
+                    width: parent.width; height: width
+                    y: taskCount.baselineOffset + yadmIconMetrics.tightBoundingRect.y
+                }
+            }
             Text {
+                id: taskCount
                 visible: root.service && root.service.loaded
                 text: root.service ? root.service.todayCount : ""
-                font.family: button.fontFamily; font.pixelSize: button.fontSize
+                font.family: button.fontFamily; font.pixelSize: Style.bar.iconFont
+                renderType: Text.NativeRendering
                 color: button.foreground
             }
         }
