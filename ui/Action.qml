@@ -5,6 +5,7 @@ import qs.Commons
 C.AbstractButton {
     id: root
     property bool selected: false
+    property bool highlightOnHover: true
     property color foreground: Color.popups.text
     property string tip: ""
     property bool bold: selected
@@ -36,8 +37,8 @@ C.AbstractButton {
     }
     background: Rectangle {
         radius: Style.cornerRadius
-        color: root.selected ? Style.selectedFillFor(root.foreground, Color.accent) : root.hovered || root.activeFocus ? Style.hoverFillFor(root.foreground, Color.accent) : "transparent"
-        border.width: root.selected || root.activeFocus || root.bordered ? 1 : 0
+        color: root.selected ? Style.selectedFillFor(root.foreground, Color.accent) : root.highlightOnHover && (root.hovered || root.visualFocus) ? Style.hoverFillFor(root.foreground, Color.accent) : "transparent"
+        border.width: root.selected || root.visualFocus || root.bordered ? 1 : 0
         border.color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, root.bordered ? 0.35 : 0.12)
     }
     Tip { visible: root.hovered && root.tip !== ""; text: root.tip }

@@ -180,6 +180,8 @@ FocusScope {
             model: [{id: "today", title: "Aujourd’hui"}, {id: "upcoming", title: "Bientôt"}, {id: "inbox", title: "Inbox"}]
             Action {
                 required property var modelData
+                objectName: "viewTab_" + modelData.id
+                highlightOnHover: false
                 Layout.fillWidth: true
                 Layout.preferredWidth: implicitWidth
                 Layout.minimumWidth: 0

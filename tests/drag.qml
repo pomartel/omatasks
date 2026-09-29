@@ -50,6 +50,21 @@ ShellRoot {
             var list = findChild(taskList, "taskListView"); list.positionViewAtBeginning();
             wait(150);
         }
+        function test_only_selected_tab_has_a_filled_background() {
+            var today = findChild(taskList, "viewTab_today");
+            var inbox = findChild(taskList, "viewTab_inbox");
+            mouseClick(inbox);
+            taskList.view = "today";
+            mouseMove(inbox, inbox.width / 2, inbox.height / 2);
+            compare(inbox.hovered, true);
+            compare(today.selected, true);
+            compare(inbox.selected, false);
+            compare(inbox.background.color.a, 0);
+            verify(today.background.color.a > 0);
+            compare(inbox.background.border.width, 0);
+            taskList.forceActiveFocus();
+            mouseMove(taskList, taskList.width - 1, taskList.height - 1);
+        }
         function test_imported_navigation_and_actions() {
             taskList.forceActiveFocus(); keyClick(Qt.Key_J);
             compare(taskList.keyboardTaskId, "0");

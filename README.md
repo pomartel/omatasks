@@ -8,6 +8,8 @@ Fork de [crmne/omatasks](https://github.com/crmne/omatasks), conservant ses comp
 - **Inbox** : tâches principales **sans date de planification, dans tous les projets**. Le nom reste Inbox ; le filtre ne se limite pas au projet Boîte de réception. Une date limite seule n’exclut pas la tâche.
 - **Bientôt** : de demain au sixième jour inclus, sans les tâches d’aujourd’hui ou en retard. Les jours contenant des tâches sont regroupés sous **Demain**, puis les noms des jours en français. Les heures restent visibles sur les tâches, sans répéter leur date.
 
+Seul l’onglet sélectionné a un fond rempli. Le survol éclaircit son texte et ses icônes ; le focus clavier est indiqué par un contour.
+
 Les sous-tâches se consultent et se terminent dans les détails de leur parent. Elles ne figurent pas dans les listes principales ni dans le compteur. Aujourd’hui et Inbox n’ont pas de sous-titres avec le regroupement par défaut. Les options natives de regroupement, de tri et de filtrage restent disponibles ; Inbox inclut par défaut tous les responsables, les autres vues conservent le filtre natif « Moi et non attribuées ».
 
 ## Installation
