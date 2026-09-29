@@ -89,7 +89,7 @@ Item {
                     model: root.subtasks
                     TaskRow { required property var modelData; Layout.fillWidth: true; Layout.minimumWidth: 0; task: modelData; service: root.service; view: "details"; onActivated: function(task) { root.taskRequested(task); } }
                 }
-                Action { visible: Number(root.task.note_count || root.task.comment_count || 0) > 0; text: (root.task.note_count || root.task.comment_count || 0) + " commentaires · Ouvrir dans Todoist ↗"; maximumWidth: root.width; onClicked: Qt.openUrlExternally("https://app.todoist.com/app/task/" + encodeURIComponent(root.task.id)) }
+                Action { visible: Number(root.task.note_count || root.task.comment_count || 0) > 0; text: (root.task.note_count || root.task.comment_count || 0) + " commentaires · Ouvrir dans Todoist ↗"; maximumWidth: root.width; onClicked: root.service.openTodoist(root.task) }
                 Label { visible: !!root.task.added_at; Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.added_at ? "Ajoutée le " + new Date(root.task.added_at).toLocaleString(Qt.locale("fr_CA"), "d MMM yyyy, HH:mm") : ""; opacity: 0.4; font.pixelSize: Style.font.caption; wrapMode: Text.Wrap; elide: Text.ElideNone }
             }
             Loader {
@@ -113,7 +113,7 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Action { objectName: "editTaskButton"; visible: !root.editing; text: "Modifier"; bordered: true; enabled: !root.service.saving; onClicked: root.startEditing() }
-            Action { text: "Ouvrir dans Todoist ↗"; onClicked: Qt.openUrlExternally("https://app.todoist.com/app/task/" + encodeURIComponent(root.task.id)) }
+            Action { text: "Ouvrir dans Todoist ↗"; onClicked: root.service.openTodoist(root.task) }
             Item { Layout.fillWidth: true }
             Action { visible: !root.editing; text: "Fermer"; enabled: !root.busy; onClicked: root.dismissEditor() }
         }

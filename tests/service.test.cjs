@@ -325,3 +325,20 @@ test('Authorization failures do not schedule transient retries; malformed sync r
     s.refresh(true); wires[2].respond(200, {});
     assert.equal(s.syncFailures, 2);
 });
+
+test('Todoist opens task pages through the webapp launcher and closes panels', () => {
+    const {s} = service();
+    const launches = [];
+    let closed = 0;
+    s.Quickshell = {execDetached(args) { launches.push(Array.from(args)); }};
+    s.widgets = [{close() { closed++; }}];
+    s.openTodoist({id: 'task/with space?'});
+    assert.deepEqual(launches, [['omarchy-launch-webapp', 'https://app.todoist.com/app/task/task%2Fwith%20space%3F']]);
+    assert.equal(closed, 1);
+    s.openTodoist({});
+    assert.equal(launches.length, 1);
+    assert.equal(closed, 1);
+    s.openTodoist();
+    assert.deepEqual(launches[1], ['omarchy-launch-webapp', 'https://app.todoist.com']);
+    assert.equal(closed, 2);
+});

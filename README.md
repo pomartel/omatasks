@@ -37,7 +37,7 @@ Les erreurs de synchronisation transitoires déclenchent des essais espacés de 
 | ↑ / ↓ ou k / j | Sélectionner une tâche |
 | Entrée / e | Modifier la tâche sélectionnée |
 | Espace | Terminer la tâche sélectionnée |
-| o | Ouvrir la page de la tâche dans Todoist |
+| o | Ouvrir la page de la tâche dans la fenêtre flottante Todoist |
 | x | Supprimer, après confirmation |
 | Ctrl+a / Ctrl+d / Ctrl+i | Planifier aujourd’hui, demain, ou retirer la date |
 | Ctrl+a sans curseur de tâche | Sélectionner toutes les tâches visibles |
@@ -46,6 +46,8 @@ Les erreurs de synchronisation transitoires déclenchent des essais espacés de 
 | p | Ouvrir ou fermer les réglages |
 | ? | Afficher l’aide des raccourcis |
 | Échap | Annuler le glissement, revenir ou fermer |
+
+Les liens « Ouvrir dans Todoist » et le raccourci **o** lancent directement la page de la tâche avec `omarchy-launch-webapp`, puis ferment le panneau. La règle de fenêtre Todoist d’Omarchy détermine son affichage flottant.
 
 Les champs de texte gardent leurs touches habituelles. **Alt+Space** ouvre l’ajout rapide global natif ; ce raccourci est configurable dans les réglages. Pour associer **Super+Maj+T** au panneau, utilisez la commande :
 

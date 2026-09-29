@@ -125,7 +125,7 @@ FocusScope {
         showTask(task);
         Qt.callLater(function() { if (detailLoader.item) detailLoader.item.startEditing(); });
     }
-    function openInTodoist(task) { Qt.openUrlExternally("https://app.todoist.com/app/task/" + encodeURIComponent(task.id)); }
+    function openInTodoist(task) { service.openTodoist(task); }
     function handleShortcut(event) {
         if (dragging || composerKey || details.visible || display.visible || taskMenu.visible || helpOpen) return;
         // Text controls own their keystrokes, including settings fields.
@@ -135,7 +135,7 @@ FocusScope {
         var task = keyboardTask(), tabs = ["today", "inbox", "upcoming"];
         if (key === Qt.Key_P) { settingsOpen = !settingsOpen; event.accepted = true; return; }
         if (setupVisible) {
-            if (key === Qt.Key_T) { Qt.openUrlExternally("https://app.todoist.com"); event.accepted = true; }
+            if (key === Qt.Key_T) { service.openTodoist(); event.accepted = true; }
             return;
         }
         if (key === Qt.Key_Tab || key === Qt.Key_Backtab || key === Qt.Key_Left || key === Qt.Key_Right) {

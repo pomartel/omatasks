@@ -62,6 +62,12 @@ Item {
     function registerWidget(widget) { if (widgets.indexOf(widget) < 0) widgets = widgets.concat([widget]); }
     function unregisterWidget(widget) { widgets = widgets.filter(function(w) { return w !== widget; }); }
     function closePanels() { widgets.forEach(function(w) { w.close(); }); }
+    function openTodoist(task) {
+        if (task && !task.id) return;
+        var url = task ? "https://app.todoist.com/app/task/" + encodeURIComponent(task.id) : "https://app.todoist.com";
+        Quickshell.execDetached(["omarchy-launch-webapp", url]);
+        closePanels();
+    }
     function openPanel() {
         var name = Hyprland.focusedMonitor ? Hyprland.focusedMonitor.name : "";
         var widget = widgets.filter(function(w) { return w.QsWindow.window && w.QsWindow.window.screen.name === name; })[0] || widgets[0];
