@@ -42,12 +42,12 @@ Panel {
                 font.bold: true
             }
             Item {
-                width: yadmIconMetrics.tightBoundingRect.height
+                width: yadmIconMetrics.tightBoundingRect.height + Style.space(2)
                 height: taskCount.implicitHeight
                 Tasks.TodoistIcon {
                     color: button.foreground
                     width: parent.width; height: width
-                    y: taskCount.baselineOffset + yadmIconMetrics.tightBoundingRect.y
+                    y: taskCount.baselineOffset + yadmIconMetrics.tightBoundingRect.y - Style.space(2) / 2
                 }
             }
             Text {

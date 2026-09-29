@@ -12,7 +12,7 @@ Seul l’onglet sélectionné a un fond rempli. Le survol éclaircit son texte e
 
 Les sous-tâches se consultent et se terminent dans les détails de leur parent. Elles ne figurent pas dans les listes principales ni dans le compteur. Aujourd’hui et Inbox n’ont pas de sous-titres avec le regroupement par défaut. Les options natives de regroupement, de tri et de filtrage restent disponibles ; Inbox inclut par défaut tous les responsables, les autres vues conservent le filtre natif « Moi et non attribuées ».
 
-L’icône de la barre reprend la hauteur visible du « Y » de qs-yadm ; le compteur utilise la même taille de texte que son compteur.
+L’icône de la barre dépasse légèrement la hauteur visible du « Y » de qs-yadm ; le compteur utilise la même taille de texte que son compteur.
 
 ## Installation
 
