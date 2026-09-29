@@ -27,14 +27,18 @@ function overdue(task, now) {
 }
 function clockText(date) { return String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0"); }
 function dayLabel(key, today) {
-    if (!key) return "No date";
-    if (key === today) return "Today";
-    if (key === addDays(today, 1)) return "Tomorrow";
-    return typeof Qt !== "undefined" ? Qt.formatDate(dateFromKey(key), "d MMM") : dateFromKey(key).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    if (!key) return "Sans date";
+    if (key === today) return "Aujourd’hui";
+    if (key === addDays(today, 1)) return "Demain";
+    return typeof Qt !== "undefined" ? dateFromKey(key).toLocaleDateString(Qt.locale("fr_CA"), "d MMM") : dateFromKey(key).toLocaleDateString("fr-CA", { month: "short", day: "numeric" });
+}
+function upcomingLabel(key, today) {
+    if (key === addDays(today, 1)) return "Demain";
+    return ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"][dateFromKey(key).getDay()];
 }
 function dueLabel(task, now, view, grouping) {
     var day = dueDay(task), time = dueTime(task), text = "";
-    if (day && (day !== dateKey(now) || view !== "today" || grouping !== "none")) text = dayLabel(day, dateKey(now));
+    if (view !== "upcoming" && day && (day !== dateKey(now) || view !== "today" || grouping !== "none")) text = dayLabel(day, dateKey(now));
     if (time) {
         text += (text ? " " : "") + clockText(time);
         if (task.duration && task.duration.unit === "minute") text += "–" + clockText(new Date(time.getTime() + task.duration.amount * 60000));
@@ -66,11 +70,12 @@ function mergeCompleted(previous, updates, full) {
 function assigned(task) { return String(task.responsible_uid || task.assignee_id || ""); }
 function active(task) { return !task.checked && !task.is_completed && !task.is_deleted; }
 function inView(task, view, today, projects) {
-    if (!active(task)) return false;
+    if (!active(task) || task.parent_id) return false;
     var day = scheduledDay(task), project = projects[String(task.project_id)] || {};
-    if (view === "inbox") return !!(project.inbox_project || project.is_inbox_project);
+    if (view === "inbox") return !dueDay(task);
     if (view === "today") return !!day && day <= today;
-    return !!day; // Upcoming includes every scheduled task, with overdue first.
+    var due = dueDay(task);
+    return !!due && due > today && due <= addDays(today, 6);
 }
 function matches(task, options, userId, today) {
     var who = assigned(task);
@@ -114,10 +119,10 @@ function viewRows(tasks, projectList, collaborators, options, view, userId, now)
     var selected = tasks.filter(function(t) { return inView(t, view, today, projects) && matches(t, options, userId, today); });
     selected = sortTasks(selected, options.sorting, view, projects, people);
     var groups = {}, keys = [];
-    var hasOverdue = view === "today" && selected.some(function(t) { return scheduledDay(t) < today; });
+
     selected.forEach(function(t) {
         if (options.grouping === "label") {
-            ((t.labels || []).length ? t.labels : ["No label"]).forEach(function(label) {
+            ((t.labels || []).length ? t.labels : ["Sans étiquette"]).forEach(function(label) {
                 if (!groups[label]) { groups[label] = {label: label, rank: label, tasks: [], projectId: ""}; keys.push(label); }
                 groups[label].tasks.push(t);
             });
@@ -125,10 +130,9 @@ function viewRows(tasks, projectList, collaborators, options, view, userId, now)
         }
         var key = "", label = "", rank = "", projectId = "";
         if (options.grouping === "project") { var p = projects[String(t.project_id)] || {id: t.project_id, name: "Inbox"}; key = String(p.id); label = p.name; rank = p.order_key || String(p.child_order || 0).padStart(8, "0"); projectId = String(p.id); }
-        else if (options.grouping === "priority") { key = String(5 - t.priority); label = t.priority > 1 ? "Priority " + key : "No priority"; rank = key; }
-        else if (options.grouping === "date" || view === "upcoming") { key = scheduledDay(t) || "9999"; if (key < today) key = "0000"; label = key === "0000" ? "Overdue" : key === "9999" ? "No date" : dayLabel(key, today); rank = key; }
-        else if (view === "today" && scheduledDay(t) < today) { key = "overdue"; label = "Overdue"; rank = "0"; }
-        else if (hasOverdue) { key = "today"; label = "Today"; rank = "1"; }
+        else if (options.grouping === "priority") { key = String(5 - t.priority); label = t.priority > 1 ? "Priorité " + key : "Sans priorité"; rank = key; }
+        else if (options.grouping === "date" || view === "upcoming") { key = scheduledDay(t) || "9999"; if (key < today) key = "0000"; label = key === "0000" ? "En retard" : key === "9999" ? "Sans date" : view === "upcoming" ? upcomingLabel(key, today) : dayLabel(key, today); rank = key; }
+
         if (!groups[key]) { groups[key] = {label: label, rank: rank, tasks: [], projectId: projectId}; keys.push(key); }
         groups[key].tasks.push(t);
     });
@@ -145,9 +149,9 @@ function viewRows(tasks, projectList, collaborators, options, view, userId, now)
 }
 function uuid() { return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16); }); }
 function errorMessage(status) {
-    if (status === 401 || status === 403) return "Todoist could not authorize this request. Check your API token in Settings.";
-    if (status === 429) return "Todoist is receiving too many requests. Please wait a moment.";
-    if (status === 0) return "Could not reach Todoist. Check your connection and try again.";
-    if (status === 400) return "Todoist could not save that task. Check the text and try again.";
-    return "Todoist could not finish the request (" + status + "). Try again.";
+    if (status === 401 || status === 403) return "Todoist n’a pas autorisé cette requête. Vérifiez votre jeton API dans les réglages.";
+    if (status === 429) return "Todoist reçoit trop de requêtes. Veuillez patienter.";
+    if (status === 0) return "Impossible de joindre Todoist. Vérifiez votre connexion et réessayez.";
+    if (status === 400) return "Impossible d’enregistrer la tâche. Vérifiez le texte et réessayez.";
+    return "Todoist n’a pas pu terminer la requête (" + status + "). Réessayez.";
 }

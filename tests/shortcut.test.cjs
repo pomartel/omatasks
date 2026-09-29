@@ -15,7 +15,7 @@ bindd
     modmask: 72
     submap:
     key: T
-    description: Todoist quick add
+    description: Ajout rapide Todoist
     dispatcher: __lua
 `;
 test('Shortcut normalizes supported modifiers and rejects invalid or injectable input', () => {
@@ -43,4 +43,9 @@ test('Changing the default migrates an old owned binding without touching Omarch
     assert.ok(code.includes('hl.unbind("SUPER + ALT + T")'));
     assert.ok(code.includes('hl.bind("ALT + SPACE"'));
     assert.ok(!code.includes('hl.unbind("SUPER + CTRL + A")'));
+});
+
+test('The French fork does not claim the original OmaTasks shortcut binding', () => {
+    const binding={modmask:8,submap:'',key:'SPACE',description:'Todoist quick add',dispatcher:'__lua'};
+    assert.ok(M.conflict([binding], M.parse('ALT + SPACE')));
 });

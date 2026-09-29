@@ -5,7 +5,7 @@ import "ui" as Tasks
 
 Panel {
     id: root
-    moduleName: "crmne.todoist"
+    moduleName: "pomartel.omatasks"
     ipcTarget: ""
     readonly property var service: bar && bar.shell ? bar.shell.serviceFor(moduleName) : null
     implicitWidth: button.implicitWidth
@@ -23,7 +23,7 @@ Panel {
         hasVisualContent: true
         fixedWidth: vertical ? barSize : readout.implicitWidth + scaledHorizontalMargin * 2
         fixedHeight: vertical ? readout.implicitHeight + scaledVerticalPadding * 2 : barSize
-        tooltipText: root.service && root.service.error ? root.service.error : "Todoist · Today\nRight-click: quick add"
+        tooltipText: root.service && root.service.error ? root.service.error : "Todoist · Aujourd’hui\nClic droit : ajout rapide"
         onPressed: function(mouseButton) {
             if (mouseButton === Qt.RightButton && root.bar && root.bar.shell) { root.close(); root.bar.shell.summon(root.moduleName, "{}"); }
             else if (mouseButton === Qt.MiddleButton && root.service) root.service.refresh();

@@ -13,6 +13,7 @@ const projects = [{ id: 'inbox', name: 'Inbox', inbox_project: true }, { id: 'wo
 const now = new Date(2026, 8, 15, 12);
 const task = (id, props = {}) => ({ id, content: id, project_id: 'inbox', priority: 1, due: {date: '2026-09-15'}, ...props });
 function rows(tasks, view = 'today', opts = {}) {
+    if (view === 'inbox') tasks.forEach(t => { t.due = null; });
     return Model.viewRows(tasks, projects, [], {...Model.DEFAULT_VIEW, sorting: 'manual', ...opts}, view, 'me', now);
 }
 function order(tasks, view = 'today') { return plain(Model.sortTasks(tasks, 'manual', view, {}, {}).map(t => t.id)); }

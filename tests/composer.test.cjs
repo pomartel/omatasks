@@ -45,3 +45,15 @@ test('Typed dates take precedence over the Today view default, while arbitrary i
   assert.equal(draft.dateToken('Review every other Tuesday at 10am').value, 'every other Tuesday at 10am');
   assert.equal(draft.dateToken('Review // Tomorrow is background context'), null);
 });
+
+test('French dates and explicit sans date override the current view default', () => {
+  for (const value of ['demain à 17h','jeudi prochain','sans date','dans 3 jours','tous les jours']) {
+    assert.equal(draft.quickText(input({text:'Réviser '+value,due:'aujourd’hui'})), 'Réviser '+value);
+  }
+});
+test('Date and priority pickers expose French labels with French relative dates', () => {
+  const dates = draft.choices('due','',service,null);
+  assert.equal(dates[0].label,'Aujourd’hui'); assert.equal(dates[0].value,'aujourd’hui');
+  assert.equal(dates[1].value,'demain');
+  assert.equal(draft.choices('priority','',service,null)[0].label,'Priorité 1');
+});

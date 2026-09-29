@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "crmne.todoist",
-  "name": "OmaTasks for Todoist",
-  "version": "1.1.0",
+  "id": "pomartel.omatasks",
+  "name": "OmaTasks en français",
+  "version": "1.1.0-fr.1",
   "author": "Carmine Paolino",
   "license": "MIT",
-  "description": "Todoist in the Omarchy bar: Today, Inbox and Upcoming, rich Quick Add, task editing, multi-selection, bulk actions, and drag-to-reorder synced through the API.",
+  "description": "Todoist dans Omarchy : Aujourd’hui, Inbox sans date, Bientôt sur six jours, ajout rapide et raccourcis clavier.",
   "kinds": [
     "service",
     "bar-widget",
@@ -18,8 +18,8 @@
     "overlay": "QuickAdd.qml"
   },
   "barWidget": {
-    "displayName": "OmaTasks for Todoist",
-    "description": "Today, Inbox and Upcoming, with task details, grouping and quick add.",
+    "displayName": "OmaTasks en français",
+    "description": "Tâches Todoist, détails, filtres et ajout rapide en français.",
     "category": "Productivity",
     "aliases": [
       "todoist",

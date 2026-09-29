@@ -50,7 +50,7 @@ Item {
     readonly property int todayCount: tasks.filter(function(t) {
         return Model.inView(t, "today", Model.dateKey(now), projectMap) && Model.matches(t, Model.DEFAULT_VIEW, user.id, Model.dateKey(now));
     }).length
-    property string stateDir: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/omarchy-todoist"
+    property string stateDir: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/omatasks-fr"
 
     signal taskAdded()
     signal taskUpdated(string taskId)
@@ -67,7 +67,17 @@ Item {
         var widget = widgets.filter(function(w) { return w.QsWindow.window && w.QsWindow.window.screen.name === name; })[0] || widgets[0];
         if (widget) widget.open();
     }
-    function viewOptions(view) { return Object.assign({}, Model.DEFAULT_VIEW, preferences[view] || {}); }
+    function togglePanel() {
+        var monitor = Hyprland.focusedMonitor ? Hyprland.focusedMonitor.name : "";
+        var widget = widgets.find(function(w) { return w.QsWindow.window && w.QsWindow.window.screen.name === monitor; }) || widgets[0];
+        if (widget) { if (widget.opened) widget.close(); else widget.open(); }
+    }
+    IpcHandler {
+        target: "pomartel.omatasks"
+        function togglePanel(): void { root.togglePanel(); }
+        function status(): string { return JSON.stringify({connected: root.configured, loaded: root.loaded, loading: root.loading, taskCount: root.tasks.length, hasError: !!root.error}); }
+    }
+    function viewOptions(view) { return Object.assign({}, Model.DEFAULT_VIEW, view === "inbox" ? {assignee: "all"} : {}, preferences[view] || {}); }
     function setOption(view, key, value) {
         var next = Object.assign({}, preferences), options = viewOptions(view);
         options[key] = value;
@@ -114,7 +124,7 @@ Item {
     function connectToken(value) {
         if (connecting || saving || !storageReady) return;
         var candidate = value.trim();
-        if (!candidate || /\s/.test(candidate)) { error = "Paste the API token from Todoist’s Developer settings."; return; }
+        if (!candidate || /\s/.test(candidate)) { error = "Collez le jeton API des paramètres développeur de Todoist."; return; }
         connecting = true; error = "";
         request("POST", "/sync", {sync_token: "*", resource_types: ["user"]}, candidate, function(data, message) {
             if (message) { connecting = false; error = message; return; }
@@ -179,7 +189,7 @@ Item {
         syncFailures = Math.min(syncFailures + 1, 7);
         var delay = Math.min(300000, 5000 * Math.pow(2, syncFailures - 1));
         nextSyncRetry = Math.max(Date.now() + delay, retryAfter);
-        error = message + " Retrying automatically.";
+        error = message + " Nouvel essai automatique.";
     }
     function refresh(manual) {
         if (!configured || loading || saving || connecting || Date.now() < retryAfter) return;
@@ -237,7 +247,7 @@ Item {
             if (data && data.sync_token) ingest(data);
             if (failed.length) {
                 var result = status[failed[0].uuid];
-                message = (failed.length < commands.length ? "Some changes were saved. " : "") + (result && result.error ? result.error : "Todoist did not confirm the changes. Please retry.");
+                message = (failed.length < commands.length ? "Certaines modifications ont été enregistrées. " : "") + (result && result.error ? result.error : "Todoist n’a pas confirmé les modifications. Réessayez.");
                 error = message; operationFailed(message); return;
             }
             error = ""; taskUpdated(String(taskId));
@@ -281,7 +291,7 @@ Item {
             if (failed.length) {
                 var result = statuses[failed[0].uuid];
                 saving = false;
-                error = (job.saved ? job.saved + " changes saved. " : "") + (message || (result && result.error) || "Todoist did not confirm the changes.") + " Retry to finish the remaining changes.";
+                error = (job.saved ? job.saved + " modifications enregistrées. " : "") + (message || (result && result.error) || "Todoist n’a pas confirmé les modifications.") + " Réessayez pour terminer les modifications restantes.";
                 operationFailed(error); return;
             }
             if (job.commands.length) { sendTaskActionBatch(job); return; }
@@ -304,7 +314,7 @@ Item {
         try {
             var rows = Model.viewRows(tasks, projects, collaborators, options, view, user.id, now);
             plan = Order.plan(tasks, rows, view, sourceId, targetId, after, groupKey);
-        } catch (e) { error = "Could not calculate the task order. Refresh and try again."; return false; }
+        } catch (e) { error = "Impossible de calculer l’ordre des tâches. Actualisez et réessayez."; return false; }
         if (!plan) return false;
         if (!plan.commands.length) { setOption(view, "sorting", "manual"); return true; }
         if (!beginWrite()) return false;
@@ -328,13 +338,13 @@ Item {
             });
             if (failed.length) {
                 var result = statuses[failed[0].uuid];
-                message = message || (result && result.error) || "Todoist did not confirm the new order. Try again.";
+                message = message || (result && result.error) || "Todoist n’a pas confirmé le nouvel ordre. Réessayez.";
                 finishReorder(false);
                 if (data && data.sync_token) ingest(data);
                 // After an uncertain write, the next sync reconciles server state.
                 else syncToken = "*";
                 saving = false;
-                error = (pending.saved ? "Some tasks were reordered. " : "Could not save task order. ") + message;
+                error = (pending.saved ? "Certaines tâches ont été réordonnées. " : "Impossible d’enregistrer l’ordre des tâches. ") + message;
                 operationFailed(error); return;
             }
             if (data && data.sync_token) {
@@ -356,7 +366,7 @@ Item {
         running: true
         onExited: function(code) {
             if (code === 0) root.storageReady = true;
-            else root.error = "Could not create the Todoist settings directory.";
+            else root.error = "Impossible de créer le dossier des réglages Todoist.";
         }
     }
     FileView {
@@ -372,7 +382,7 @@ Item {
             catch (e) { root.preferences = {}; }
             root.preferencesLoaded = true;
         }
-        onSaveFailed: root.error = "Could not save the display preferences."
+        onSaveFailed: root.error = "Impossible d’enregistrer les préférences d’affichage."
     }
     ShortcutManager { id: shortcuts; service: root; enabled: root.enableShortcuts && root.preferencesLoaded }
     Process {
@@ -384,7 +394,7 @@ Item {
         onExited: function(code) {
             stdinEnabled = true;
             root.connecting = false;
-            if (code !== 0) { root.error = "Could not save the API token. Please try again."; pendingToken = ""; return; }
+            if (code !== 0) { root.error = "Impossible d’enregistrer le jeton API. Réessayez."; pendingToken = ""; return; }
             root.applyToken(pendingToken); pendingToken = "";
             root.connected();
         }

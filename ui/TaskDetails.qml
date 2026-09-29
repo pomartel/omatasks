@@ -22,21 +22,21 @@ Item {
         return record ? Number(record.completed_items) || 0 : 0;
     }
     readonly property var information: [
-        {name: "Project", value: Model.projectPath(task.project_id, service.projectMap, task.section_id, service.sectionMap)},
-        {name: "Date", value: task.due ? Model.dueLabel(task, service.now, "details", "none") + (task.due.timezone ? " · " + task.due.timezone : "") : "No date"},
-        {name: "Repeat", value: task.due && task.due.is_recurring ? task.due.string || "Recurring" : ""},
-        {name: "Duration", value: task.duration ? task.duration.amount + " " + (task.duration.unit === "day" ? "days" : "minutes") : ""},
-        {name: "Deadline", value: task.deadline ? task.deadline.date : ""},
-        {name: "Priority", value: "P" + (5 - Number(task.priority || 1)), color: ["#999999", "#999999", "#5297ff", "#eb9700", "#ef615b"][task.priority || 1]},
-        {name: "Labels", value: (task.labels || []).join(" · ") || "None"},
-        {name: "Assignee", value: person ? person.full_name || person.name || person.email : Model.assigned(task) === String(service.user.id) ? "Me" : Model.assigned(task) ? "Assigned user" : "Unassigned"}
+        {name: "Projet", value: Model.projectPath(task.project_id, service.projectMap, task.section_id, service.sectionMap)},
+        {name: "Date", value: task.due ? Model.dueLabel(task, service.now, "details", "none") + (task.due.timezone ? " · " + task.due.timezone : "") : "Sans date"},
+        {name: "Répétition", value: task.due && task.due.is_recurring ? task.due.string || "Récurrente" : ""},
+        {name: "Durée", value: task.duration ? task.duration.amount + " " + (task.duration.unit === "day" ? "jours" : "minutes") : ""},
+        {name: "Date limite", value: task.deadline ? task.deadline.date : ""},
+        {name: "Priorité", value: "P" + (5 - Number(task.priority || 1)), color: ["#999999", "#999999", "#5297ff", "#eb9700", "#ef615b"][task.priority || 1]},
+        {name: "Étiquettes", value: (task.labels || []).join(" · ") || "Aucune"},
+        {name: "Responsable", value: person ? person.full_name || person.name || person.email : Model.assigned(task) === String(service.user.id) ? "Moi" : Model.assigned(task) ? "Responsable" : "Non attribuée"}
     ].filter(function(row) { return row.value; })
     implicitHeight: body.implicitHeight + footer.implicitHeight + Style.space(14)
     signal closeRequested()
     signal taskRequested(var task)
 
     function startEditing() { editing = true; message = ""; scroll.contentItem.contentY = 0; Qt.callLater(function() { if (editor.item) editor.item.focusInput(); }); }
-    function complete() { message = ""; completing = service.completeTask(task); if (!completing) message = service.error || "Please wait for the current request to finish."; }
+    function complete() { message = ""; completing = service.completeTask(task); if (!completing) message = service.error || "Attendez la fin de l’opération en cours."; }
     function dismissEditor() { if (busy) return; if (editing) editing = false; else closeRequested(); }
 
     C.ScrollView {
@@ -69,7 +69,7 @@ Item {
                         required property var modelData
                         Layout.fillWidth: true; Layout.minimumWidth: 0
                         spacing: Style.space(10)
-                        Label { Layout.preferredWidth: Style.space(70); Layout.alignment: Qt.AlignTop; text: modelData.name; opacity: 0.5; font.pixelSize: Style.font.bodySmall }
+                        Label { Layout.preferredWidth: Style.space(90); Layout.alignment: Qt.AlignTop; text: modelData.name; opacity: 0.5; font.pixelSize: Style.font.bodySmall }
                         Label { Layout.fillWidth: true; Layout.minimumWidth: 0; text: modelData.value; color: modelData.color || Color.popups.text; wrapMode: Text.Wrap; elide: Text.ElideNone; font.pixelSize: Style.font.bodySmall }
                     }
                 }
@@ -79,18 +79,18 @@ Item {
                         required property var modelData
                         Layout.fillWidth: true; Layout.minimumWidth: 0
                         spacing: Style.space(10)
-                        Label { Layout.preferredWidth: Style.space(70); Layout.alignment: Qt.AlignTop; text: "Reminder"; opacity: 0.5; font.pixelSize: Style.font.bodySmall }
+                        Label { Layout.preferredWidth: Style.space(90); Layout.alignment: Qt.AlignTop; text: "Rappel"; opacity: 0.5; font.pixelSize: Style.font.bodySmall }
                         Label { Layout.fillWidth: true; Layout.minimumWidth: 0; text: Edit.reminderText(modelData); wrapMode: Text.Wrap; elide: Text.ElideNone; font.pixelSize: Style.font.bodySmall }
                     }
                 }
-                Action { visible: root.parentTask !== null; text: "↑ " + Model.plain((root.parentTask || {}).content); maximumWidth: root.width; tip: "Parent task"; onClicked: root.taskRequested(root.parentTask) }
-                Label { visible: root.subtasks.length + root.completedChildren > 0; text: "Subtasks · " + root.completedChildren + "/" + (root.completedChildren + root.subtasks.length); font.bold: true }
+                Action { visible: root.parentTask !== null; text: "↑ " + Model.plain((root.parentTask || {}).content); maximumWidth: root.width; tip: "Tâche parente"; onClicked: root.taskRequested(root.parentTask) }
+                Label { visible: root.subtasks.length + root.completedChildren > 0; text: "Sous-tâches · " + root.completedChildren + "/" + (root.completedChildren + root.subtasks.length); font.bold: true }
                 Repeater {
                     model: root.subtasks
                     TaskRow { required property var modelData; Layout.fillWidth: true; Layout.minimumWidth: 0; task: modelData; service: root.service; view: "details"; onActivated: function(task) { root.taskRequested(task); } }
                 }
-                Action { visible: Number(root.task.note_count || root.task.comment_count || 0) > 0; text: (root.task.note_count || root.task.comment_count || 0) + " comments · Open in Todoist ↗"; maximumWidth: root.width; onClicked: Qt.openUrlExternally("https://app.todoist.com/app/task/" + encodeURIComponent(root.task.id)) }
-                Label { visible: !!root.task.added_at; Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.added_at ? "Added " + Qt.formatDateTime(new Date(root.task.added_at), "d MMM yyyy, HH:mm") : ""; opacity: 0.4; font.pixelSize: Style.font.caption; wrapMode: Text.Wrap; elide: Text.ElideNone }
+                Action { visible: Number(root.task.note_count || root.task.comment_count || 0) > 0; text: (root.task.note_count || root.task.comment_count || 0) + " commentaires · Ouvrir dans Todoist ↗"; maximumWidth: root.width; onClicked: Qt.openUrlExternally("https://app.todoist.com/app/task/" + encodeURIComponent(root.task.id)) }
+                Label { visible: !!root.task.added_at; Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.added_at ? "Ajoutée le " + new Date(root.task.added_at).toLocaleString(Qt.locale("fr_CA"), "d MMM yyyy, HH:mm") : ""; opacity: 0.4; font.pixelSize: Style.font.caption; wrapMode: Text.Wrap; elide: Text.ElideNone }
             }
             Loader {
                 id: editor
@@ -112,10 +112,10 @@ Item {
         spacing: Style.space(6)
         RowLayout {
             Layout.fillWidth: true
-            Action { objectName: "editTaskButton"; visible: !root.editing; text: "Edit"; bordered: true; enabled: !root.service.saving; onClicked: root.startEditing() }
-            Action { text: "Open in Todoist ↗"; onClicked: Qt.openUrlExternally("https://app.todoist.com/app/task/" + encodeURIComponent(root.task.id)) }
+            Action { objectName: "editTaskButton"; visible: !root.editing; text: "Modifier"; bordered: true; enabled: !root.service.saving; onClicked: root.startEditing() }
+            Action { text: "Ouvrir dans Todoist ↗"; onClicked: Qt.openUrlExternally("https://app.todoist.com/app/task/" + encodeURIComponent(root.task.id)) }
             Item { Layout.fillWidth: true }
-            Action { visible: !root.editing; text: "Close"; enabled: !root.busy; onClicked: root.dismissEditor() }
+            Action { visible: !root.editing; text: "Fermer"; enabled: !root.busy; onClicked: root.dismissEditor() }
         }
     }
     Connections {

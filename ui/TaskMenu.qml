@@ -35,7 +35,7 @@ C.Popup {
         pending = true; message = ""; canRetry = false;
         if (!service.applyTaskAction(taskIds, action, value)) {
             pending = false;
-            message = service.error || "Please wait for the current request to finish.";
+            message = service.error || "Attendez la fin de l’opération en cours.";
         }
     }
     function showPage(value) { page = value; input.text = ""; if (["customDate", "deadline", "reminder"].indexOf(page) >= 0) input.forceActiveFocus(); }
@@ -51,24 +51,24 @@ C.Popup {
             spacing: Style.space(5)
             RowLayout {
                 Layout.fillWidth: true
-                Action { visible: root.page !== "main"; text: "‹"; tip: "Back"; enabled: !root.busy; onClicked: root.page = "main" }
-                Label { Layout.fillWidth: true; text: root.tasks.length === 1 ? "1 task selected" : root.tasks.length + " tasks selected"; font.bold: true }
-                Action { text: "×"; tip: "Close menu"; enabled: !root.busy; onClicked: root.close() }
+                Action { visible: root.page !== "main"; text: "‹"; tip: "Retour"; enabled: !root.busy; onClicked: root.page = "main" }
+                Label { Layout.fillWidth: true; text: root.tasks.length === 1 ? "1 tâche sélectionnée" : root.tasks.length + " tâches sélectionnées"; font.bold: true }
+                Action { text: "×"; tip: "Fermer le menu"; enabled: !root.busy; onClicked: root.close() }
             }
-            Label { visible: root.busy; text: "Saving changes…"; opacity: 0.6 }
+            Label { visible: root.busy; text: "Enregistrement…"; opacity: 0.6 }
             Label { visible: text !== ""; text: root.message; color: Color.urgent; Layout.fillWidth: true; wrapMode: Text.Wrap; elide: Text.ElideNone }
             Action {
                 visible: root.canRetry && !!root.service.bulkRetry
-                text: "Retry remaining changes"; enabled: !root.busy
-                onClicked: { root.pending = true; root.message = ""; if (!root.service.retryTaskAction()) { root.pending = false; root.message = root.service.error || "Please wait before retrying."; } }
+                text: "Réessayer les modifications restantes"; enabled: !root.busy
+                onClicked: { root.pending = true; root.message = ""; if (!root.service.retryTaskAction()) { root.pending = false; root.message = root.service.error || "Veuillez patienter avant de réessayer."; } }
             }
             ColumnLayout {
                 visible: root.page === "main"
                 enabled: !root.busy
                 Layout.fillWidth: true
                 spacing: Style.space(5)
-                Action { visible: root.tasks.length === 1; text: "Edit"; leftAligned: true; Layout.fillWidth: true; onClicked: { var task = root.tasks[0]; root.close(); root.editRequested(task); } }
-                Action { text: "✓   Complete"; objectName: "bulkComplete"; leftAligned: true; Layout.fillWidth: true; onClicked: root.run("complete", null) }
+                Action { visible: root.tasks.length === 1; text: "Modifier"; leftAligned: true; Layout.fillWidth: true; onClicked: { var task = root.tasks[0]; root.close(); root.editRequested(task); } }
+                Action { text: "✓   Terminer"; objectName: "bulkComplete"; leftAligned: true; Layout.fillWidth: true; onClicked: root.run("complete", null) }
                 Rectangle { Layout.fillWidth: true; height: 1; color: Color.popups.text; opacity: 0.12 }
                 Label { text: "Date"; font.bold: true; Layout.topMargin: Style.space(4) }
                 RowLayout {
@@ -76,12 +76,12 @@ C.Popup {
                     spacing: Style.space(2)
                     Repeater {
                         model: [
-                            {value: "today", text: String(root.service.now.getDate()), tip: "Today", color: "#4baf63"},
-                            {value: "tomorrow", text: "☀", tip: "Tomorrow", color: "#eb9700"},
-                            {value: "weekend", text: "▱", tip: "This weekend", color: "#5297ff"},
-                            {value: "nextweek", text: "→", tip: "Next Monday", color: "#b58ce8"},
-                            {value: "", text: "∅", tip: "Remove date", color: Color.popups.text},
-                            {value: "custom", text: "…", tip: "Choose date or recurrence", color: Color.popups.text}
+                            {value: "today", text: String(root.service.now.getDate()), tip: "Aujourd’hui", color: "#4baf63"},
+                            {value: "tomorrow", text: "☀", tip: "Demain", color: "#eb9700"},
+                            {value: "weekend", text: "▱", tip: "Cette fin de semaine", color: "#5297ff"},
+                            {value: "nextweek", text: "→", tip: "Lundi prochain", color: "#b58ce8"},
+                            {value: "", text: "∅", tip: "Retirer la date", color: Color.popups.text},
+                            {value: "custom", text: "…", tip: "Choisir une date ou une récurrence", color: Color.popups.text}
                         ]
                         Action {
                             required property var modelData
@@ -92,7 +92,7 @@ C.Popup {
                         }
                     }
                 }
-                Label { text: "Priority"; font.bold: true; Layout.topMargin: Style.space(4) }
+                Label { text: "Priorité"; font.bold: true; Layout.topMargin: Style.space(4) }
                 RowLayout {
                     Layout.fillWidth: true
                     Repeater {
@@ -108,39 +108,39 @@ C.Popup {
                     }
                 }
                 Rectangle { Layout.fillWidth: true; height: 1; color: Color.popups.text; opacity: 0.12; Layout.topMargin: Style.space(4) }
-                Action { text: "⚑   Deadline…"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("deadline") }
-                Action { text: "◷   Add reminder…"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("reminder") }
-                Action { text: "Move to…"; objectName: "bulkMove"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("move") }
-                Action { text: "Duplicate"; objectName: "bulkDuplicate"; leftAligned: true; Layout.fillWidth: true; tip: "Copy tasks and subtasks, without comments or reminders"; onClicked: root.run("duplicate", null) }
+                Action { text: "⚑   Date limite…"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("deadline") }
+                Action { text: "◷   Ajouter un rappel…"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("reminder") }
+                Action { text: "Déplacer vers…"; objectName: "bulkMove"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("move") }
+                Action { text: "Dupliquer"; objectName: "bulkDuplicate"; leftAligned: true; Layout.fillWidth: true; tip: "Copier les tâches et sous-tâches, sans commentaires ni rappels"; onClicked: root.run("duplicate", null) }
                 Action {
-                    text: root.tasks.length === 1 ? "Copy link to task" : "Copy task links"
+                    text: root.tasks.length === 1 ? "Copier le lien de la tâche" : "Copier les liens des tâches"
                     leftAligned: true; Layout.fillWidth: true
                     onClicked: { Quickshell.clipboardText = root.tasks.map(function(t) { return "https://app.todoist.com/app/task/" + encodeURIComponent(t.id); }).join("\n"); root.close(); }
                 }
                 Rectangle { Layout.fillWidth: true; height: 1; color: Color.popups.text; opacity: 0.12 }
-                Action { text: "Delete…"; objectName: "bulkDelete"; foreground: Color.urgent; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("delete") }
+                Action { text: "Supprimer…"; objectName: "bulkDelete"; foreground: Color.urgent; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("delete") }
             }
             ColumnLayout {
                 visible: ["customDate", "deadline", "reminder"].indexOf(root.page) >= 0
                 enabled: !root.busy
                 Layout.fillWidth: true
-                Label { text: root.page === "customDate" ? "Date or recurrence" : root.page === "deadline" ? "Deadline" : "Add reminder"; font.bold: true }
+                Label { text: root.page === "customDate" ? "Date ou récurrence" : root.page === "deadline" ? "Date limite" : "Ajouter un rappel"; font.bold: true }
                 UI.TextField {
                     id: input
                     objectName: "bulkDateInput"
                     Layout.fillWidth: true
-                    placeholderText: root.page === "deadline" ? "YYYY-MM-DD or Tomorrow" : root.page === "reminder" ? "Tomorrow at 9am or 30mb" : "Friday at 10am or every Monday"
+                    placeholderText: root.page === "deadline" ? "AAAA-MM-JJ ou demain" : root.page === "reminder" ? "Demain à 9h ou 30mb" : "Vendredi à 10h ou chaque lundi"
                     onAccepted: root.submitInput()
                 }
-                Action { text: "Apply to " + root.tasks.length + (root.tasks.length === 1 ? " task" : " tasks"); enabled: input.text.trim() !== ""; objectName: "bulkApplyInput"; onClicked: root.submitInput() }
-                Action { visible: root.page === "deadline"; text: "Remove deadline"; onClicked: root.run("deadline", "") }
+                Action { text: "Appliquer à " + root.tasks.length + (root.tasks.length === 1 ? " tâche" : " tâches"); enabled: input.text.trim() !== ""; objectName: "bulkApplyInput"; onClicked: root.submitInput() }
+                Action { visible: root.page === "deadline"; text: "Retirer la date limite"; onClicked: root.run("deadline", "") }
             }
             ColumnLayout {
                 visible: root.page === "move"
                 enabled: !root.busy
                 Layout.fillWidth: true
-                Label { text: "Move to project or section"; font.bold: true }
-                UI.TextField { id: search; Layout.fillWidth: true; placeholderText: "Find a project or section…" }
+                Label { text: "Déplacer vers un projet ou une section"; font.bold: true }
+                UI.TextField { id: search; Layout.fillWidth: true; placeholderText: "Rechercher un projet ou une section…" }
                 Repeater {
                     model: {
                         var destinations = [];
@@ -159,10 +159,10 @@ C.Popup {
                 visible: root.page === "delete"
                 enabled: !root.busy
                 Layout.fillWidth: true
-                Label { text: "Delete " + root.tasks.length + (root.tasks.length === 1 ? " task" : " tasks") + " and their subtasks?"; wrapMode: Text.Wrap; elide: Text.ElideNone; Layout.fillWidth: true }
+                Label { text: "Supprimer " + root.tasks.length + (root.tasks.length === 1 ? " tâche" : " tâches") + " et leurs sous-tâches ?"; wrapMode: Text.Wrap; elide: Text.ElideNone; Layout.fillWidth: true }
                 RowLayout {
-                    Action { text: "Cancel"; onClicked: root.page = "main" }
-                    Action { text: "Delete"; objectName: "bulkConfirmDelete"; foreground: Color.urgent; bordered: true; onClicked: root.run("delete", null) }
+                    Action { text: "Annuler"; onClicked: root.page = "main" }
+                    Action { text: "Supprimer"; objectName: "bulkConfirmDelete"; foreground: Color.urgent; bordered: true; onClicked: root.run("delete", null) }
                 }
             }
         }

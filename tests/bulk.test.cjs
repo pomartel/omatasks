@@ -42,9 +42,9 @@ test('Quick dates retain recurrence, time and timezone; removal clears the sched
 test('Bulk custom dates, deadlines and reminders validate input and preserve unrelated fields', () => {
     assert.deepEqual(plain(bulk.commands(tasks, ['parent'], 'customDate', 'every Monday', now)[0].args), {id: 'parent', due: {string: 'every Monday', timezone: 'Europe/Berlin'}});
     assert.deepEqual(plain(bulk.commands(tasks, ['parent'], 'deadline', 'tomorrow', now)[0].args), {id: 'parent', deadline: {date: '2026-09-17'}});
-    assert.throws(() => bulk.commands(tasks, ['parent'], 'deadline', '2026-02-30', now), /YYYY-MM-DD/);
+    assert.throws(() => bulk.commands(tasks, ['parent'], 'deadline', '2026-02-30', now), /AAAA-MM-JJ/);
     assert.deepEqual(plain(bulk.commands(tasks, ['parent'], 'reminder', '30mb', now)[0].args), {item_id: 'parent', type: 'absolute', minute_offset: 30});
-    assert.throws(() => bulk.commands(tasks, ['parent'], 'priority', 0, now), /priority/);
+    assert.throws(() => bulk.commands(tasks, ['parent'], 'priority', 0, now), /priorité/);
 });
 test('Duplication preserves task fields and copies each descendant under its new parent once', () => {
     const commands = bulk.commands(tasks, ['parent', 'child'], 'duplicate', null, now);

@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Window
 import QtQuick.Controls as C
 import QtQuick.Layouts
 import qs.Commons
@@ -10,6 +11,8 @@ FocusScope {
     id: root
     required property var service
     property string view: "today"
+    property string keyboardTaskId: ""
+    property bool helpOpen: false
     property bool settingsOpen: false
     property string composerKey: ""
     property string composerProject: ""
@@ -41,6 +44,7 @@ FocusScope {
         updateListModel();
         var visible = Bulk.visibleIds(rows);
         selectedIds = selectedIds.filter(function(id) { return visible.indexOf(id) >= 0; });
+        if (visible.indexOf(keyboardTaskId) < 0) keyboardTaskId = "";
     }
     Component.onCompleted: updateListModel()
 
@@ -65,7 +69,7 @@ FocusScope {
         display.close();
         taskMenu.open();
     }
-    function reset() { clearSelection(); view = "today"; settingsOpen = false; display.close(); details.close(); }
+    function reset() { keyboardTaskId = ""; helpOpen = false; clearSelection(); view = "today"; settingsOpen = false; display.close(); details.close(); }
     function showTask(task) { clearSelection(); selectedTask = task; details.open(); }
     function startDrag(index, point) {
         if (service.saving || composerKey || setupVisible || selectedIds.length) return;
@@ -105,17 +109,65 @@ FocusScope {
         if (target) service.reorderTasks(view, String(source.task.id), String(target.task.id), after, source.groupKey);
         cancelDrag();
     }
-    Keys.onEscapePressed: { if (dragging) cancelDrag(); else if (taskMenu.visible) { if (!taskMenu.busy) taskMenu.close(); } else if (display.opened) display.close(); else if (details.opened && detailLoader.item) detailLoader.item.dismissEditor(); else if (composerKey) composerKey = ""; else if (selectedIds.length) clearSelection(); else if (settingsOpen) settingsOpen = false; else closeRequested(); }
-    Keys.onPressed: function(event) {
-        if (event.modifiers & Qt.ControlModifier && event.key === Qt.Key_Tab) {
-            var tabs = ["today", "inbox", "upcoming"];
-            if (!dragging) view = tabs[(tabs.indexOf(view) + (event.modifiers & Qt.ShiftModifier ? 2 : 1)) % 3]; event.accepted = true;
-        }
-        if (event.modifiers & Qt.ControlModifier && event.key === Qt.Key_A && !dragging && !composerKey && !details.visible && !display.visible && !taskMenu.visible && !setupVisible) {
-            selectedIds = Bulk.visibleIds(rows); event.accepted = true;
-        }
+    Keys.onEscapePressed: { if (dragging) cancelDrag(); else if (taskMenu.visible) { if (!taskMenu.busy) taskMenu.close(); } else if (display.opened) display.close(); else if (details.opened && detailLoader.item) detailLoader.item.dismissEditor(); else if (composerKey) { composerKey = ""; forceActiveFocus(); } else if (selectedIds.length) clearSelection(); else if (settingsOpen) settingsOpen = false; else if (keyboardTaskId) keyboardTaskId = ""; else closeRequested(); }
+    function keyboardTask() {
+        return service.tasks.find(function(t) { return String(t.id) === keyboardTaskId; }) || null;
     }
-    onViewChanged: { cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
+    function moveKeyboard(step) {
+        var tasks = rows.filter(function(r) { return r.kind === "task"; });
+        if (!tasks.length) return;
+        var index = tasks.findIndex(function(r) { return String(r.task.id) === root.keyboardTaskId; });
+        index = index < 0 ? (step > 0 ? 0 : tasks.length - 1) : Math.max(0, Math.min(tasks.length - 1, index + step));
+        keyboardTaskId = String(tasks[index].task.id);
+        list.positionViewAtIndex(rows.indexOf(tasks[index]), ListView.Contain);
+    }
+    function editKeyboardTask(task) {
+        showTask(task);
+        Qt.callLater(function() { if (detailLoader.item) detailLoader.item.startEditing(); });
+    }
+    function openInTodoist(task) { Qt.openUrlExternally("https://app.todoist.com/app/task/" + encodeURIComponent(task.id)); }
+    function handleShortcut(event) {
+        if (dragging || composerKey || details.visible || display.visible || taskMenu.visible || helpOpen) return;
+        // Text controls own their keystrokes, including settings fields.
+        var focused = Window.activeFocusItem;
+        if (focused && focused.cursorPosition !== undefined) return;
+        var ctrl = !!(event.modifiers & Qt.ControlModifier), key = event.key;
+        var task = keyboardTask(), tabs = ["today", "inbox", "upcoming"];
+        if (key === Qt.Key_P) { settingsOpen = !settingsOpen; event.accepted = true; return; }
+        if (setupVisible) {
+            if (key === Qt.Key_T) { Qt.openUrlExternally("https://app.todoist.com"); event.accepted = true; }
+            return;
+        }
+        if (key === Qt.Key_Tab || key === Qt.Key_Backtab || key === Qt.Key_Left || key === Qt.Key_Right) {
+            view = tabs[(tabs.indexOf(view) + ((event.modifiers & Qt.ShiftModifier) || key === Qt.Key_Backtab || key === Qt.Key_Left ? 2 : 1)) % 3];
+        } else if (ctrl && [Qt.Key_A, Qt.Key_D, Qt.Key_I].indexOf(key) >= 0 && task) {
+            service.applyTaskAction([String(task.id)], "date", key === Qt.Key_A ? "today" : key === Qt.Key_D ? "tomorrow" : "");
+        } else if (ctrl && key === Qt.Key_A) {
+            selectedIds = Bulk.visibleIds(rows);
+        } else if (!ctrl && [Qt.Key_A, Qt.Key_D, Qt.Key_I].indexOf(key) >= 0) {
+            view = key === Qt.Key_A ? "today" : key === Qt.Key_D ? "upcoming" : "inbox";
+        } else if (!ctrl && [Qt.Key_J, Qt.Key_Down, Qt.Key_K, Qt.Key_Up].indexOf(key) >= 0) {
+            moveKeyboard(key === Qt.Key_J || key === Qt.Key_Down ? 1 : -1);
+        } else if (!ctrl && task && [Qt.Key_Return, Qt.Key_Enter, Qt.Key_E].indexOf(key) >= 0) {
+            editKeyboardTask(task);
+        } else if (!ctrl && task && key === Qt.Key_Space) {
+            service.completeTask(task);
+        } else if (!ctrl && task && key === Qt.Key_O) {
+            openInTodoist(task);
+        } else if (!ctrl && task && key === Qt.Key_X) {
+            openTaskMenu(task, Qt.point(0, header.height)); taskMenu.showPage("delete");
+        } else if (!ctrl && key === Qt.Key_Q) {
+            var add = rows.filter(function(r) { return r.kind === "add"; }).pop();
+            if (add) addAt(add.key, add.projectId);
+        } else if (!ctrl && key === Qt.Key_R) {
+            service.refresh(true);
+        } else if (event.text === "?") {
+            helpOpen = true;
+        } else return;
+        event.accepted = true;
+    }
+    Keys.onPressed: function(event) { handleShortcut(event); }
+    onViewChanged: { keyboardTaskId = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
     onSetupVisibleChanged: if (setupVisible) { cancelDrag(); clearSelection(); }
     onVisibleChanged: if (!visible) { cancelDrag(); clearSelection(); }
     onComposerKeyChanged: if (!composerKey) heldRows = null
@@ -125,22 +177,23 @@ FocusScope {
         anchors.top: parent.top; width: parent.width
         height: Style.space(28); spacing: Style.space(4)
         Repeater {
-            model: [{id: "today", title: "Today"}, {id: "inbox", title: "Inbox"}, {id: "upcoming", title: "Upcoming"}]
+            model: [{id: "today", title: "Aujourd’hui"}, {id: "inbox", title: "Inbox"}, {id: "upcoming", title: "Bientôt"}]
             Action {
                 required property var modelData
                 Layout.fillWidth: true
-                Layout.preferredWidth: 0
+                Layout.preferredWidth: implicitWidth
                 Layout.minimumWidth: 0
                 text: modelData.title
-                iconName: modelData.id
+                tip: modelData.id === "inbox" ? "Tâches sans date dans tous les projets" : modelData.title
+                iconName: root.width >= Style.space(480) ? modelData.id : ""
                 iconDay: root.service.now.getDate()
                 bold: true
                 selected: root.view === modelData.id && !root.settingsOpen
                 onClicked: { root.view = modelData.id; root.settingsOpen = false; }
             }
         }
-        Action { id: displayButton; objectName: "displayButton"; iconName: "display"; iconSize: Style.space(17); tip: "Display"; selected: display.opened; enabled: root.service.configured; onClicked: display.opened ? display.close() : display.open() }
-        Action { iconName: "settings"; iconSize: Style.space(17); tip: "Settings"; selected: root.settingsOpen; onClicked: root.settingsOpen = !root.settingsOpen }
+        Action { id: displayButton; objectName: "displayButton"; iconName: "display"; iconSize: Style.space(17); tip: "Affichage"; selected: display.opened; enabled: root.service.configured; onClicked: display.opened ? display.close() : display.open() }
+        Action { iconName: "settings"; iconSize: Style.space(17); tip: "Réglages"; selected: root.settingsOpen; onClicked: root.settingsOpen = !root.settingsOpen }
     }
     ColumnLayout {
         id: status
@@ -152,7 +205,7 @@ FocusScope {
         Label {
             id: statusText
             Layout.fillWidth: true
-            text: root.service.error || (!root.service.loaded && root.service.configured ? "Loading tasks…" : "")
+            text: root.service.error || (!root.service.loaded && root.service.configured ? "Chargement des tâches…" : "")
             color: root.service.error ? Color.urgent : Color.popups.text
             wrapMode: Text.WordWrap; elide: Text.ElideNone
             font.pixelSize: Style.font.bodySmall
@@ -160,7 +213,7 @@ FocusScope {
         Action {
             objectName: "retrySync"
             visible: root.service.configured && root.service.error !== ""
-            text: root.service.loading ? "Retrying…" : "Retry now"
+            text: root.service.loading ? "Nouvel essai…" : "Réessayer"
             enabled: !root.service.loading && !root.service.saving && !root.service.connecting
             onClicked: root.service.refresh(true)
         }
@@ -171,7 +224,7 @@ FocusScope {
         width: parent.width
         height: visible ? Style.space(34) : 0
         visible: root.selectedIds.length > 0 && !root.setupVisible
-        Label { Layout.fillWidth: true; text: root.selectedIds.length + " selected"; color: Color.accent; font.pixelSize: Style.font.bodySmall }
+        Label { Layout.fillWidth: true; text: root.selectedIds.length + " sélectionnée(s)"; color: Color.accent; font.pixelSize: Style.font.bodySmall }
         Action {
             text: "Actions…"; objectName: "selectionActions"; enabled: !root.service.saving
             onClicked: {
@@ -179,7 +232,7 @@ FocusScope {
                 if (task) root.openTaskMenu(task, mapToItem(root, 0, height));
             }
         }
-        Action { text: "Clear"; enabled: !root.service.saving; onClicked: root.clearSelection() }
+        Action { text: "Effacer"; enabled: !root.service.saving; onClicked: root.clearSelection() }
     }
     C.ScrollView {
         visible: root.setupVisible
@@ -201,13 +254,15 @@ FocusScope {
         interactive: !root.dragging
         model: []
         spacing: 0
+        keyNavigationEnabled: false
+        Keys.onPressed: function(event) { root.handleShortcut(event); }
         cacheBuffer: Style.space(1000)
         C.ScrollBar.vertical: C.ScrollBar { policy: list.contentHeight > list.height ? C.ScrollBar.AsNeeded : C.ScrollBar.AlwaysOff }
         header: Label {
             width: list.width
             height: visible ? Style.space(60) : 0
             visible: root.service.loaded && !root.rows.some(function(row) { return row.kind === "task"; })
-            text: "No tasks in this view."
+            text: "Aucune tâche dans cette vue."
             verticalAlignment: Text.AlignVCenter
             opacity: 0.5
         }
@@ -222,7 +277,7 @@ FocusScope {
                 id: groupComponent
                 Item {
                     implicitHeight: Style.space(40)
-                    Label { anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.bottomMargin: Style.space(9); text: rowLoader.modelData.title; font.bold: true; color: text === "Overdue" ? "#ef615b" : Color.popups.text }
+                    Label { anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.bottomMargin: Style.space(9); text: rowLoader.modelData.title; font.bold: true; color: text === "En retard" ? "#ef615b" : Color.popups.text }
                     Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Color.popups.text; opacity: 0.12 }
                 }
             }
@@ -231,7 +286,7 @@ FocusScope {
                 TaskRow {
                     task: rowLoader.modelData.task; service: root.service; view: root.view; grouping: root.options.grouping
                     reorderEnabled: !root.service.saving && !root.composerKey && !root.selectedIds.length
-                    selected: root.selectedIds.indexOf(String(task.id)) >= 0
+                    selected: root.selectedIds.indexOf(String(task.id)) >= 0 || root.keyboardTaskId === String(task.id)
                     dragging: root.dragIndex === rowLoader.index
                     listDragging: root.dragging
                     opacity: dragging ? 0.3 : 1
@@ -251,7 +306,7 @@ FocusScope {
                     Action {
                         visible: root.composerKey !== rowLoader.modelData.key
                         y: Style.space(5)
-                        text: "+   Add task"
+                        text: "+   Ajouter une tâche"
                         foreground: Color.popups.text
                         onClicked: root.addAt(rowLoader.modelData.key, rowLoader.modelData.projectId)
                     }
@@ -263,9 +318,9 @@ FocusScope {
                         sourceComponent: Composer {
                             service: root.service
                             initialProjectId: root.composerProject
-                            initialDue: root.view === "today" ? "today" : ""
-                            onFinished: root.composerKey = ""
-                            onCancelled: root.composerKey = ""
+                            initialDue: root.view === "today" ? "aujourd’hui" : root.view === "upcoming" ? "demain" : ""
+                            onFinished: { root.composerKey = ""; root.forceActiveFocus(); }
+                            onCancelled: { root.composerKey = ""; root.forceActiveFocus(); }
                             Component.onCompleted: Qt.callLater(focusInput)
                         }
                     }
@@ -303,6 +358,33 @@ FocusScope {
             anchors.centerIn: parent; width: parent.width - Style.space(20)
             text: root.dragging ? Model.plain(root.rows[root.dragIndex].task.content) : ""
             maximumLineCount: 1
+        }
+    }
+    C.Popup {
+        id: shortcutHelp
+        objectName: "shortcutHelp"
+        visible: root.helpOpen
+        onClosed: { root.helpOpen = false; root.forceActiveFocus(); }
+        width: root.width
+        height: Math.min(root.height, helpBody.implicitHeight + padding * 2)
+        padding: Style.space(16)
+        focus: true
+        closePolicy: C.Popup.CloseOnEscape | C.Popup.CloseOnPressOutside
+        background: Rectangle { color: Color.popups.background; border.color: Color.popups.border; radius: Style.cornerRadius }
+        contentItem: C.ScrollView {
+            contentWidth: availableWidth
+            ColumnLayout {
+                id: helpBody
+                width: parent.width
+                spacing: Style.space(10)
+                Label { text: "Raccourcis clavier"; font.bold: true }
+                Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.Wrap; elide: Text.ElideNone
+                    text: "Tab / Maj+Tab : changer de vue\na / d / i : Aujourd’hui / Bientôt / Inbox\n↑ / ↓ ou k / j : sélectionner une tâche\nEntrée / e : modifier\nEspace : terminer\no : ouvrir dans Todoist\nx : supprimer (avec confirmation)\nCtrl+a / Ctrl+d / Ctrl+i : aujourd’hui / demain / sans date\nCtrl+a sans curseur : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
+                }
+                Action { text: "Fermer"; onClicked: shortcutHelp.close() }
+            }
         }
     }
     TaskMenu {

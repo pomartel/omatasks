@@ -8,7 +8,7 @@ function escapeName(name) {
 // multilingual parser. Unsupported expressions are sent to the API unchanged.
 function dateToken(text) {
     var source = text.split(" // ")[0];
-    var match = /(?:^|\s)((?:every (?:other )?(?:\d+ )?(?:days?|weekdays?|weeks?|months?|years?|mondays?|tuesdays?|wednesdays?|thursdays?|fridays?|saturdays?|sundays?)|today|tomorrow|tonight|(?:next |this )?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)|next week|in \d+ (?:days?|weeks?)|\d{4}-\d{2}-\d{2})(?: (?:at )?\d{1,2}(?::\d{2})?\s?(?:am|pm)?)?)(?=\s|$)/i.exec(source);
+    var match = /(?:^|\s)((?:every (?:other )?(?:\d+ )?(?:days?|weekdays?|weeks?|months?|years?|mondays?|tuesdays?|wednesdays?|thursdays?|fridays?|saturdays?|sundays?)|sans date|no date|aujourd['’]hui|après-demain|apres-demain|demain|ce soir|(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)(?: prochain)?|(?:la )?semaine prochaine|dans \d+ (?:jours?|semaines?|heures?|minutes?)|(?:tous les|chaque) (?:jours?|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)|today|tomorrow|tonight|(?:next |this )?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)|next week|in \d+ (?:days?|weeks?)|\d{4}-\d{2}-\d{2})(?: (?:at |à )?\d{1,2}(?::\d{2}|\s*h(?:\s*\d{2})?)?\s?(?:am|pm)?)?)(?=\s|$)/i.exec(source);
     if (!match) return null;
     var start = match.index + (match[0][0] === " " ? 1 : 0);
     return {value: match[1], start: start, end: start + match[1].length};
@@ -50,19 +50,19 @@ function choices(kind, query, service, project) {
     if (kind === "section") rows = service.sections.filter(function(s) { return project && s.project_id === project.id && !s.is_deleted && !s.is_archived; }).map(function(s) { return {id: s.id, label: s.name, value: s, prefix: "/"}; });
     if (kind === "label") {
         rows = service.labels.map(function(l) { return {id: l.name, label: l.name, value: l.name, icon: "label"}; });
-        if (q && !rows.some(function(r) { return r.label.toLowerCase() === q; })) rows.push({id: "new", label: query.trim(), detail: "Create label", value: query.trim().replace(/\s+/g, "_"), icon: "label"});
+        if (q && !rows.some(function(r) { return r.label.toLowerCase() === q; })) rows.push({id: "new", label: query.trim(), detail: "Créer une étiquette", value: query.trim().replace(/\s+/g, "_"), icon: "label"});
     }
-    if (kind === "priority") rows = [1, 2, 3, 4].map(function(p) { return {id: String(p), label: "Priority " + p, detail: p === 4 ? "Default" : "", value: p, icon: "flag", color: ["#ef615b", "#e49b40", "#5295e4", ""][p - 1]}; });
+    if (kind === "priority") rows = [1, 2, 3, 4].map(function(p) { return {id: String(p), label: "Priorité " + p, detail: p === 4 ? "Par défaut" : "", value: p, icon: "flag", color: ["#ef615b", "#e49b40", "#5295e4", ""][p - 1]}; });
     if (kind === "assignee" && project && project.is_shared) rows = service.collaborators.filter(function(c) { return !c.project_id || c.project_id === project.id; }).map(function(c) { return {id: c.id, label: c.full_name || c.name || c.email, value: {id: c.id, name: c.full_name || c.name || c.email}, prefix: "+"}; });
     if (kind === "due" || kind === "deadline") {
-        rows = [{id: "today", label: "Today", value: "today", icon: "today"}, {id: "tomorrow", label: "Tomorrow", value: "tomorrow", icon: "upcoming"}, {id: "next week", label: "Next week", value: "next week", icon: "upcoming"}];
+        rows = [{id: "today", label: "Aujourd’hui", value: "aujourd’hui", icon: "today"}, {id: "tomorrow", label: "Demain", value: "demain", icon: "upcoming"}, {id: "next week", label: "La semaine prochaine", value: "la semaine prochaine", icon: "upcoming"}];
         if (q && !rows.some(function(r) { return r.id === q; })) rows.unshift({id: "custom", label: query.trim(), value: query.trim(), icon: "today"});
-        rows.push({id: "none", label: kind === "due" ? "No date" : "No deadline", value: "", icon: "close"});
+        rows.push({id: "none", label: kind === "due" ? "Sans date" : "Sans date limite", value: "", icon: "close"});
     }
     if (kind === "reminder") {
-        rows = [{id: "0mb", label: "At due time", value: "0mb", icon: "bell"}, {id: "30mb", label: "30 minutes before", value: "30mb", icon: "bell"}, {id: "1h", label: "1 hour before", value: "1h", icon: "bell"}];
+        rows = [{id: "0mb", label: "À l’heure prévue", value: "0mb", icon: "bell"}, {id: "30mb", label: "30 minutes avant", value: "30mb", icon: "bell"}, {id: "1h", label: "1 heure avant", value: "1h", icon: "bell"}];
         if (q) rows.unshift({id: "custom", label: query.trim(), value: query.trim(), icon: "bell"});
-        rows.push({id: "none", label: "No reminder", value: "", icon: "close"});
+        rows.push({id: "none", label: "Aucun rappel", value: "", icon: "close"});
     }
     return rows.filter(function(r) { return !q || r.id === "custom" || (r.label + " " + (r.detail || "")).toLowerCase().indexOf(q) >= 0; });
 }

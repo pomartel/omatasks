@@ -10,7 +10,7 @@ Item {
     property var shell: null
     property var manifest: null
     property bool opened: false
-    property var service: shell ? shell.serviceFor("crmne.todoist") : null
+    property var service: shell ? shell.serviceFor("pomartel.omatasks") : null
     function open(payload) {
         if (!service) return;
         if (!service.configured) { opened = false; service.openPanel(); return; }
@@ -19,7 +19,7 @@ Item {
         Qt.callLater(function() { composer.focusInput(); });
     }
     function close() { opened = false; }
-    function dismiss() { close(); if (shell) shell.hide("crmne.todoist"); }
+    function dismiss() { close(); if (shell) shell.hide("pomartel.omatasks"); }
     function toggle() { if (opened) dismiss(); else open("{}"); }
 
     PanelWindow {

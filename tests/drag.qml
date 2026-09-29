@@ -32,7 +32,7 @@ ShellRoot {
         visible: true
         implicitWidth: 456; implicitHeight: 540
         color: Color.popups.background
-        Tasks.TaskList { id: taskList; anchors.fill: parent; anchors.margins: 18; service: service }
+        Tasks.TaskList { id: taskList; property string openedTask: ""; function openInTodoist(task) { openedTask = String(task.id); } anchors.fill: parent; anchors.margins: 18; service: service }
     }
     TestCase {
         id: checks
@@ -50,6 +50,58 @@ ShellRoot {
             var list = findChild(taskList, "taskListView"); list.positionViewAtBeginning();
             wait(150);
         }
+        function test_imported_navigation_and_actions() {
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J);
+            compare(taskList.keyboardTaskId, "0");
+            keyClick(Qt.Key_Down); compare(taskList.keyboardTaskId, "1");
+            keyClick(Qt.Key_K); compare(taskList.keyboardTaskId, "0");
+            keyClick(Qt.Key_O); compare(taskList.openedTask, "0");
+            keyClick(Qt.Key_Space); compare(service.completions[0], "0");
+            keyClick(Qt.Key_X);
+            var menu = findChild(taskList,"taskContextMenu");
+            tryCompare(menu,"opened",true); compare(menu.page,"delete");
+            compare(service.captured.length,0); menu.close(); taskList.clearSelection();
+            taskList.forceActiveFocus(); keyClick(Qt.Key_R); compare(service.manualRefresh,true);
+
+            keyClick(Qt.Key_D); compare(taskList.view,"upcoming");
+            keyClick(Qt.Key_I); compare(taskList.view,"inbox");
+            keyClick(Qt.Key_A); compare(taskList.view,"today");
+            keyClick(Qt.Key_Tab); compare(taskList.view,"inbox");
+            keyClick(Qt.Key_Backtab); compare(taskList.view,"today");
+            keyClick(Qt.Key_P); compare(taskList.settingsOpen,true);
+            keyClick(Qt.Key_Escape); compare(taskList.settingsOpen,false);
+        }
+        function test_imported_date_shortcuts() {
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J);
+            keyClick(Qt.Key_D,Qt.ControlModifier);
+            compare(service.captured[0].args.due.date,"2026-09-16");
+            keyClick(Qt.Key_I,Qt.ControlModifier);
+            compare(service.captured[1].args.due,null);
+            keyClick(Qt.Key_A,Qt.ControlModifier);
+            compare(service.captured[2].args.due.date,"2026-09-15");
+        }
+        function test_editor_shortcut_and_typing() {
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_Return);
+            tryVerify(function() { return findChild(taskList,"taskName") !== null });
+            var input=findChild(taskList,"taskName");
+            tryCompare(input,"activeFocus",true);
+            keyClick(Qt.Key_A); keyClick(Qt.Key_D); keyClick(Qt.Key_I);
+            compare(taskList.view,"today");
+            compare(service.captured.length,0);
+            input.text="Réviser demain à 17h p1"; keyClick(Qt.Key_Return);
+            compare(service.captured.length,1);
+            compare(service.captured[0].args.content,"Réviser");
+            compare(service.captured[0].args.due.lang,"fr");
+            compare(service.captured[0].args.priority,4);
+            findChild(taskList,"taskDetailsPopup").close();
+        }
+        function test_add_shortcut_and_french_picker() {
+            taskList.forceActiveFocus(); keyClick(Qt.Key_Q);
+            tryVerify(function() { return findChild(taskList,"taskName") !== null });
+            var input=findChild(taskList,"taskName"); tryCompare(input,"activeFocus",true);
+            keyClick(Qt.Key_I); compare(taskList.view,"today");
+            keyClick(Qt.Key_Escape); compare(taskList.composerKey,"");
+        }
         function test_sync_retry_button() {
             service.error = "Could not reach Todoist. Retrying automatically.";
             service.manualRefresh = false;
@@ -59,7 +111,7 @@ ShellRoot {
             mouseClick(button);
             compare(service.manualRefresh, true, "Retry button requests an immediate sync");
             service.loading = true;
-            compare(button.enabled, false); compare(button.text, "Retrying…");
+            compare(button.enabled, false); compare(button.text, "Nouvel essai…");
             service.loading = false; service.error = "";
             tryCompare(button, "visible", false);
         }
@@ -191,7 +243,7 @@ ShellRoot {
             menu.showPage("deadline"); wait(30);
             var input = findChild(menu, "bulkDateInput"); input.text = "2026-02-30";
             var apply = findChild(menu, "bulkApplyInput"); mouseClick(apply, apply.width / 2, apply.height / 2);
-            verify(menu.message.indexOf("YYYY-MM-DD") >= 0); compare(service.captured.length, 0);
+            verify(menu.message.indexOf("AAAA-MM-JJ") >= 0); compare(service.captured.length, 0);
             menu.showPage("customDate"); input.text = "every Monday at 10am"; wait(30);
             mouseClick(apply, apply.width / 2, apply.height / 2);
             compare(service.captured.length, 1); compare(service.captured[0].args.due.string, "every Monday at 10am");

@@ -9,33 +9,33 @@ ColumnLayout {
     required property var service
     spacing: Style.space(14)
     function focusInput() { tokenInput.forceActiveFocus(); }
-    Label { text: root.service.configured ? "Todoist account" : "Connect to Todoist"; font.bold: true; font.pixelSize: Style.font.heading }
+    Label { text: root.service.configured ? "Compte Todoist" : "Connexion à Todoist"; font.bold: true; font.pixelSize: Style.font.heading }
     Label {
         Layout.fillWidth: true
-        text: "Open Todoist → Settings → Integrations → Developer. Copy your API token and paste it below."
+        text: "Ouvrez Todoist → Paramètres → Intégrations → Développeur. Copiez votre jeton API et collez-le ci-dessous."
         wrapMode: Text.WordWrap
         elide: Text.ElideNone
         opacity: 0.7
     }
-    Action { text: "Open Developer settings ↗"; bordered: true; onClicked: Qt.openUrlExternally(Model.TOKEN_URL) }
+    Action { text: "Ouvrir les paramètres développeur ↗"; bordered: true; onClicked: Qt.openUrlExternally(Model.TOKEN_URL) }
     UI.TextField {
         id: tokenInput
         Layout.fillWidth: true
         password: true
         font.family: Style.font.family
-        placeholderText: root.service.configured ? "Paste a replacement API token" : "Paste your API token"
+        placeholderText: root.service.configured ? "Collez un nouveau jeton API" : "Collez votre jeton API"
         enabled: !root.service.connecting
         onAccepted: root.service.connectToken(text)
     }
     RowLayout {
         Action {
-            text: root.service.connecting ? "Connecting…" : "Connect"
+            text: root.service.connecting ? "Connexion…" : "Se connecter"
             selected: true
             enabled: tokenInput.text.trim().length > 0 && !root.service.connecting
             onClicked: root.service.connectToken(tokenInput.text)
         }
-        Action { visible: root.service.configured; text: "Disconnect"; enabled: !root.service.connecting && !root.service.saving; onClicked: root.service.disconnect() }
+        Action { visible: root.service.configured; text: "Se déconnecter"; enabled: !root.service.connecting && !root.service.saving; onClicked: root.service.disconnect() }
     }
-    Label { Layout.fillWidth: true; text: "Your token stays on this computer."; opacity: 0.45; font.pixelSize: Style.font.caption }
+    Label { Layout.fillWidth: true; text: "Votre jeton reste sur cet ordinateur."; opacity: 0.45; font.pixelSize: Style.font.caption }
     Connections { target: root.service; function onConnected() { tokenInput.text = ""; } }
 }

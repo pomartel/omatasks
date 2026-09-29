@@ -30,13 +30,13 @@ test('Moving to a project or section uses one destination and does not rewrite t
 });
 test('Changed dates retain fixed timezone; deadlines validate actual calendar dates', () => {
     const draft = edit.snapshot(task); draft.due = 'every Monday at 3pm'; draft.deadline = 'tomorrow';
-    assert.deepEqual(plain(edit.changes(task, draft, now).update), {due: {string: 'every Monday at 3pm', timezone: 'Europe/Berlin'}, deadline: {date: '2026-09-16'}});
-    draft.deadline = '2026-02-30'; assert.throws(() => edit.changes(task, draft, now), /YYYY-MM-DD/);
-    draft.deadline = ''; draft.duration = '1.5'; assert.throws(() => edit.changes(task, draft, now), /whole number/);
+    assert.deepEqual(plain(edit.changes(task, draft, now).update), {due: {string: 'every Monday at 3pm', lang: 'en', timezone: 'Europe/Berlin'}, deadline: {date: '2026-09-16'}});
+    draft.deadline = '2026-02-30'; assert.throws(() => edit.changes(task, draft, now), /AAAA-MM-JJ/);
+    draft.deadline = ''; draft.duration = '1.5'; assert.throws(() => edit.changes(task, draft, now), /entier/);
 });
 test('Reminder additions distinguish relative offsets and absolute date strings', () => {
     assert.deepEqual(plain(edit.reminderArgs('30mb', 'task')), {item_id: 'task', type: 'absolute', minute_offset: 30});
     assert.deepEqual(plain(edit.reminderArgs('1h', 'task')), {item_id: 'task', type: 'absolute', minute_offset: 60});
     assert.deepEqual(plain(edit.reminderArgs('tomorrow at 4pm', 'task')), {item_id: 'task', type: 'absolute', due: {string: 'tomorrow at 4pm'}});
-    assert.equal(edit.reminderText({type: 'absolute', minute_offset: 0}), 'At due time');
+    assert.equal(edit.reminderText({type: 'absolute', minute_offset: 0}), "À l’heure prévue");
 });

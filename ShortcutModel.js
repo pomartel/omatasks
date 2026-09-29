@@ -1,6 +1,6 @@
 var DEFAULT = "ALT + SPACE";
-var DESCRIPTION = "Todoist quick add";
-var COMMAND = "omarchy-shell shell toggle crmne.todoist";
+var DESCRIPTION = "Ajout rapide Todoist";
+var COMMAND = "omarchy-shell shell toggle pomartel.omatasks";
 var MODIFIERS = {SUPER: 64, CTRL: 4, ALT: 8, SHIFT: 1};
 
 function parse(value) {

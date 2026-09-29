@@ -49,15 +49,15 @@ function commands(tasks, ids, action, value, now) {
         if (action === "complete" || action === "delete") { add(action === "complete" ? "item_close" : "item_delete", args); return; }
         if (action === "duplicate") { duplicate(task, null); return; }
         if (action === "move") {
-            if (!value || (!value.section_id && !value.project_id)) throw new Error("Choose a project or section.");
+            if (!value || (!value.section_id && !value.project_id)) throw new Error("Choisissez un projet ou une section.");
             add("item_move", Object.assign(args, value.section_id ? {section_id: value.section_id} : {project_id: value.project_id})); return;
         }
         if (action === "reminder") {
-            if (!String(value || "").trim()) throw new Error("Enter a reminder time.");
+            if (!String(value || "").trim()) throw new Error("Indiquez l’heure du rappel.");
             add("reminder_add", Edit.reminderArgs(value, task.id), true); return;
         }
         if (action === "priority") {
-            if ([1, 2, 3, 4].indexOf(value) < 0) throw new Error("Choose a priority.");
+            if ([1, 2, 3, 4].indexOf(value) < 0) throw new Error("Choisissez une priorité.");
             args.priority = value;
         } else if (action === "date") {
             if (!value) args.due = null;
@@ -68,11 +68,11 @@ function commands(tasks, ids, action, value, now) {
                 if (due.is_recurring) { args.due.string = due.string; args.due.is_recurring = true; if (due.lang) args.due.lang = due.lang; }
             }
         } else if (action === "customDate") {
-            if (!String(value || "").trim()) throw new Error("Enter a date.");
+            if (!String(value || "").trim()) throw new Error("Indiquez une date.");
             args.due = {string: value.trim()};
             if ((task.due || {}).timezone) args.due.timezone = task.due.timezone;
         } else if (action === "deadline") args.deadline = value ? {date: Edit.deadlineDate(value, now)} : null;
-        else throw new Error("Unknown task action.");
+        else throw new Error("Action inconnue.");
         add("item_update", args);
     });
     return result;

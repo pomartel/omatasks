@@ -9,7 +9,7 @@ C.AbstractButton {
     readonly property color priorityColor: ["#999999", "#999999", "#5297ff", "#eb9700", "#ef615b"][task.priority || 1]
     implicitWidth: Style.space(26)
     implicitHeight: Style.space(28)
-    Accessible.name: "Complete " + Model.plain(task.content)
+    Accessible.name: "Terminer " + Model.plain(task.content)
     focusPolicy: Qt.StrongFocus
     background: Item {}
     contentItem: Item {

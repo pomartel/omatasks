@@ -70,7 +70,7 @@ test('Failed reorder rolls back order and sorting, and an uncertain retry reuses
     assert.equal(s.tasks[2].day_order, 2);
     assert.equal(s.tasks[0].content, 'Concurrent title edit');
     assert.equal(s.saving, false);
-    assert.match(s.error, /Could not save task order/);
+    assert.match(s.error, /Impossible d’enregistrer l’ordre/);
     s.reorderTasks('today', 'c', 'a', false, '');
     assert.equal(commandsOf(wires[1])[0].uuid, first.uuid);
     wires[1].respond(200, {sync_token: 'retry', sync_status: {[first.uuid]: 'ok'}});
@@ -79,6 +79,7 @@ test('Failed reorder rolls back order and sorting, and an uncertain retry reuses
 });
 test('HTTP 200 with a rejected reorder command rolls back and reports the API error', () => {
     const {s, wires} = reorderFixture();
+    s.tasks = s.tasks.map(t => ({...t, due: null}));
     s.reorderTasks('inbox', 'c', 'a', false, '');
     const command = commandsOf(wires[0])[0];
     assert.deepEqual(Object.keys(command.args).sort(), ['id', 'order_key']);
@@ -110,7 +111,7 @@ test('Large Inbox reorders batch commands and roll back only unconfirmed changes
     wires[1].respond(500, {});
     assert.equal(s.saving, false);
     assert.equal(s.preferences.inbox.sorting, 'manual');
-    assert.match(s.error, /Some tasks were reordered/);
+    assert.match(s.error, /Certaines tâches ont été réordonnées/);
     assert.equal(s.tasks.filter(t => t.order_key).length, 100);
 });
 test('Sync uses form encoding, Bearer auth and the incremental token', () => {
@@ -162,7 +163,7 @@ test('Rate limits back off; timeouts release loading state', () => {
     s.retryAfter = 0;
     s.refresh(true); s.requests[0].timeout();
     assert.equal(s.loading, false);
-    assert.ok(s.error.includes('connection'));
+    assert.ok(s.error.includes('connexion'));
 });
 test('Changing accounts ignores the previous account’s in-flight response', () => {
     const { s, wires } = service();
@@ -194,7 +195,7 @@ test('Partial edit failures retain synced changes and report failure, even with 
     const commands = [{uuid: 'move', type: 'item_move', args: {id: 'task', project_id: 'new'}}, {uuid: 'edit', type: 'item_update', args: {id: 'task', due: {string: 'invalid'}}}];
     s.updateTask('task', commands);
     wires[0].respond(200, {sync_token: 'next', sync_status: {move: 'ok', edit: {error: 'Invalid date'}}, items: [{id: 'task', project_id: 'new'}]});
-    assert.equal(s.updated, undefined); assert.match(s.failed, /Some changes were saved.*Invalid date/);
+    assert.equal(s.updated, undefined); assert.match(s.failed, /Certaines modifications.*Invalid date/);
     assert.equal(s.tasks[0].project_id, 'new'); assert.equal(s.saving, false);
 });
 test('An uncertain task edit can retry the same command UUID without reporting false success', () => {
@@ -205,7 +206,7 @@ test('An uncertain task edit can retry the same command UUID without reporting f
     s.updateTask('task', commands);
     assert.equal(JSON.parse(new URLSearchParams(wires[1].body).get('commands'))[0].uuid, 'stable');
     wires[1].respond(200, {sync_token: 'next'});
-    assert.equal(s.updated, undefined); assert.match(s.failed, /did not confirm/);
+    assert.equal(s.updated, undefined); assert.match(s.failed, /pas confirmé/);
 });
 test('Bulk writes cancel stale syncs, deduplicate tasks and ingest confirmed changes', () => {
     const {s, wires} = reorderFixture();
@@ -223,7 +224,7 @@ test('A partial bulk failure retries only unconfirmed commands with their origin
     s.applyTaskAction(['a', 'b', 'c'], 'duplicate', null);
     const first = commandsOf(wires[0]);
     wires[0].respond(200, {sync_token: 'partial', sync_status: {[first[0].uuid]: 'ok', [first[1].uuid]: {error: 'Project unavailable'}}});
-    assert.equal(s.bulkFinished, undefined); assert.match(s.error, /1 changes saved.*Project unavailable/);
+    assert.equal(s.bulkFinished, undefined); assert.match(s.error, /1 modifications enregistrées.*Project unavailable/);
     assert.equal(s.bulkRetry.commands.length, 2);
     assert.equal(s.applyTaskAction(['c', 'b', 'a'], 'duplicate', null), true);
     assert.deepEqual(commandsOf(wires[1]), first.slice(1));
@@ -283,7 +284,7 @@ test('Transient sync failures back off to five minutes, preserve tasks and recov
         assert.equal(s.nextSyncRetry, now + delay);
         assert.equal(s.tasks[0].id, 'cached');
         assert.equal(s.token, 'test-token');
-        assert.match(s.error, /Retrying automatically/);
+        assert.match(s.error, /Nouvel essai automatique/);
         const count = wires.length;
         now += delay - 1; s.refresh(); assert.equal(wires.length, count);
         now++;
@@ -318,7 +319,7 @@ test('Timeout retries ignore late responses and account changes discard schedule
 test('Authorization failures do not schedule transient retries; malformed sync responses do', () => {
     const {s, wires} = service();
     s.refresh(); wires[0].respond(401, {});
-    assert.equal(s.nextSyncRetry, 0); assert.doesNotMatch(s.error, /Retrying automatically/);
+    assert.equal(s.nextSyncRetry, 0); assert.doesNotMatch(s.error, /Nouvel essai automatique/);
     s.refresh(true); wires[1].respond(200, 'not json');
     assert.ok(s.nextSyncRetry > Date.now());
     s.refresh(true); wires[2].respond(200, {});

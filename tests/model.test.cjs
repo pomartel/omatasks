@@ -13,7 +13,7 @@ test('Today includes overdue and deadline-only tasks, but excludes completed, fu
     const tasks = [task('today'), task('overdue', { due: { date: '2026-09-14' } }), task('deadline', { due: null, deadline: { date: '2026-09-15' } }), task('future', { due: { date: '2026-09-16' } }), task('done', { checked: true }), task('other', { responsible_uid: 'other' })];
     const rows = M.viewRows(tasks, projects, [], M.DEFAULT_VIEW, 'today', 'me', today);
     assert.deepEqual(plain(rows.filter(r => r.task).map(r => r.task.id)), ['overdue', 'deadline', 'today']);
-    assert.equal(rows[0].title, 'Overdue');
+    assert.equal(rows.filter(r => r.kind === 'group').length, 0);
     assert.equal(rows.at(-1).kind, 'add');
 });
 test('Smart sorts timed work before priority, then deadline and manual order', () => {
@@ -38,10 +38,25 @@ test('Date-only tasks do not shift across timezones; UTC times do', () => {
     assert.equal(M.dueLabel(task('duration', { due: { date: '2026-09-15T09:00:00' }, duration: { amount: 15, unit: 'minute' } }), today, 'today', 'none'), '09:00–09:15');
     assert.equal(M.overdue(task('date'), today), false);
 });
-test('Upcoming has no arbitrary seven-day cutoff; Inbox also contains undated tasks', () => {
-    const tasks = [task('distant', { due: { date: '2027-01-01' } }), task('inbox', { due: null, project_id: 'inbox' })];
-    assert.equal(M.viewRows(tasks, projects, [], M.DEFAULT_VIEW, 'upcoming', 'me', today).filter(r => r.task)[0].task.id, 'distant');
-    assert.equal(M.viewRows(tasks, projects, [], M.DEFAULT_VIEW, 'inbox', 'me', today).filter(r => r.task)[0].task.id, 'inbox');
+test('Bientôt includes only tomorrow through day six with populated French weekday groups', () => {
+    const tasks = [task('old', {due:{date:'2026-09-14'}}), task('today'), task('tomorrow',{due:{date:'2026-09-16'}}), task('day6',{due:{date:'2026-09-21'}}),task('day7',{due:{date:'2026-09-22'}}),task('deadline',{due:null,deadline:{date:'2026-09-17'}})];
+    const rows = M.viewRows(tasks,projects,[],M.DEFAULT_VIEW,'upcoming','me',today);
+    assert.deepEqual(plain(rows.filter(r=>r.task).map(r=>r.task.id)), ['tomorrow','day6']);
+    assert.deepEqual(plain(rows.filter(r=>r.kind==='group').map(r=>r.title)), ['Demain','Lundi']);
+    assert.equal(M.dueLabel(task('timed',{due:{date:'2026-09-16T09:00:00'}}),today,'upcoming','none'), '09:00');
+});
+test('Inbox includes undated main tasks across projects, not dated Inbox tasks or subtasks', () => {
+    const tasks = [task('dated',{project_id:'inbox'}),task('inbox',{project_id:'inbox',due:null}),task('work',{due:null}),task('child',{due:null,parent_id:'work'}),task('deadline',{due:null,deadline:{date:'2026-10-01'}})];
+    const rows = M.viewRows(tasks,projects,[],M.DEFAULT_VIEW,'inbox','me',today);
+    assert.deepEqual(plain(rows.filter(r=>r.task).map(r=>r.task.id)).sort(),['deadline','inbox','work']);
+    assert.equal(rows.filter(r=>r.kind==='group').length,0);
+});
+test('Bientôt uses local calendar days through month, year, and daylight-saving boundaries', () => {
+    for (const now of [new Date(2026,11,29,12),new Date(2026,9,30,12),new Date(2026,2,6,12)]) {
+        const today=M.dateKey(now), sixth=M.addDays(today,6), seventh=M.addDays(today,7);
+        assert.equal(M.inView(task('sixth',{due:{date:sixth}}),'upcoming',today,{}),true);
+        assert.equal(M.inView(task('seventh',{due:{date:seventh}}),'upcoming',today,{}),false);
+    }
 });
 test('Incremental sync retains unchanged items, replaces changed items and removes tombstones', () => {
     const merged = M.merge([task('a'), task('b')], [task('a', { content: 'updated' }), { id: 'b', is_deleted: true }, task('c')], false);

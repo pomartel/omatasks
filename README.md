@@ -1,132 +1,71 @@
-# OmaTasks for Todoist
+# OmaTasks en français
 
-Your Todoist day in the Omarchy bar, with a native Quick Add a shortcut away.
+Fork de [crmne/omatasks](https://github.com/crmne/omatasks), conservant ses composants natifs pour les listes, les détails, l’ajout, la modification, les filtres et les actions groupées.
 
-![OmaTasks for Todoist: a compact task panel in the Omarchy bar](preview.png)
+## Les trois vues
 
-**Today · Inbox · Upcoming · Quick Add · Edit · Multi-select · Drag to reorder**
+- **Aujourd’hui** : tâches principales prévues aujourd’hui ou en retard. Les tâches avec seulement une date limite sont également incluses selon cette date, comme dans OmaTasks.
+- **Inbox** : tâches principales **sans date de planification, dans tous les projets**. Le nom reste Inbox ; le filtre ne se limite pas au projet Boîte de réception. Une date limite seule n’exclut pas la tâche.
+- **Bientôt** : de demain au sixième jour inclus, sans les tâches d’aujourd’hui ou en retard. Les jours contenant des tâches sont regroupés sous **Demain**, puis les noms des jours en français. Les heures restent visibles sur les tâches, sans répéter leur date.
 
-A compact list that puts your tasks first. Open the bar panel to plan your day,
-complete a task, or change its details. Press **Alt+Space** to capture something
-new with projects, labels, dates, priorities, and reminders.
+Les sous-tâches se consultent et se terminent dans les détails de leur parent. Elles ne figurent pas dans les listes principales ni dans le compteur. Aujourd’hui et Inbox n’ont pas de sous-titres avec le regroupement par défaut. Les options natives de regroupement, de tri et de filtrage restent disponibles ; Inbox inclut par défaut tous les responsables, les autres vues conservent le filtre natif « Moi et non attribuées ».
 
-Everything follows your Omarchy theme. Adjust the panel size, grouping, sorting,
-and filters from inside the panel. Tasks sync directly with Todoist's API.
-
-## Install
+## Installation
 
 ```sh
-omarchy plugin add https://github.com/crmne/omatasks.git --enable
+omarchy plugin add https://github.com/pomartel/omatasks.git --enable --yes
 ```
 
-### Requirements
+Identifiant du plugin : `pomartel.omatasks`. Nécessite Omarchy Quattro, Quickshell et un compte Todoist. Aucun outil Todoist supplémentaire n’est requis. L’ancien plugin peut rester installé, mais désactivé, pour revenir en arrière.
 
-- Omarchy Quattro with its Quickshell shell and Hyprland.
-- A Todoist account and its personal API token.
+Depuis un dépôt local, `./install` copie les composants et active le plugin. Après une modification, rechargez les plugins avec `omarchy restart shell`.
 
-No extra packages or Todoist CLI are required. The runtime uses QML's HTTPS
-client; Hyprland manages the shortcut, and standard shell utilities save your
-local settings. Node.js is only used for development tests.
+## Connexion et stockage
 
-## Connect
+Ouvrez le panneau, puis les paramètres développeur de Todoist depuis le lien proposé. Collez le jeton API dans le champ protégé et cliquez sur **Se connecter**.
 
-Click the **Todoist icon** in the bar. Setup appears **inside that panel**:
+Le jeton reste dans `$XDG_CONFIG_HOME/omatasks-fr/token`, normalement `~/.config/omatasks-fr/token`, avec les permissions `0600` dans un dossier `0700`. Il passe par l’entrée standard pour son enregistrement et par un en-tête HTTPS pour les appels à Todoist. Les préférences sont stockées dans `views.json` au même endroit ; les tâches restent en mémoire. Aucun jeton ne doit être ajouté à ce dépôt ou à YADM.
 
-1. Open Todoist → **Settings → Integrations → Developer**.
-2. Copy your API token. The panel links directly to [Developer settings](https://app.todoist.com/app/settings/integrations/developer).
-3. Paste the token into the password field and select **Connect**.
+Les erreurs de synchronisation transitoires déclenchent des essais espacés de 5 secondes jusqu’à 5 minutes. Les modifications échouées gardent leurs brouillons et permettent de réessayer. Les actions groupées vérifient chaque commande et ne renvoient que les modifications non confirmées.
 
-The token is validated before being saved. It lives in `$XDG_CONFIG_HOME/omarchy-todoist/token` (normally `~/.config/omarchy-todoist/token`) with mode `0600`, inside a `0700` directory. It is sent to the credential writer through stdin and to Todoist through an HTTPS authorization header. It is never stored in `shell.json`, command arguments, or this repository. Display preferences are stored in `views.json` beside it. Task data stays in memory.
+## Raccourcis
 
-Temporary sync failures retry automatically after 5 seconds, with increasing delays up to five minutes. Cached tasks stay visible and your account stays connected. Use **Retry now** in the error banner to try immediately; Todoist rate limits still apply. Failed task changes retain their existing explicit retry behavior.
+| Touche | Action |
+| --- | --- |
+| Tab / Maj+Tab ou ← / → | Parcourir Aujourd’hui, Inbox, Bientôt |
+| a / d / i | Ouvrir Aujourd’hui, Bientôt, Inbox |
+| ↑ / ↓ ou k / j | Sélectionner une tâche |
+| Entrée / e | Modifier la tâche sélectionnée |
+| Espace | Terminer la tâche sélectionnée |
+| o | Ouvrir la page de la tâche dans Todoist |
+| x | Supprimer, après confirmation |
+| Ctrl+a / Ctrl+d / Ctrl+i | Planifier aujourd’hui, demain, ou retirer la date |
+| Ctrl+a sans curseur de tâche | Sélectionner toutes les tâches visibles |
+| q | Ouvrir le formulaire d’ajout dans la liste |
+| r | Actualiser |
+| p | Ouvrir ou fermer les réglages |
+| ? | Afficher l’aide des raccourcis |
+| Échap | Annuler le glissement, revenir ou fermer |
 
-The settings button opens panel size, account, and shortcut settings inside the panel. Disconnect clears the saved token and account data.
-
-## Quick add
-
-The default shortcut is **Alt+Space**, matching [Todoist’s macOS Option+Space shortcut](https://www.todoist.com/help/todoist/features/use-keyboard-shortcuts-in-todoist-Wyovn2). Change it under **Settings → Quick add shortcut**, then select **Apply**. Conflicting shortcuts are rejected with the existing action's name. Leave it empty to disable it. The plugin saves your preference and registers it again when the shell starts or Hyprland reloads; no manual binding is needed.
-
-You can also right-click the bar widget. Before connecting, this opens setup in the bar panel. Once connected, it opens a compact task editor in the center of the screen. The list’s inline editor and the shortcut window share the same QML component.
-
-Examples:
-
-```text
-Buy milk
-Review the proposal tomorrow at 10am p1
-Book a table Friday #Personal @errands
-```
-
-Tasks go to Inbox unless you choose a project. Inline additions in Today start with today’s date; project groups preselect their project.
-
-- Type **#** for projects, **@** (or **%**) for labels, **/** for sections, **p1–p4** for priority, **+** for an assignee in a shared project, **!** for reminders, or **{** for deadlines.
-- Choose suggestions with **↑/↓**, then **Enter** or **Tab**. Escape dismisses the picker first.
-- Click the property chips to change them; **×** removes a selection. The **…** button reveals reminders, deadlines, sections, and assignees.
-- **↓** from the task name opens Description. **Ctrl+Enter** submits from Description; Enter in the task name submits when no picker is open.
-- Todoist parses dates and recurrence using its own API. Common English dates also have a chip preview; other supported expressions still go to Todoist unchanged. Reminder availability follows your Todoist plan.
-
-The layout follows the established editor shown in Todoist’s [Quick Add design comparison](https://www.todoist.com/help/todoist/product-updates/a-cleaner-simpler-quick-add-june-29-PuIpiLmLh), with Omarchy’s theme and fonts. See Todoist’s [Quick Add guide](https://www.todoist.com/help/todoist/features/use-task-quick-add-in-todoist-va4Lhpzz) for its input syntax.
-
-**Escape** closes. A failed request preserves the text so you can retry. Dismissing quick add also preserves its draft for the next opening; Cancel discards it. These drafts last for the shell session.
-
-<details>
-<summary>Quick Add and project picker</summary>
-
-<img src="screenshots/quick-add.png" alt="Quick Add with a date, priority, label, and project" width="560">
-
-<img src="screenshots/quick-add-picker.png" alt="Choose a project directly in Quick Add" width="560">
-
-</details>
-
-## Using the panel
-
-- Click a task's circle to complete it. Todoist advances recurring tasks to their next occurrence.
-- Click a task for its full description, date/time, recurrence, duration, deadline, priority, labels, project/section, assignee, reminders, and subtask progress. Long text wraps, and only vertical scrolling is enabled.
-- **Ctrl-click** tasks to select or deselect them, then **right-click** a selected task (or choose **Actions…**) to act on the selection. **Ctrl+A** selects every task in the current filtered view; **Escape** or **Clear** clears the selection. Right-clicking an unselected task selects just that task. Selected tasks are highlighted, including appearances in multiple label groups.
-- The task menu supports completion, Today/Tomorrow/Weekend/Next Monday, custom dates and recurrence, removing dates, priorities, deadlines, adding reminders, moving to a project or section, duplication, copying task links, and deletion with confirmation. Quick date choices retain existing recurrence and time; custom date expressions replace the schedule. Duplication includes active subtasks and task properties, without comments or reminders. Parent/subtask selections are processed together for completion, moves, duplication, and deletion. Failed bulk actions offer **Retry remaining changes**, preserving confirmed changes and reusing request IDs for uncertain results.
-- Complete tasks and subtasks from the detail popup, or choose **Edit** to change the title, description, project/section, date/recurrence, priority, labels, assignee, deadline, duration, and reminders. **Save** writes the changes; **Cancel** discards the draft. Only changed fields are sent, preserving existing schedules when you edit other fields. Deadlines accept Today, Tomorrow, Next week, or YYYY-MM-DD.
-- The detail popup links to the parent task, individual subtasks, and comments in Todoist when present.
-- Drag a task up or down to reorder it. The insertion line shows where it will land; hold near the top or bottom to scroll. **Escape** or dropping outside cancels. A successful drop selects **Manual** sorting for that tab and saves the order through Todoist's API. Failed saves restore the previous order and show an error.
-- Reordering stays within the displayed group. In Inbox it also stays within the same section and parent task. Filters preserve hidden tasks' positions. Today/Upcoming use Todoist's day order; Inbox uses project sibling order. Other clients show the saved order with **Manual** sorting in the corresponding view; their display preferences remain independent.
-- Use the display button for grouping and sorting. **Smart** follows date/time → priority → deadline → manual order.
-- Project grouping uses the task's own project, with its section shown on the task row. Label grouping lists a task under each of its labels.
-- Today includes overdue tasks. Upcoming includes all scheduled tasks, grouped by date. The default assignee filter is **Me and unassigned**.
-- The bar number counts today's and overdue tasks assigned to you or unassigned, independent of panel filters.
-- **Ctrl+Tab / Ctrl+Shift+Tab** switches tabs. **Tab** moves between controls. **Escape** closes the current editor, menu, or panel.
-- Middle-click the bar widget, or use **Display → Refresh**, to refresh immediately. Background sync runs every minute.
-
-<details>
-<summary>Task menu, details, and display options</summary>
-
-<img src="screenshots/multi-selection.png" alt="Two selected tasks with the bulk action context menu" width="456">
-
-<img src="screenshots/task-details.png" alt="Task details with completion, editing, date, duration, priority, and labels" width="560">
-
-<img src="screenshots/display.png" alt="Grouping, sorting, and filters in the Display menu" width="340">
-
-</details>
-
-Screenshots use sample tasks. Panel size defaults to **420 × 560px** and is
-adjustable in Settings; shorter lists shrink to fit.
-
-Only the active-task list is implemented. Calendar, board, completed-task history, and comment editing are outside this version.
-
-## Remove
+Les champs de texte gardent leurs touches habituelles. **Alt+Space** ouvre l’ajout rapide global natif ; ce raccourci est configurable dans les réglages. Pour associer **Super+Maj+T** au panneau, utilisez la commande :
 
 ```sh
-omarchy plugin remove crmne.todoist --yes
+omarchy-shell pomartel.omatasks togglePanel
 ```
 
-Use **Settings → Disconnect** before removal if you also want to clear the saved
-API token. Otherwise the token and display preferences remain in
-`$XDG_CONFIG_HOME/omarchy-todoist` (normally `~/.config/omarchy-todoist`) for a later
-reinstall. The plugin unregisters its quick-add shortcut when it unloads.
+Le clic droit sur l’icône ouvre l’ajout rapide et le clic du milieu actualise. Les raccourcis globaux existants en conflit ne sont pas remplacés automatiquement.
 
-## Development
+## Tâches et formulaires
 
-Clone the repository and run `./install` to copy it into the local plugin
-directory. Existing installations are backed up before replacement. If the shell
-retains a cached QML component, run `omarchy restart shell`.
+L’interface reprend celle d’OmaTasks : projets, sections, descriptions, dates, priorités, étiquettes, responsables, durées, dates limites et rappels. Les menus et messages sont en français. Les noms de projets, d’étiquettes et le contenu des tâches restent ceux du compte Todoist. Les icônes des onglets se masquent sur les panneaux étroits pour conserver les titres français complets.
 
+L’ajout utilise le parseur Todoist. Les modifications reconnaissent aussi les dates françaises ou anglaises, les heures, `p1` à `p4` et `#Projet`, par exemple `Réviser demain à 17h p1 #Travail`. Les champs non modifiés restent inchangés. Les dates limites acceptent aujourd’hui, demain, la semaine prochaine ou `AAAA-MM-JJ`.
+
+Ctrl+clic sélectionne plusieurs tâches, y compris sur leur cercle. Le menu contextuel conserve les actions natives : terminer, replanifier, changer la priorité, déplacer, dupliquer, copier les liens et supprimer avec confirmation. Les rappels dépendent des fonctionnalités disponibles sur le compte Todoist.
+
+Le glissement conserve le fonctionnement natif d’OmaTasks : réorganisation dans le groupe affiché, et dans le même projet/section pour Inbox. Le tri manuel est synchronisé avec Todoist. Les raccourcis Ctrl+a/d/i servent à changer la date ; ce fork ne reprend pas le glissement entre onglets de l’ancien plugin.
+
+## Vérification
 
 ```sh
 node --test tests/*.test.cjs
@@ -134,20 +73,10 @@ node --test tests/*.test.cjs
 omarchy plugin validate .
 ```
 
-Tests cover task selection, Smart/manual order, nested groups, time zones, incremental sync, request cancellation, recurring completion, retry IDs, and error handling. Reorder tests cover filtered tasks, duplicate label groups, sibling boundaries, fractional keys, batching, rollback, and retries. Quick Add tests cover token boundaries, scoped pickers, escaped names, description serialization, and date precedence. Edit tests cover preserving recurring schedules, optional-field removal, project moves, deadline validation, reminder syntax, partial Sync failures, and retries. The service tests run its JavaScript methods with controlled HTTP responses; they do not modify a Todoist account. UI and credential-file behavior are checked in Quickshell.
+Les tests utilisent des tâches synthétiques et des requêtes interceptées. Les contrôles visuels couvrent les thèmes clair et sombre à plusieurs largeurs. Le raccourci IPC `omarchy-shell pomartel.omatasks status` retourne uniquement un état agrégé, sans contenu de tâche ni identifiant de connexion.
 
-Implementation follows the [Todoist API v1 documentation](https://developer.todoist.com/api/v1/): form-encoded incremental Sync, JSON Quick Add, and the task close endpoint. The app's display preferences are local to this plugin.
+## Origine et licence
 
-`./tools/render-preview` regenerates the release artwork and screenshots from the real QML components with sample data. It never accesses your account.
+Interface et implémentation d’origine : Carmine Paolino, [OmaTasks](https://github.com/crmne/omatasks), base `7cd8b201ce5e17ea57bcbc12c5d6f8f02b15acc1`. Adaptation française et préférences : [pomartel/omatasks](https://github.com/pomartel/omatasks). Le parseur de modification provient de [pomartel/omarchy-todoist](https://github.com/pomartel/omarchy-todoist).
 
-`check-drag` runs offscreen QML interaction tests using synthetic tasks and intercepted requests. It checks clicks, multi-selection, context menus, bulk actions, deletion confirmation, drops, scrolling, scroll-position retention, and cancellation, without accessing a Todoist account. Bulk service tests cover batching, partial failures, retries, recurring completion, and account changes.
-
-Not created by, affiliated with, or supported by Todoist.
-
-The Todoist mark belongs to Doist; its monochrome path is rendered in the bar's theme color. View icons are drawn in QML.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
-
-`ui/Fractional.js` vendors [fractional-indexing v3.2.0](https://github.com/rocicorp/fractional-indexing/tree/v3.2.0), released under CC0, with ES module exports removed for QML.
+Licence [MIT](LICENSE), avec la [notice du parseur importé](LICENSE.EditParser). Aucune publication de version ni aucun envoi de modifications au dépôt d’origine n’est effectué automatiquement.
