@@ -6,7 +6,7 @@ Fork de [crmne/omatasks](https://github.com/crmne/omatasks), conservant ses comp
 
 - **Aujourd’hui** : tâches principales prévues aujourd’hui ou en retard. Les tâches avec seulement une date limite sont également incluses selon cette date, comme dans OmaTasks.
 - **Inbox** : tâches principales **sans date de planification, dans tous les projets**. Le nom reste Inbox ; le filtre ne se limite pas au projet Boîte de réception. Une date limite seule n’exclut pas la tâche.
-- **Bientôt** : de demain au sixième jour inclus, sans les tâches d’aujourd’hui ou en retard. Les jours contenant des tâches sont regroupés sous **Demain**, puis les noms des jours en français. Les heures restent visibles sur les tâches, sans répéter leur date.
+- **Prochainement** : de demain au sixième jour inclus, sans les tâches d’aujourd’hui ou en retard. Les jours contenant des tâches sont regroupés sous **Demain**, puis les noms des jours en français. Les heures restent visibles sur les tâches, sans répéter leur date.
 
 Seul l’onglet sélectionné a un fond rempli. Le survol éclaircit son texte et ses icônes ; le focus clavier est indiqué par un contour.
 
@@ -34,8 +34,8 @@ Les erreurs de synchronisation transitoires déclenchent des essais espacés de 
 
 | Touche | Action |
 | --- | --- |
-| Tab / Maj+Tab ou ← / → | Parcourir Aujourd’hui, Bientôt, Inbox |
-| a / d / i | Ouvrir Aujourd’hui, Bientôt, Inbox |
+| Tab / Maj+Tab ou ← / → | Parcourir Aujourd’hui, Prochainement, Inbox |
+| a / d / i | Ouvrir Aujourd’hui, Prochainement, Inbox |
 | ↑ / ↓ ou k / j | Sélectionner une tâche |
 | Entrée / e | Modifier la tâche sélectionnée |
 | Espace | Terminer la tâche sélectionnée |

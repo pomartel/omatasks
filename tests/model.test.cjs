@@ -38,7 +38,7 @@ test('Date-only tasks do not shift across timezones; UTC times do', () => {
     assert.equal(M.dueLabel(task('duration', { due: { date: '2026-09-15T09:00:00' }, duration: { amount: 15, unit: 'minute' } }), today, 'today', 'none'), '09:00–09:15');
     assert.equal(M.overdue(task('date'), today), false);
 });
-test('Bientôt includes only tomorrow through day six with populated French weekday groups', () => {
+test('Prochainement includes only tomorrow through day six with populated French weekday groups', () => {
     const tasks = [task('old', {due:{date:'2026-09-14'}}), task('today'), task('tomorrow',{due:{date:'2026-09-16'}}), task('day6',{due:{date:'2026-09-21'}}),task('day7',{due:{date:'2026-09-22'}}),task('deadline',{due:null,deadline:{date:'2026-09-17'}})];
     const rows = M.viewRows(tasks,projects,[],M.DEFAULT_VIEW,'upcoming','me',today);
     assert.deepEqual(plain(rows.filter(r=>r.task).map(r=>r.task.id)), ['tomorrow','day6']);
@@ -51,7 +51,7 @@ test('Inbox includes undated main tasks across projects, not dated Inbox tasks o
     assert.deepEqual(plain(rows.filter(r=>r.task).map(r=>r.task.id)).sort(),['deadline','inbox','work']);
     assert.equal(rows.filter(r=>r.kind==='group').length,0);
 });
-test('Bientôt uses local calendar days through month, year, and daylight-saving boundaries', () => {
+test('Prochainement uses local calendar days through month, year, and daylight-saving boundaries', () => {
     for (const now of [new Date(2026,11,29,12),new Date(2026,9,30,12),new Date(2026,2,6,12)]) {
         const today=M.dateKey(now), sixth=M.addDays(today,6), seventh=M.addDays(today,7);
         assert.equal(M.inView(task('sixth',{due:{date:sixth}}),'upcoming',today,{}),true);

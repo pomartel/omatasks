@@ -177,7 +177,7 @@ FocusScope {
         anchors.top: parent.top; width: parent.width
         height: Style.space(28); spacing: Style.space(4)
         Repeater {
-            model: [{id: "today", title: "Aujourd’hui"}, {id: "upcoming", title: "Bientôt"}, {id: "inbox", title: "Inbox"}]
+            model: [{id: "today", title: "Aujourd’hui"}, {id: "upcoming", title: "Prochainement"}, {id: "inbox", title: "Inbox"}]
             Action {
                 required property var modelData
                 objectName: "viewTab_" + modelData.id
@@ -383,7 +383,7 @@ FocusScope {
                 Label {
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap; elide: Text.ElideNone
-                    text: "Tab / Maj+Tab : changer de vue\na / d / i : Aujourd’hui / Bientôt / Inbox\n↑ / ↓ ou k / j : sélectionner une tâche\nEntrée / e : modifier\nEspace : terminer\no : ouvrir dans Todoist\nx : supprimer (avec confirmation)\nCtrl+a / Ctrl+d / Ctrl+i : aujourd’hui / demain / sans date\nCtrl+a sans curseur : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
+                    text: "Tab / Maj+Tab : changer de vue\na / d / i : Aujourd’hui / Prochainement / Inbox\n↑ / ↓ ou k / j : sélectionner une tâche\nEntrée / e : modifier\nEspace : terminer\no : ouvrir dans Todoist\nx : supprimer (avec confirmation)\nCtrl+a / Ctrl+d / Ctrl+i : aujourd’hui / demain / sans date\nCtrl+a sans curseur : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
                 }
                 Action { text: "Fermer"; onClicked: shortcutHelp.close() }
             }
