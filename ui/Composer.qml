@@ -206,6 +206,12 @@ ColumnLayout {
             background: Item {}
             enabled: !root.submitting
             Keys.onPressed: function(event) {
+                if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
+                    var forward = event.key !== Qt.Key_Backtab && !(event.modifiers & Qt.ShiftModifier);
+                    description.nextItemInFocusChain(forward).forceActiveFocus(forward ? Qt.TabFocusReason : Qt.BacktabFocusReason);
+                    event.accepted = true;
+                    return;
+                }
                 root.handleKey(event);
                 if ((event.modifiers & Qt.ControlModifier) && (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)) { root.submit(); event.accepted = true; }
             }

@@ -12,6 +12,7 @@ FocusScope {
     required property var service
     property string view: "today"
     property string keyboardTaskId: ""
+    property string keyboardAddKey: ""
     property bool helpOpen: false
     property bool settingsOpen: false
     property string composerKey: ""
@@ -45,6 +46,7 @@ FocusScope {
         var visible = Bulk.visibleIds(rows);
         selectedIds = selectedIds.filter(function(id) { return visible.indexOf(id) >= 0; });
         if (visible.indexOf(keyboardTaskId) < 0) keyboardTaskId = "";
+        if (!rows.some(function(r) { return r.kind === "add" && r.key === keyboardAddKey; })) keyboardAddKey = "";
     }
     Component.onCompleted: updateListModel()
 
@@ -69,7 +71,7 @@ FocusScope {
         display.close();
         taskMenu.open();
     }
-    function reset() { keyboardTaskId = ""; helpOpen = false; clearSelection(); view = "today"; settingsOpen = false; display.close(); details.close(); }
+    function reset() { keyboardTaskId = ""; keyboardAddKey = ""; helpOpen = false; clearSelection(); view = "today"; settingsOpen = false; display.close(); details.close(); }
     function showTask(task) { clearSelection(); selectedTask = task; details.open(); }
     function startDrag(index, point) {
         if (service.saving || composerKey || setupVisible || selectedIds.length) return;
@@ -109,17 +111,21 @@ FocusScope {
         if (target) service.reorderTasks(view, String(source.task.id), String(target.task.id), after, source.groupKey);
         cancelDrag();
     }
-    Keys.onEscapePressed: { if (dragging) cancelDrag(); else if (taskMenu.visible) { if (!taskMenu.busy) taskMenu.close(); } else if (display.opened) display.close(); else if (details.opened && detailLoader.item) detailLoader.item.dismissEditor(); else if (composerKey) { composerKey = ""; forceActiveFocus(); } else if (selectedIds.length) clearSelection(); else if (settingsOpen) settingsOpen = false; else if (keyboardTaskId) keyboardTaskId = ""; else closeRequested(); }
+    Keys.onEscapePressed: { if (dragging) cancelDrag(); else if (taskMenu.visible) { if (!taskMenu.busy) taskMenu.close(); } else if (display.opened) display.close(); else if (details.opened && detailLoader.item) detailLoader.item.dismissEditor(); else if (composerKey) { composerKey = ""; forceActiveFocus(); } else if (selectedIds.length) clearSelection(); else if (settingsOpen) settingsOpen = false; else if (keyboardTaskId || keyboardAddKey) { keyboardTaskId = ""; keyboardAddKey = ""; } else closeRequested(); }
     function keyboardTask() {
         return service.tasks.find(function(t) { return String(t.id) === keyboardTaskId; }) || null;
     }
     function moveKeyboard(step) {
-        var tasks = rows.filter(function(r) { return r.kind === "task"; });
-        if (!tasks.length) return;
-        var index = tasks.findIndex(function(r) { return String(r.task.id) === root.keyboardTaskId; });
-        index = index < 0 ? (step > 0 ? 0 : tasks.length - 1) : Math.max(0, Math.min(tasks.length - 1, index + step));
-        keyboardTaskId = String(tasks[index].task.id);
-        list.positionViewAtIndex(rows.indexOf(tasks[index]), ListView.Contain);
+        var entries = rows.filter(function(r) { return r.kind === "task" || r.kind === "add"; });
+        if (!entries.length) return;
+        var index = entries.findIndex(function(r) {
+            return r.kind === "task" ? String(r.task.id) === root.keyboardTaskId : r.key === root.keyboardAddKey;
+        });
+        index = index < 0 ? (step > 0 ? 0 : entries.length - 1) : Math.max(0, Math.min(entries.length - 1, index + step));
+        var entry = entries[index];
+        keyboardTaskId = entry.kind === "task" ? String(entry.task.id) : "";
+        keyboardAddKey = entry.kind === "add" ? entry.key : "";
+        list.positionViewAtIndex(rows.indexOf(entry), ListView.Contain);
     }
     function editKeyboardTask(task) {
         showTask(task);
@@ -148,6 +154,9 @@ FocusScope {
             view = key === Qt.Key_A ? "today" : key === Qt.Key_D ? "upcoming" : "inbox";
         } else if (!ctrl && [Qt.Key_J, Qt.Key_Down, Qt.Key_K, Qt.Key_Up].indexOf(key) >= 0) {
             moveKeyboard(key === Qt.Key_J || key === Qt.Key_Down ? 1 : -1);
+        } else if (!ctrl && keyboardAddKey && [Qt.Key_Return, Qt.Key_Enter, Qt.Key_Space].indexOf(key) >= 0) {
+            var selectedAdd = rows.find(function(r) { return r.kind === "add" && r.key === keyboardAddKey; });
+            if (selectedAdd) addAt(selectedAdd.key, selectedAdd.projectId);
         } else if (!ctrl && task && [Qt.Key_Return, Qt.Key_Enter, Qt.Key_E].indexOf(key) >= 0) {
             editKeyboardTask(task);
         } else if (!ctrl && task && key === Qt.Key_Space) {
@@ -167,7 +176,7 @@ FocusScope {
         event.accepted = true;
     }
     Keys.onPressed: function(event) { handleShortcut(event); }
-    onViewChanged: { keyboardTaskId = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
+    onViewChanged: { keyboardTaskId = ""; keyboardAddKey = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
     onSetupVisibleChanged: if (setupVisible) { cancelDrag(); clearSelection(); }
     onVisibleChanged: if (!visible) { cancelDrag(); clearSelection(); }
     onComposerKeyChanged: if (!composerKey) heldRows = null
@@ -309,6 +318,8 @@ FocusScope {
                         visible: root.composerKey !== rowLoader.modelData.key
                         y: Style.space(5)
                         text: "+   Ajouter une tâche"
+                        objectName: "addTask_" + rowLoader.modelData.key
+                        selected: root.keyboardAddKey === rowLoader.modelData.key
                         foreground: Color.popups.text
                         onClicked: root.addAt(rowLoader.modelData.key, rowLoader.modelData.projectId)
                     }
@@ -383,7 +394,7 @@ FocusScope {
                 Label {
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap; elide: Text.ElideNone
-                    text: "Tab / Maj+Tab : changer de vue\na / d / i : Aujourd’hui / Prochainement / Inbox\n↑ / ↓ ou k / j : sélectionner une tâche\nEntrée / e : modifier\nEspace : terminer\no : ouvrir dans Todoist\nx : supprimer\nCtrl+a / Ctrl+d / Ctrl+i : aujourd’hui / demain / sans date\nCtrl+a sans curseur : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
+                    text: "Tab / Maj+Tab : changer de vue\na / d / i : Aujourd’hui / Prochainement / Inbox\n↑ / ↓ ou k / j : sélectionner une tâche ou l’ajout\nEntrée / e : modifier\nEspace : terminer\no : ouvrir dans Todoist\nx : supprimer\nCtrl+a / Ctrl+d / Ctrl+i : aujourd’hui / demain / sans date\nCtrl+a sans curseur : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
                 }
                 Action { text: "Fermer"; onClicked: shortcutHelp.close() }
             }

@@ -112,6 +112,46 @@ ShellRoot {
             compare(service.captured[0].args.priority,4);
             findChild(taskList,"taskDetailsPopup").close();
         }
+        function test_description_tab_moves_focus_without_changing_text() {
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_Return);
+            tryVerify(function() { return findChild(taskList, "taskDescription") !== null; });
+            var description = findChild(taskList, "taskDescription");
+            description.forceActiveFocus();
+            var original = description.text;
+            var next = description.nextItemInFocusChain(true);
+            verify(next !== description);
+            keyClick(Qt.Key_Tab);
+            tryCompare(next, "activeFocus", true);
+            compare(description.text, original);
+            description.forceActiveFocus();
+            var previous = description.nextItemInFocusChain(false);
+            verify(previous !== description);
+            keyClick(Qt.Key_Backtab);
+            tryCompare(previous, "activeFocus", true);
+            compare(description.text, original);
+            compare(service.captured.length, 0);
+            findChild(taskList, "taskDetailsPopup").close();
+        }
+        function test_arrow_navigation_reaches_add_task() {
+            taskList.forceActiveFocus();
+            taskList.keyboardTaskId = "23";
+            keyClick(Qt.Key_Down);
+            compare(taskList.keyboardTaskId, "");
+            compare(taskList.keyboardAddKey, "add");
+            tryVerify(function() { return findChild(taskList, "addTask_add") !== null; });
+            compare(findChild(taskList, "addTask_add").selected, true);
+            keyClick(Qt.Key_Up); compare(taskList.keyboardTaskId, "23");
+            compare(taskList.keyboardAddKey, "");
+            keyClick(Qt.Key_Down); keyClick(Qt.Key_Return);
+            compare(taskList.composerKey, "add");
+            tryVerify(function() { var input = findChild(taskList, "taskName"); return input && input.activeFocus; });
+            keyClick(Qt.Key_Escape);
+            service.tasks = []; taskList.forceActiveFocus();
+            keyClick(Qt.Key_Down); compare(taskList.keyboardAddKey, "add");
+            keyClick(Qt.Key_Return); compare(taskList.composerKey, "add");
+            keyClick(Qt.Key_Escape);
+            taskList.view = "inbox"; compare(taskList.keyboardAddKey, "");
+        }
         function test_add_shortcut_and_french_picker() {
             taskList.forceActiveFocus(); keyClick(Qt.Key_Q);
             tryVerify(function() { return findChild(taskList,"taskName") !== null });
