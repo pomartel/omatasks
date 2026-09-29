@@ -74,8 +74,8 @@ ShellRoot {
             keyClick(Qt.Key_Space); compare(service.completions[0], "0");
             keyClick(Qt.Key_X);
             var menu = findChild(taskList,"taskContextMenu");
-            tryCompare(menu,"opened",true); compare(menu.page,"delete");
-            compare(service.captured.length,0); menu.close(); taskList.clearSelection();
+            compare(service.captured.length,1); compare(service.captured[0].type,"item_delete");
+            tryCompare(menu,"opened",false); taskList.clearSelection();
             taskList.forceActiveFocus(); keyClick(Qt.Key_R); compare(service.manualRefresh,true);
 
             keyClick(Qt.Key_D); compare(taskList.view,"upcoming");
@@ -245,14 +245,17 @@ ShellRoot {
             service.tasks = service.tasks.slice(1); wait(30);
             compare(taskList.selectedIds.join(","), "1");
         }
-        function test_bulk_delete_requires_confirmation() {
+        function test_bulk_delete_without_confirmation() {
+            taskList.selectedIds = ["0", "1"];
             mouseClick(findChild(taskList, "taskPointer_0"), 65, 12, Qt.RightButton);
             var menu = findChild(taskList, "taskContextMenu"); tryCompare(menu, "opened", true);
-            // The final action can be below the fold on a short panel.
-            menu.showPage("delete"); wait(30);
             compare(service.captured.length, 0);
-            var confirm = findChild(menu, "bulkConfirmDelete"); mouseClick(confirm, confirm.width / 2, confirm.height / 2);
-            compare(service.captured.length, 1); compare(service.captured[0].type, "item_delete");
+            // Activate the menu action directly; it can be below the fold.
+            findChild(menu, "bulkDelete").clicked();
+            compare(service.captured.length, 2);
+            compare(service.captured[0].type, "item_delete");
+            compare(service.captured[1].type, "item_delete");
+            tryCompare(menu, "opened", false);
         }
         function test_bulk_custom_date_and_deadline_validation() {
             mouseClick(findChild(taskList, "taskPointer_0"), 65, 12, Qt.RightButton);

@@ -40,7 +40,7 @@ Les erreurs de synchronisation transitoires déclenchent des essais espacés de 
 | Entrée / e | Modifier la tâche sélectionnée |
 | Espace | Terminer la tâche sélectionnée |
 | o | Ouvrir la page de la tâche dans la fenêtre flottante Todoist |
-| x | Supprimer, après confirmation |
+| x | Supprimer immédiatement |
 | Ctrl+a / Ctrl+d / Ctrl+i | Planifier aujourd’hui, demain, ou retirer la date |
 | Ctrl+a sans curseur de tâche | Sélectionner toutes les tâches visibles |
 | q | Ouvrir le formulaire d’ajout dans la liste |
@@ -65,7 +65,7 @@ L’interface reprend celle d’OmaTasks : projets, sections, descriptions, date
 
 L’ajout utilise le parseur Todoist. Les modifications reconnaissent aussi les dates françaises ou anglaises, les heures, `p1` à `p4` et `#Projet`, par exemple `Réviser demain à 17h p1 #Travail`. Les champs non modifiés restent inchangés. Les dates limites acceptent aujourd’hui, demain, la semaine prochaine ou `AAAA-MM-JJ`.
 
-Ctrl+clic sélectionne plusieurs tâches, y compris sur leur cercle. Le menu contextuel conserve les actions natives : terminer, replanifier, changer la priorité, déplacer, dupliquer, copier les liens et supprimer avec confirmation. Les rappels dépendent des fonctionnalités disponibles sur le compte Todoist.
+Ctrl+clic sélectionne plusieurs tâches, y compris sur leur cercle. Le menu contextuel conserve les actions natives : terminer, replanifier, changer la priorité, déplacer, dupliquer, copier les liens et supprimer sans confirmation. Les rappels dépendent des fonctionnalités disponibles sur le compte Todoist.
 
 Le glissement conserve le fonctionnement natif d’OmaTasks : réorganisation dans le groupe affiché, et dans le même projet/section pour Inbox. Le tri manuel est synchronisé avec Todoist. Les raccourcis Ctrl+a/d/i servent à changer la date ; ce fork ne reprend pas le glissement entre onglets de l’ancien plugin.
 

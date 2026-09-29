@@ -118,7 +118,7 @@ C.Popup {
                     onClicked: { Quickshell.clipboardText = root.tasks.map(function(t) { return "https://app.todoist.com/app/task/" + encodeURIComponent(t.id); }).join("\n"); root.close(); }
                 }
                 Rectangle { Layout.fillWidth: true; height: 1; color: Color.popups.text; opacity: 0.12 }
-                Action { text: "Supprimer…"; objectName: "bulkDelete"; foreground: Color.urgent; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("delete") }
+                Action { text: "Supprimer"; objectName: "bulkDelete"; foreground: Color.urgent; leftAligned: true; Layout.fillWidth: true; onClicked: root.run("delete", null) }
             }
             ColumnLayout {
                 visible: ["customDate", "deadline", "reminder"].indexOf(root.page) >= 0
@@ -153,16 +153,6 @@ C.Popup {
                         return destinations.filter(function(d) { return d.text.toLowerCase().indexOf(search.text.toLowerCase()) >= 0; });
                     }
                     Action { required property var modelData; text: modelData.text; leftAligned: true; Layout.fillWidth: true; onClicked: root.run("move", modelData.args) }
-                }
-            }
-            ColumnLayout {
-                visible: root.page === "delete"
-                enabled: !root.busy
-                Layout.fillWidth: true
-                Label { text: "Supprimer " + root.tasks.length + (root.tasks.length === 1 ? " tâche" : " tâches") + " et leurs sous-tâches ?"; wrapMode: Text.Wrap; elide: Text.ElideNone; Layout.fillWidth: true }
-                RowLayout {
-                    Action { text: "Annuler"; onClicked: root.page = "main" }
-                    Action { text: "Supprimer"; objectName: "bulkConfirmDelete"; foreground: Color.urgent; bordered: true; onClicked: root.run("delete", null) }
                 }
             }
         }

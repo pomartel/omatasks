@@ -155,7 +155,7 @@ FocusScope {
         } else if (!ctrl && task && key === Qt.Key_O) {
             openInTodoist(task);
         } else if (!ctrl && task && key === Qt.Key_X) {
-            openTaskMenu(task, Qt.point(0, header.height)); taskMenu.showPage("delete");
+            openTaskMenu(task, Qt.point(0, header.height)); taskMenu.run("delete", null);
         } else if (!ctrl && key === Qt.Key_Q) {
             var add = rows.filter(function(r) { return r.kind === "add"; }).pop();
             if (add) addAt(add.key, add.projectId);
@@ -383,7 +383,7 @@ FocusScope {
                 Label {
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap; elide: Text.ElideNone
-                    text: "Tab / Maj+Tab : changer de vue\na / d / i : Aujourd’hui / Prochainement / Inbox\n↑ / ↓ ou k / j : sélectionner une tâche\nEntrée / e : modifier\nEspace : terminer\no : ouvrir dans Todoist\nx : supprimer (avec confirmation)\nCtrl+a / Ctrl+d / Ctrl+i : aujourd’hui / demain / sans date\nCtrl+a sans curseur : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
+                    text: "Tab / Maj+Tab : changer de vue\na / d / i : Aujourd’hui / Prochainement / Inbox\n↑ / ↓ ou k / j : sélectionner une tâche\nEntrée / e : modifier\nEspace : terminer\no : ouvrir dans Todoist\nx : supprimer\nCtrl+a / Ctrl+d / Ctrl+i : aujourd’hui / demain / sans date\nCtrl+a sans curseur : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
                 }
                 Action { text: "Fermer"; onClicked: shortcutHelp.close() }
             }
