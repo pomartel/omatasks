@@ -304,6 +304,7 @@ FocusScope {
                     opacity: dragging ? 0.3 : 1
                     onActivated: function(task) { root.showTask(task); }
                     onHighlighted: function(task) {
+                        root.clearSelection();
                         root.keyboardTaskId = String(task.id);
                         root.keyboardAddKey = "";
                         root.forceActiveFocus();

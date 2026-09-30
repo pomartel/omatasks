@@ -271,6 +271,25 @@ ShellRoot {
             keyClick(Qt.Key_Up); compare(taskList.keyboardTaskId, "1");
             keyClick(Qt.Key_Space); compare(service.completions.join(","), "1");
         }
+        function test_plain_click_replaces_bulk_selection_with_simple_selection() {
+            var first = findChild(taskList, "taskPointer_0");
+            var second = findChild(taskList, "taskPointer_1");
+            mouseClick(first, 65, 12, Qt.LeftButton, Qt.ControlModifier);
+            mouseClick(second, 65, 12, Qt.LeftButton, Qt.ControlModifier);
+            compare(taskList.selectedIds.join(","), "0,1");
+            mouseClick(first, 65, 12);
+            compare(taskList.selectedIds.length, 0);
+            compare(taskList.keyboardTaskId, "0");
+            var highlight = findChild(taskList, "taskHighlight_0");
+            compare(highlight.color, Style.hoverFillFor(Color.popups.text, Color.accent));
+            compare(highlight.opacity, 0.5);
+            verify(!findChild(taskList, "taskDetailsPopup").opened);
+            compare(service.completions.length, 0);
+            mouseClick(second, 65, 12, Qt.LeftButton, Qt.ControlModifier);
+            mouseClick(first, 65, 12);
+            compare(taskList.selectedIds.length, 0);
+            compare(taskList.keyboardTaskId, "0");
+        }
         function test_double_click_opens_details_and_clears_selection() {
             mouseDoubleClickSequence(findChild(taskList, "taskPointer_0"), 65, 12); wait(80);
             verify(findChild(taskList, "taskDetailsPopup").opened);
