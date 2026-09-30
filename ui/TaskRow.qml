@@ -49,7 +49,12 @@ Item {
     HoverHandler {
         id: hover
         onHoveredChanged: if (hovered && !root.listDragging) root.hoverHighlighted(root.task)
-        onPointChanged: if (hovered && !root.listDragging) root.hoverHighlighted(root.task)
+        property point lastScenePosition: Qt.point(-1, -1)
+        onPointChanged: {
+            var moved = point.scenePosition.x !== lastScenePosition.x || point.scenePosition.y !== lastScenePosition.y;
+            lastScenePosition = point.scenePosition;
+            if (moved && hovered && !root.listDragging) root.hoverHighlighted(root.task);
+        }
     }
     MouseArea {
         id: pointer
@@ -76,11 +81,9 @@ Item {
             if (moved) return;
             if (mouse.button === Qt.RightButton) root.contextRequested(root.task, mouse.x, mouse.y);
             else if (mouse.modifiers & Qt.ControlModifier) root.selectionToggled(root.task);
-            else root.highlighted(root.task);
+            else { root.highlighted(root.task); root.activated(root.task); }
         }
-        onDoubleClicked: function(mouse) {
-            if (!moved && mouse.button === Qt.LeftButton && !(mouse.modifiers & Qt.ControlModifier)) root.activated(root.task);
-        }
+        onDoubleClicked: function(mouse) { mouse.accepted = false; }
     }
     TaskCheck {
         x: 0; y: Style.space(5)

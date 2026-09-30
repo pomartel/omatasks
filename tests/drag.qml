@@ -49,6 +49,8 @@ ShellRoot {
             service.tasks = Array.from({length: 24}, function(_, i) { return {id: String(i), content: "Task " + (i + 1) + " with a useful description", description: "Description of the task to check dragging and layout.", priority: 1, project_id: "inbox", day_order: i, due: {date: "2026-09-15"}}; });
             service.captured = []; service.completions = []; service.failNext = false; taskList.reset(); taskList.anchors.bottomMargin = 18;
             var list = findChild(taskList, "taskListView"); list.positionViewAtBeginning();
+            tryCompare(findChild(taskList, "taskDetailsPopup"), "visible", false);
+            taskList.forceActiveFocus();
             wait(150);
         }
         function test_only_selected_tab_has_a_filled_background() {
@@ -252,24 +254,20 @@ ShellRoot {
             verify(Math.abs(list.contentY - offset) < 50);
             compare(service.captured.length, 1);
         }
-        function test_click_highlights_like_keyboard_without_bulk_selection() {
+        function test_click_highlights_and_opens_details_without_bulk_selection() {
             taskList.keyboardAddKey = "add";
             mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
             compare(taskList.keyboardTaskId, "0");
             compare(taskList.keyboardAddKey, "");
             compare(taskList.selectedIds.length, 0);
-            verify(!findChild(taskList, "taskDetailsPopup").opened);
-            mouseClick(findChild(taskList, "taskPointer_1"), 65, 12);
-            compare(taskList.keyboardTaskId, "1");
-            mouseClick(findChild(taskList, "taskPointer_1"), 65, 12);
-            compare(taskList.keyboardTaskId, "1");
-            compare(taskList.selectedIds.length, 0);
-            verify(!findChild(taskList, "taskDetailsPopup").opened);
-            compare(service.completions.length, 0);
-            compare(service.captured.length, 0);
-            keyClick(Qt.Key_Down); compare(taskList.keyboardTaskId, "2");
-            keyClick(Qt.Key_Up); compare(taskList.keyboardTaskId, "1");
+            verify(findChild(taskList, "taskDetailsPopup").opened);
+            compare(String(taskList.selectedTask.id), "0");
+            keyClick(Qt.Key_Escape);
+            tryCompare(findChild(taskList, "taskDetailsPopup"), "visible", false);
+            taskList.forceActiveFocus();
+            keyClick(Qt.Key_Down); compare(taskList.keyboardTaskId, "1");
             keyClick(Qt.Key_Space); compare(service.completions.join(","), "1");
+            compare(service.captured.length, 0);
         }
         function test_plain_click_replaces_bulk_selection_with_simple_selection() {
             var first = findChild(taskList, "taskPointer_0");
@@ -283,15 +281,17 @@ ShellRoot {
             var highlight = findChild(taskList, "taskHighlight_0");
             compare(highlight.color, Style.hoverFillFor(Color.popups.text, Color.accent));
             compare(highlight.opacity, 0.5);
-            verify(!findChild(taskList, "taskDetailsPopup").opened);
+            verify(findChild(taskList, "taskDetailsPopup").opened);
+            keyClick(Qt.Key_Escape);
+            tryCompare(findChild(taskList, "taskDetailsPopup"), "visible", false);
             compare(service.completions.length, 0);
             mouseClick(second, 65, 12, Qt.LeftButton, Qt.ControlModifier);
             mouseClick(first, 65, 12);
             compare(taskList.selectedIds.length, 0);
             compare(taskList.keyboardTaskId, "0");
         }
-        function test_double_click_opens_details_and_clears_selection() {
-            mouseDoubleClickSequence(findChild(taskList, "taskPointer_0"), 65, 12); wait(80);
+        function test_click_opens_details_and_clears_selection() {
+            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12); wait(80);
             verify(findChild(taskList, "taskDetailsPopup").opened);
             compare(String(taskList.selectedTask.id), "0");
             compare(taskList.selectedIds.length, 0);
