@@ -87,7 +87,7 @@ Item {
                 Label { visible: root.subtasks.length + root.completedChildren > 0; text: "Sous-tâches · " + root.completedChildren + "/" + (root.completedChildren + root.subtasks.length); font.bold: true }
                 Repeater {
                     model: root.subtasks
-                    TaskRow { required property var modelData; Layout.fillWidth: true; Layout.minimumWidth: 0; task: modelData; service: root.service; view: "details"; onActivated: function(task) { root.taskRequested(task); } }
+                    TaskRow { required property var modelData; Layout.fillWidth: true; Layout.minimumWidth: 0; task: modelData; service: root.service; view: "details"; onSelectionToggled: selected = !selected; onActivated: function(task) { root.taskRequested(task); } }
                 }
                 Action { visible: Number(root.task.note_count || root.task.comment_count || 0) > 0; text: (root.task.note_count || root.task.comment_count || 0) + " commentaires · Ouvrir dans Todoist ↗"; maximumWidth: root.width; onClicked: root.service.openTodoist(root.task) }
                 Label { visible: !!root.task.added_at; Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.added_at ? "Ajoutée le " + new Date(root.task.added_at).toLocaleString(Qt.locale("fr_CA"), "d MMM yyyy, HH:mm") : ""; opacity: 0.4; font.pixelSize: Style.font.caption; wrapMode: Text.Wrap; elide: Text.ElideNone }

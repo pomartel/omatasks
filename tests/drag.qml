@@ -220,9 +220,24 @@ ShellRoot {
             verify(Math.abs(list.contentY - offset) < 50);
             compare(service.captured.length, 1);
         }
-        function test_click_opens_details() {
-            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12); wait(80);
+        function test_click_selects_and_toggles_without_opening_details() {
+            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
+            compare(taskList.selectedIds.join(","), "0");
+            verify(!findChild(taskList, "taskDetailsPopup").opened);
+            mouseClick(findChild(taskList, "taskPointer_1"), 65, 12);
+            compare(taskList.selectedIds.join(","), "0,1");
+            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
+            compare(taskList.selectedIds.join(","), "1");
+            verify(!findChild(taskList, "taskDetailsPopup").opened);
+            compare(service.completions.length, 0);
+            compare(service.captured.length, 0);
+        }
+        function test_double_click_opens_details_and_clears_selection() {
+            mouseDoubleClickSequence(findChild(taskList, "taskPointer_0"), 65, 12); wait(80);
             verify(findChild(taskList, "taskDetailsPopup").opened);
+            compare(String(taskList.selectedTask.id), "0");
+            compare(taskList.selectedIds.length, 0);
+            compare(service.completions.length, 0);
             compare(service.captured.length, 0);
         }
         function test_ctrl_click_selects_and_toggles() {

@@ -68,8 +68,10 @@ Item {
         onClicked: function(mouse) {
             if (moved) return;
             if (mouse.button === Qt.RightButton) root.contextRequested(root.task, mouse.x, mouse.y);
-            else if (mouse.modifiers & Qt.ControlModifier) root.selectionToggled(root.task);
-            else root.activated(root.task);
+            else root.selectionToggled(root.task);
+        }
+        onDoubleClicked: function(mouse) {
+            if (!moved && mouse.button === Qt.LeftButton && !(mouse.modifiers & Qt.ControlModifier)) root.activated(root.task);
         }
     }
     TaskCheck {
