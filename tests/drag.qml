@@ -41,6 +41,7 @@ ShellRoot {
         function cleanupTestCase() { console.log("DRAG UI RESULTS", qtest_results.passCount, "passed", qtest_results.failCount, "failed"); Qt.callLater(Qt.quit); }
         function cleanup() { console.log("TEST", qtest_results.functionName, qtest_results.failed ? "FAILED" : "PASSED"); }
         function init() {
+            mouseMove(taskList, 1, 1);
             service.token = "fixture"; service.loaded = true; service.error = ""; service.bulkRetry = null;
             service.now = new Date(2026, 8, 15, 12);
             service.user = {id: "me"}; service.preferences = {};
@@ -64,6 +65,37 @@ ShellRoot {
             compare(inbox.background.border.width, 0);
             taskList.forceActiveFocus();
             mouseMove(taskList, taskList.width - 1, taskList.height - 1);
+        }
+        function test_hover_selects_for_shortcuts_and_preserves_bulk_selection() {
+            var first = findChild(taskList, "taskPointer_0");
+            var second = findChild(taskList, "taskPointer_1");
+            mouseMove(taskList, 1, 1);
+            taskList.keyboardAddKey = "add";
+            mouseMove(first, 65, 12);
+            compare(taskList.keyboardTaskId, "0");
+            compare(taskList.keyboardAddKey, "");
+            compare(taskList.selectedIds.length, 0);
+            var simple = findChild(taskList, "taskHighlight_0");
+            compare(simple.color, Style.hoverFillFor(Color.popups.text, Color.accent));
+            compare(simple.opacity, 0.5);
+            mouseClick(first, 65, 12, Qt.LeftButton, Qt.ControlModifier);
+            compare(taskList.selectedIds.join(","), "0");
+            compare(simple.color, Style.selectedFillFor(Color.popups.text, Color.accent));
+            compare(simple.opacity, 1);
+            mouseMove(second, 65, 12);
+            compare(taskList.keyboardTaskId, "1");
+            compare(taskList.selectedIds.join(","), "0");
+            verify(simple.visible);
+            var next = findChild(taskList, "taskHighlight_1");
+            compare(next.color, Style.hoverFillFor(Color.popups.text, Color.accent));
+            verify(simple.color.toString() !== next.color.toString());
+            keyClick(Qt.Key_Down); compare(taskList.keyboardTaskId, "2");
+            mouseMove(second, 75, 12); compare(taskList.keyboardTaskId, "1");
+            keyClick(Qt.Key_Space); compare(service.completions.join(","), "1");
+            taskList.composerKey = "add";
+            mouseMove(first, 75, 12); compare(taskList.keyboardTaskId, "1");
+            mouseMove(taskList, 1, 1);
+            taskList.composerKey = "";
         }
         function test_imported_navigation_and_actions() {
             taskList.forceActiveFocus(); keyClick(Qt.Key_J);

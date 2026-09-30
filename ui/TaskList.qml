@@ -297,7 +297,8 @@ FocusScope {
                 TaskRow {
                     task: rowLoader.modelData.task; service: root.service; view: root.view; grouping: root.options.grouping
                     reorderEnabled: !root.service.saving && !root.composerKey && !root.selectedIds.length
-                    selected: root.selectedIds.indexOf(String(task.id)) >= 0 || root.keyboardTaskId === String(task.id)
+                    selected: root.keyboardTaskId === String(task.id)
+                    bulkSelected: root.selectedIds.indexOf(String(task.id)) >= 0
                     dragging: root.dragIndex === rowLoader.index
                     listDragging: root.dragging
                     opacity: dragging ? 0.3 : 1
@@ -306,6 +307,13 @@ FocusScope {
                         root.keyboardTaskId = String(task.id);
                         root.keyboardAddKey = "";
                         root.forceActiveFocus();
+                    }
+                    onHoverHighlighted: function(task) {
+                        if (root.dragging || root.service.saving || root.composerKey || root.setupVisible || details.visible || display.visible || taskMenu.visible || root.helpOpen) return;
+                        var focused = Window.activeFocusItem;
+                        if (focused && focused.cursorPosition !== undefined) return;
+                        root.keyboardTaskId = String(task.id);
+                        root.keyboardAddKey = "";
                     }
                     onSelectionToggled: function(task) { root.toggleSelection(task); }
                     onContextRequested: function(task, x, y) { root.openTaskMenu(task, mapToItem(root, x, y)); }

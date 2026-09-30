@@ -12,8 +12,10 @@ Item {
     property bool dragging: false
     property bool listDragging: false
     property bool selected: false
+    property bool bulkSelected: false
     signal activated(var task)
     signal highlighted(var task)
+    signal hoverHighlighted(var task)
     signal selectionToggled(var task)
     signal contextRequested(var task, real x, real y)
     signal dragStarted(real x, real y)
@@ -42,9 +44,13 @@ Item {
     }
     implicitHeight: content.implicitHeight + Style.space(18)
 
-    Rectangle { anchors.fill: parent; color: root.selected ? Style.selectedFillFor(Color.popups.text, Color.accent) : Style.hoverFillFor(Color.popups.text, Color.accent); visible: root.selected || hover.hovered; opacity: root.selected ? 1 : 0.5; radius: Style.cornerRadius }
-    Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: Style.space(2); color: Color.accent; visible: root.selected }
-    HoverHandler { id: hover }
+    Rectangle { objectName: "taskHighlight_" + root.task.id; anchors.fill: parent; color: root.bulkSelected ? Style.selectedFillFor(Color.popups.text, Color.accent) : Style.hoverFillFor(Color.popups.text, Color.accent); visible: root.bulkSelected || root.selected || hover.hovered; opacity: root.bulkSelected ? 1 : 0.5; radius: Style.cornerRadius }
+    Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: Style.space(2); color: Color.accent; visible: root.bulkSelected || root.selected }
+    HoverHandler {
+        id: hover
+        onHoveredChanged: if (hovered && !root.listDragging) root.hoverHighlighted(root.task)
+        onPointChanged: if (hovered && !root.listDragging) root.hoverHighlighted(root.task)
+    }
     MouseArea {
         id: pointer
         objectName: "taskPointer_" + root.task.id
@@ -138,5 +144,5 @@ Item {
         }
     }
     Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Color.popups.text; opacity: 0.09 }
-    Tip { visible: hover.hovered && !root.listDragging && !root.selected; text: root.projectText + (root.task.description ? "\n" + Model.plain(root.task.description) : ""); delay: 1200 }
+    Tip { visible: hover.hovered && !root.listDragging && !root.selected && !root.bulkSelected; text: root.projectText + (root.task.description ? "\n" + Model.plain(root.task.description) : ""); delay: 1200 }
 }
