@@ -13,6 +13,7 @@ Item {
     property bool listDragging: false
     property bool selected: false
     signal activated(var task)
+    signal highlighted(var task)
     signal selectionToggled(var task)
     signal contextRequested(var task, real x, real y)
     signal dragStarted(real x, real y)
@@ -68,7 +69,8 @@ Item {
         onClicked: function(mouse) {
             if (moved) return;
             if (mouse.button === Qt.RightButton) root.contextRequested(root.task, mouse.x, mouse.y);
-            else root.selectionToggled(root.task);
+            else if (mouse.modifiers & Qt.ControlModifier) root.selectionToggled(root.task);
+            else root.highlighted(root.task);
         }
         onDoubleClicked: function(mouse) {
             if (!moved && mouse.button === Qt.LeftButton && !(mouse.modifiers & Qt.ControlModifier)) root.activated(root.task);

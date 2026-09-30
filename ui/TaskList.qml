@@ -302,6 +302,11 @@ FocusScope {
                     listDragging: root.dragging
                     opacity: dragging ? 0.3 : 1
                     onActivated: function(task) { root.showTask(task); }
+                    onHighlighted: function(task) {
+                        root.keyboardTaskId = String(task.id);
+                        root.keyboardAddKey = "";
+                        root.forceActiveFocus();
+                    }
                     onSelectionToggled: function(task) { root.toggleSelection(task); }
                     onContextRequested: function(task, x, y) { root.openTaskMenu(task, mapToItem(root, x, y)); }
                     onDragStarted: function(x, y) { root.startDrag(rowLoader.index, mapToItem(root, x, y)); }

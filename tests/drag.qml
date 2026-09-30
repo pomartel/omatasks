@@ -220,17 +220,24 @@ ShellRoot {
             verify(Math.abs(list.contentY - offset) < 50);
             compare(service.captured.length, 1);
         }
-        function test_click_selects_and_toggles_without_opening_details() {
+        function test_click_highlights_like_keyboard_without_bulk_selection() {
+            taskList.keyboardAddKey = "add";
             mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
-            compare(taskList.selectedIds.join(","), "0");
+            compare(taskList.keyboardTaskId, "0");
+            compare(taskList.keyboardAddKey, "");
+            compare(taskList.selectedIds.length, 0);
             verify(!findChild(taskList, "taskDetailsPopup").opened);
             mouseClick(findChild(taskList, "taskPointer_1"), 65, 12);
-            compare(taskList.selectedIds.join(","), "0,1");
-            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
-            compare(taskList.selectedIds.join(","), "1");
+            compare(taskList.keyboardTaskId, "1");
+            mouseClick(findChild(taskList, "taskPointer_1"), 65, 12);
+            compare(taskList.keyboardTaskId, "1");
+            compare(taskList.selectedIds.length, 0);
             verify(!findChild(taskList, "taskDetailsPopup").opened);
             compare(service.completions.length, 0);
             compare(service.captured.length, 0);
+            keyClick(Qt.Key_Down); compare(taskList.keyboardTaskId, "2");
+            keyClick(Qt.Key_Up); compare(taskList.keyboardTaskId, "1");
+            keyClick(Qt.Key_Space); compare(service.completions.join(","), "1");
         }
         function test_double_click_opens_details_and_clears_selection() {
             mouseDoubleClickSequence(findChild(taskList, "taskPointer_0"), 65, 12); wait(80);
