@@ -8,6 +8,7 @@ import "EditModel.js" as Edit
 Item {
     id: root
     required property var service
+    readonly property string fontFamily: service.fontFamily
     required property var task
     property bool editing: false
     property string highlightedSubtaskId: ""
@@ -60,10 +61,10 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true; Layout.minimumWidth: 0
                     spacing: Style.space(5)
-                    TaskCheck { Layout.alignment: Qt.AlignTop; task: root.task; enabled: !root.service.saving; onClicked: root.complete() }
-                    Label { Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.alignment: Qt.AlignTop; Layout.topMargin: Style.space(5); text: Model.plain(root.task.content); wrapMode: Text.Wrap; elide: Text.ElideNone; font.bold: true }
+                    TaskCheck { fontFamily: root.fontFamily; Layout.alignment: Qt.AlignTop; task: root.task; enabled: !root.service.saving; onClicked: root.complete() }
+                    Label { font.family: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.alignment: Qt.AlignTop; Layout.topMargin: Style.space(5); text: Model.plain(root.task.content); wrapMode: Text.Wrap; elide: Text.ElideNone; font.bold: true }
                 }
-                Label { Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.description || ""; visible: text !== ""; wrapMode: Text.Wrap; elide: Text.ElideNone; opacity: 0.7 }
+                Label { font.family: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.description || ""; visible: text !== ""; wrapMode: Text.Wrap; elide: Text.ElideNone; opacity: 0.7 }
                 Rectangle { Layout.fillWidth: true; height: 1; color: Color.popups.text; opacity: 0.12 }
                 Repeater {
                     model: root.information
@@ -71,8 +72,8 @@ Item {
                         required property var modelData
                         Layout.fillWidth: true; Layout.minimumWidth: 0
                         spacing: Style.space(10)
-                        Label { Layout.preferredWidth: Style.space(90); Layout.alignment: Qt.AlignTop; text: modelData.name; opacity: 0.5; font.pixelSize: Style.font.bodySmall }
-                        Label { Layout.fillWidth: true; Layout.minimumWidth: 0; text: modelData.value; color: modelData.color || Color.popups.text; wrapMode: Text.Wrap; elide: Text.ElideNone; font.pixelSize: Style.font.bodySmall }
+                        Label { font.family: root.fontFamily; Layout.preferredWidth: Style.space(90); Layout.alignment: Qt.AlignTop; text: modelData.name; opacity: 0.5; font.pixelSize: Style.font.bodySmall }
+                        Label { font.family: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; text: modelData.value; color: modelData.color || Color.popups.text; wrapMode: Text.Wrap; elide: Text.ElideNone; font.pixelSize: Style.font.bodySmall }
                     }
                 }
                 Repeater {
@@ -81,18 +82,18 @@ Item {
                         required property var modelData
                         Layout.fillWidth: true; Layout.minimumWidth: 0
                         spacing: Style.space(10)
-                        Label { Layout.preferredWidth: Style.space(90); Layout.alignment: Qt.AlignTop; text: "Rappel"; opacity: 0.5; font.pixelSize: Style.font.bodySmall }
-                        Label { Layout.fillWidth: true; Layout.minimumWidth: 0; text: Edit.reminderText(modelData); wrapMode: Text.Wrap; elide: Text.ElideNone; font.pixelSize: Style.font.bodySmall }
+                        Label { font.family: root.fontFamily; Layout.preferredWidth: Style.space(90); Layout.alignment: Qt.AlignTop; text: "Rappel"; opacity: 0.5; font.pixelSize: Style.font.bodySmall }
+                        Label { font.family: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; text: Edit.reminderText(modelData); wrapMode: Text.Wrap; elide: Text.ElideNone; font.pixelSize: Style.font.bodySmall }
                     }
                 }
-                Action { visible: root.parentTask !== null; text: "↑ " + Model.plain((root.parentTask || {}).content); maximumWidth: root.width; tip: "Tâche parente"; onClicked: root.taskRequested(root.parentTask) }
-                Label { visible: root.subtasks.length + root.completedChildren > 0; text: "Sous-tâches · " + root.completedChildren + "/" + (root.completedChildren + root.subtasks.length); font.bold: true }
+                Action { fontFamily: root.fontFamily; visible: root.parentTask !== null; text: "↑ " + Model.plain((root.parentTask || {}).content); maximumWidth: root.width; tip: "Tâche parente"; onClicked: root.taskRequested(root.parentTask) }
+                Label { font.family: root.fontFamily; visible: root.subtasks.length + root.completedChildren > 0; text: "Sous-tâches · " + root.completedChildren + "/" + (root.completedChildren + root.subtasks.length); font.bold: true }
                 Repeater {
                     model: root.subtasks
                     TaskRow { required property var modelData; Layout.fillWidth: true; Layout.minimumWidth: 0; task: modelData; service: root.service; view: "details"; selected: root.highlightedSubtaskId === String(task.id); onHighlighted: function(task) { root.highlightedSubtaskId = String(task.id); } onSelectionToggled: function(task) { root.highlightedSubtaskId = selected ? "" : String(task.id); } onActivated: function(task) { root.taskRequested(task); } }
                 }
-                Action { visible: Number(root.task.note_count || root.task.comment_count || 0) > 0; text: (root.task.note_count || root.task.comment_count || 0) + " commentaires · Ouvrir dans Todoist ↗"; maximumWidth: root.width; onClicked: root.service.openTodoist(root.task) }
-                Label { visible: !!root.task.added_at; Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.added_at ? "Ajoutée le " + new Date(root.task.added_at).toLocaleString(Qt.locale("fr_CA"), "d MMM yyyy, HH:mm") : ""; opacity: 0.4; font.pixelSize: Style.font.caption; wrapMode: Text.Wrap; elide: Text.ElideNone }
+                Action { fontFamily: root.fontFamily; visible: Number(root.task.note_count || root.task.comment_count || 0) > 0; text: (root.task.note_count || root.task.comment_count || 0) + " commentaires · Ouvrir dans Todoist ↗"; maximumWidth: root.width; onClicked: root.service.openTodoist(root.task) }
+                Label { font.family: root.fontFamily; visible: !!root.task.added_at; Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.added_at ? "Ajoutée le " + new Date(root.task.added_at).toLocaleString(Qt.locale("fr_CA"), "d MMM yyyy, HH:mm") : ""; opacity: 0.4; font.pixelSize: Style.font.caption; wrapMode: Text.Wrap; elide: Text.ElideNone }
             }
             Loader {
                 id: editor
@@ -105,7 +106,7 @@ Item {
                     onCancelled: root.editing = false
                 }
             }
-            Label { Layout.fillWidth: true; Layout.minimumWidth: 0; visible: text !== ""; text: root.message; wrapMode: Text.Wrap; elide: Text.ElideNone; color: Color.urgent }
+            Label { font.family: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; visible: text !== ""; text: root.message; wrapMode: Text.Wrap; elide: Text.ElideNone; color: Color.urgent }
         }
     }
     ColumnLayout {
@@ -114,10 +115,10 @@ Item {
         spacing: Style.space(6)
         RowLayout {
             Layout.fillWidth: true
-            Action { objectName: "editTaskButton"; visible: !root.editing; text: "Modifier"; bordered: true; enabled: !root.service.saving; onClicked: root.startEditing() }
-            Action { text: "Ouvrir dans Todoist ↗"; onClicked: root.service.openTodoist(root.task) }
+            Action { fontFamily: root.fontFamily; objectName: "editTaskButton"; visible: !root.editing; text: "Modifier"; bordered: true; enabled: !root.service.saving; onClicked: root.startEditing() }
+            Action { fontFamily: root.fontFamily; text: "Ouvrir dans Todoist ↗"; onClicked: root.service.openTodoist(root.task) }
             Item { Layout.fillWidth: true }
-            Action { visible: !root.editing; text: "Fermer"; enabled: !root.busy; onClicked: root.dismissEditor() }
+            Action { fontFamily: root.fontFamily; visible: !root.editing; text: "Fermer"; enabled: !root.busy; onClicked: root.dismissEditor() }
         }
     }
     Connections {

@@ -6,6 +6,7 @@ Item {
     id: root
     required property var task
     required property var service
+    readonly property string fontFamily: service.fontFamily
     property string view: "today"
     property string grouping: "none"
     property bool reorderEnabled: false
@@ -85,7 +86,7 @@ Item {
         }
         onDoubleClicked: function(mouse) { mouse.accepted = false; }
     }
-    TaskCheck {
+    TaskCheck { fontFamily: root.fontFamily;
         x: 0; y: Style.space(5)
         task: root.task
         enabled: !root.service.saving && !root.listDragging
@@ -107,13 +108,13 @@ Item {
         anchors.right: parent.right; anchors.rightMargin: Style.space(3)
         y: Style.space(9)
         spacing: Style.space(4)
-        Label {
+        Label { font.family: root.fontFamily;
             width: parent.width
             text: Model.plain(root.task.content)
             wrapMode: Text.WordWrap
             maximumLineCount: 2
         }
-        Label {
+        Label { font.family: root.fontFamily;
             visible: text !== ""
             width: parent.width
             text: Model.plain(root.task.description)
@@ -132,10 +133,10 @@ Item {
                 clip: true
                 Repeater {
                     model: root.metadata
-                    Label { required property var modelData; text: modelData.text; color: modelData.color; font.pixelSize: Style.font.caption; anchors.verticalCenter: parent.verticalCenter }
+                    Label { font.family: root.fontFamily; required property var modelData; text: modelData.text; color: modelData.color; font.pixelSize: Style.font.caption; anchors.verticalCenter: parent.verticalCenter }
                 }
             }
-            Label {
+            Label { font.family: root.fontFamily;
                 id: project
                 anchors.right: parent.right
                 width: Math.min(implicitWidth, parent.width * (root.metadata.length ? 0.4 : 0.85))

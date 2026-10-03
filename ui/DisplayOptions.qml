@@ -6,10 +6,11 @@ import qs.Ui as UI
 ColumnLayout {
     id: root
     required property var service
+    readonly property string fontFamily: service.fontFamily
     required property string view
     readonly property var options: service.viewOptions(view)
     spacing: Style.space(10)
-    Label { text: "Tri"; font.bold: true }
+    Label { font.family: root.fontFamily; text: "Tri"; font.bold: true }
     Repeater {
         model: [
             {key: "grouping", label: "Regroupement", values: [{value: "none", label: "Aucune"}, {value: "project", label: "Projet"}, {value: "priority", label: "Priorité"}, {value: "date", label: "Date"}, {value: "label", label: "Étiquette"}]},
@@ -18,11 +19,11 @@ ColumnLayout {
         RowLayout {
             required property var modelData
             Layout.fillWidth: true
-            Label { text: modelData.label; Layout.preferredWidth: Style.space(100) }
-            UI.Dropdown { Layout.fillWidth: true; showLabel: false; fontFamily: Style.font.family; value: root.options[modelData.key]; options: modelData.values; onChanged: function(value) { root.service.setOption(root.view, modelData.key, value); } }
+            Label { font.family: root.fontFamily; text: modelData.label; Layout.preferredWidth: Style.space(100) }
+            UI.Dropdown { Layout.fillWidth: true; showLabel: false; fontFamily: root.fontFamily; value: root.options[modelData.key]; options: modelData.values; onChanged: function(value) { root.service.setOption(root.view, modelData.key, value); } }
         }
     }
-    Label { text: "Filtres"; font.bold: true; Layout.topMargin: Style.space(6) }
+    Label { font.family: root.fontFamily; text: "Filtres"; font.bold: true; Layout.topMargin: Style.space(6) }
     Repeater {
         model: [
             {key: "assignee", label: "Responsable", values: [{value: "mine", label: "Moi et non attribuées"}, {value: "all", label: "Tout le monde"}, {value: "me", label: "Moi"}, {value: "unassigned", label: "Non attribuée"}]},
@@ -33,13 +34,13 @@ ColumnLayout {
         RowLayout {
             required property var modelData
             Layout.fillWidth: true
-            Label { text: modelData.label; Layout.preferredWidth: Style.space(100) }
-            UI.Dropdown { Layout.fillWidth: true; showLabel: false; fontFamily: Style.font.family; value: root.options[modelData.key]; options: modelData.values; onChanged: function(value) { root.service.setOption(root.view, modelData.key, value); } }
+            Label { font.family: root.fontFamily; text: modelData.label; Layout.preferredWidth: Style.space(100) }
+            UI.Dropdown { Layout.fillWidth: true; showLabel: false; fontFamily: root.fontFamily; value: root.options[modelData.key]; options: modelData.values; onChanged: function(value) { root.service.setOption(root.view, modelData.key, value); } }
         }
     }
     RowLayout {
-        Action { text: "Réinitialiser la vue"; onClicked: root.service.resetView(root.view) }
+        Action { fontFamily: root.fontFamily; text: "Réinitialiser la vue"; onClicked: root.service.resetView(root.view) }
         Item { Layout.fillWidth: true }
-        Action { text: root.service.loading ? "Actualisation…" : "Actualiser"; enabled: !root.service.loading; onClicked: root.service.refresh(true) }
+        Action { fontFamily: root.fontFamily; text: root.service.loading ? "Actualisation…" : "Actualiser"; enabled: !root.service.loading; onClicked: root.service.refresh(true) }
     }
 }

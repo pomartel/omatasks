@@ -42,6 +42,8 @@ Item {
     property int syncFailures: 0
     property date now: clock.date
     property var widgets: []
+    // The bar uses a terminal font. Task text follows the desktop's UI font.
+    readonly property string fontFamily: Qt.application.font.family
     readonly property bool configured: token.length > 0
     readonly property var projectMap: Model.byId(projects)
     readonly property var sectionMap: Model.byId(sections)

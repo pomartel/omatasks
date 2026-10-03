@@ -78,6 +78,7 @@ Le glissement conserve le fonctionnement natif d’OmaTasks : réorganisation da
 ```sh
 node --test tests/*.test.cjs
 ./tests/check-drag
+./tests/check-composer
 omarchy plugin validate .
 ```
 
@@ -88,3 +89,7 @@ Les tests utilisent des tâches synthétiques et des requêtes interceptées. Le
 Interface et implémentation d’origine : Carmine Paolino, [OmaTasks](https://github.com/crmne/omatasks), base `7cd8b201ce5e17ea57bcbc12c5d6f8f02b15acc1`. Adaptation française et préférences : [pomartel/omatasks](https://github.com/pomartel/omatasks). Le parseur de modification provient de [pomartel/omarchy-todoist](https://github.com/pomartel/omarchy-todoist).
 
 Licence [MIT](LICENSE), avec la [notice du parseur importé](LICENSE.EditParser). Aucune publication de version ni aucun envoi de modifications au dépôt d’origine n’est effectué automatiquement.
+
+## Intégration upstream du 3 octobre 2026
+
+Reconnaissance et surlignage des propriétés Quick Add dans les deux éditeurs, police native du bureau et correction des dates relatives anciennes. Les dates françaises, filtres locaux et détails par clic simple sont conservés. Source upstream : `55b6b631f2d6294f3466f589d30eccb35e1df46f`.
