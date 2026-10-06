@@ -117,7 +117,7 @@ FocusScope {
         return service.tasks.find(function(t) { return String(t.id) === keyboardTaskId; }) || null;
     }
     function moveKeyboard(step) {
-        forceActiveFocus();
+        list.forceActiveFocus();
         var entries = rows.filter(function(r) { return r.kind === "task" || r.kind === "add"; });
         if (!entries.length) return;
         var index = entries.findIndex(function(r) {
