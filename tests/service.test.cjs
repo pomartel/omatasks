@@ -342,3 +342,34 @@ test('Todoist opens task pages through the webapp launcher and closes panels', (
     assert.deepEqual(launches[1], ['omarchy-launch-webapp', 'https://app.todoist.com']);
     assert.equal(closed, 2);
 });
+
+test('Undo restores the last confirmed completion, retries with the same UUID, and clears on success', () => {
+    const {s, wires} = service();
+    s.lastCompletion = null;
+    assert.equal(s.undoCompletion(), false);
+    const task = {id: 'a', content: 'Task'};
+    s.tasks = [task]; s.completeTask(task);
+    assert.equal(s.lastCompletion, null);
+    wires[0].respond(200, null);
+    wires[1].respond(200, {sync_token: 'done', items: []});
+    assert.equal(s.lastCompletion.task.id, 'a');
+    s.undoCompletion();
+    const command = commandsOf(wires[2])[0];
+    assert.equal(command.type, 'item_uncomplete');
+    wires[2].respond(200, {sync_token: 'failed', sync_status: {[command.uuid]: {error: 'Try again'}}});
+    assert.equal(s.lastCompletion.task.id, 'a');
+    s.undoCompletion(); assert.equal(commandsOf(wires[3])[0].uuid, command.uuid);
+    wires[3].respond(200, {sync_token: 'restored', items: [task], sync_status: {[command.uuid]: 'ok'}});
+    assert.equal(s.lastCompletion, null); assert.equal(s.tasks[0].id, 'a');
+});
+test('Undo of recurring completion restores the original due date and resets on account change', () => {
+    const {s, wires} = service();
+    const task = {id: 'repeat', due: {date: '2026-09-15', string: 'every day', is_recurring: true}};
+    s.lastCompletion = {task, uuid: 'undo-repeat'};
+    s.undoCompletion();
+    const command = commandsOf(wires[0])[0];
+    assert.equal(command.type, 'item_update_date_complete');
+    assert.equal(command.args.is_forward, false);
+    assert.equal(command.args.due.date, '2026-09-15');
+    s.applyToken('other'); assert.equal(s.lastCompletion, null);
+});

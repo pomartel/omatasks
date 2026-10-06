@@ -39,8 +39,10 @@ Les erreurs de synchronisation transitoires déclenchent des essais espacés de 
 | Tab / Maj+Tab ou ← / → | Parcourir Aujourd’hui, Prochainement, Inbox |
 | a / d / i | Ouvrir Aujourd’hui, Prochainement, Inbox |
 | ↑ / ↓ ou k / j | Sélectionner une tâche ou « Ajouter une tâche » |
-| Entrée / e | Modifier la tâche sélectionnée |
+| Entrée | Ouvrir les détails de la tâche sélectionnée |
+| e | Modifier la tâche sélectionnée |
 | Espace | Terminer la tâche sélectionnée |
+| u | Annuler la dernière tâche terminée dans le plugin (session courante) |
 | o | Ouvrir la page de la tâche dans la fenêtre flottante Todoist |
 | x | Supprimer immédiatement |
 | Ctrl+a / Ctrl+d / Ctrl+i | Planifier aujourd’hui, demain, ou retirer la date |

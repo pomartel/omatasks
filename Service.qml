@@ -32,6 +32,7 @@ Item {
     property var preferences: ({})
     property var requests: []
     property var completionIds: ({})
+    property var lastCompletion: null
     property var reorderCache: ({})
     property var pendingReorder: null
     property var bulkRetry: null
@@ -125,6 +126,7 @@ Item {
         syncToken = "*"; loaded = false; error = ""; retryAfter = 0; lastSync = 0;
         syncFailures = 0;
         completionIds = {};
+        lastCompletion = null;
         reorderCache = {};
         bulkRetry = null;
         if (configured) refresh();
@@ -239,10 +241,31 @@ Item {
             if (message) { error = message; operationFailed(message); return; }
             // Recurring tasks are rescheduled by Todoist, then restored by sync.
             tasks = tasks.filter(function(t) { return t.id !== task.id && t.parent_id !== task.id; });
+            lastCompletion = {task: JSON.parse(JSON.stringify(task)), uuid: Model.uuid()};
             delete completionIds[key];
             taskCompleted(String(task.id));
             refresh();
         }, completionIds[key]);
+        return true;
+    }
+    function undoCompletion() {
+        if (!lastCompletion || !beginWrite()) return false;
+        var record = lastCompletion, task = record.task;
+        var recurring = task.due && task.due.is_recurring;
+        var command = {type: recurring ? "item_update_date_complete" : "item_uncomplete", uuid: record.uuid, args: {id: String(task.id)}};
+        if (recurring) { command.args.due = task.due; command.args.is_forward = false; }
+        request("POST", "/sync", {sync_token: syncToken, resource_types: ["items", "projects", "sections", "labels", "user", "collaborators", "reminders", "completed_info"], commands: [command]}, token, function(data, message) {
+            saving = false;
+            var result = data && data.sync_status && data.sync_status[command.uuid];
+            if (data && data.sync_token) ingest(data);
+            if (message || result !== "ok") {
+                error = message || (result && result.error) || "Todoist n’a pas confirmé l’annulation. Réessayez.";
+                operationFailed(error); return;
+            }
+            lastCompletion = null;
+            error = ""; taskUpdated(String(task.id));
+            if (!data.sync_token) refresh();
+        });
         return true;
     }
     function updateTask(taskId, commands) {

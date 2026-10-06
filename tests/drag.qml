@@ -131,8 +131,26 @@ ShellRoot {
             keyClick(Qt.Key_A,Qt.ControlModifier);
             compare(service.captured[2].args.due.date,"2026-09-15");
         }
-        function test_editor_shortcut_and_typing() {
+        function test_keyboard_navigation_moves_focus_from_buttons_before_space() {
+            findChild(taskList, "viewTab_today").forceActiveFocus();
+            keyClick(Qt.Key_Down);
+            compare(taskList.keyboardTaskId, "0");
+            keyClick(Qt.Key_Space);
+            compare(service.completions.join(","), "0");
+        }
+        function test_enter_opens_details_and_u_undoes_without_selection() {
             taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_Return);
+            tryCompare(findChild(taskList, "taskDetailsPopup"), "visible", true);
+            verify(findChild(taskList, "taskName") === null);
+            findChild(taskList, "taskDetailsPopup").close();
+            taskList.keyboardTaskId = "";
+            service.lastCompletion = {task: {id: "0"}, uuid: "undo-test"};
+            taskList.forceActiveFocus(); keyClick(Qt.Key_U);
+            compare(service.captured[0].type, "item_uncomplete");
+            compare(service.lastCompletion, null);
+        }
+        function test_editor_shortcut_and_typing() {
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_E);
             tryVerify(function() { return findChild(taskList,"taskName") !== null });
             var input=findChild(taskList,"taskName");
             tryCompare(input,"activeFocus",true);
@@ -147,7 +165,7 @@ ShellRoot {
             findChild(taskList,"taskDetailsPopup").close();
         }
         function test_description_tab_moves_focus_without_changing_text() {
-            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_Return);
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_E);
             tryVerify(function() { return findChild(taskList, "taskDescription") !== null; });
             var description = findChild(taskList, "taskDescription");
             description.forceActiveFocus();

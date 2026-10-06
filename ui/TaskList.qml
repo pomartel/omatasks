@@ -117,6 +117,7 @@ FocusScope {
         return service.tasks.find(function(t) { return String(t.id) === keyboardTaskId; }) || null;
     }
     function moveKeyboard(step) {
+        forceActiveFocus();
         var entries = rows.filter(function(r) { return r.kind === "task" || r.kind === "add"; });
         if (!entries.length) return;
         var index = entries.findIndex(function(r) {
@@ -158,10 +159,14 @@ FocusScope {
         } else if (!ctrl && keyboardAddKey && [Qt.Key_Return, Qt.Key_Enter, Qt.Key_Space].indexOf(key) >= 0) {
             var selectedAdd = rows.find(function(r) { return r.kind === "add" && r.key === keyboardAddKey; });
             if (selectedAdd) addAt(selectedAdd.key, selectedAdd.projectId);
-        } else if (!ctrl && task && [Qt.Key_Return, Qt.Key_Enter, Qt.Key_E].indexOf(key) >= 0) {
+        } else if (!ctrl && task && [Qt.Key_Return, Qt.Key_Enter].indexOf(key) >= 0) {
+            showTask(task);
+        } else if (!ctrl && task && key === Qt.Key_E) {
             editKeyboardTask(task);
         } else if (!ctrl && task && key === Qt.Key_Space) {
-            service.completeTask(task);
+            if (!event.isAutoRepeat) service.completeTask(task);
+        } else if (!ctrl && key === Qt.Key_U) {
+            if (!event.isAutoRepeat) service.undoCompletion();
         } else if (!ctrl && task && key === Qt.Key_O) {
             openInTodoist(task);
         } else if (!ctrl && task && key === Qt.Key_X) {
@@ -409,7 +414,7 @@ FocusScope {
                 Label { font.family: root.fontFamily;
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap; elide: Text.ElideNone
-                    text: "Tab / Maj+Tab : changer de vue\na / d / i : Aujourd’hui / Prochainement / Inbox\n↑ / ↓ ou k / j : sélectionner une tâche ou l’ajout\nEntrée / e : modifier\nEspace : terminer\no : ouvrir dans Todoist\nx : supprimer\nCtrl+a / Ctrl+d / Ctrl+i : aujourd’hui / demain / sans date\nCtrl+a sans curseur : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
+                    text: "Tab / Maj+Tab : changer de vue\na / d / i : Aujourd’hui / Prochainement / Inbox\n↑ / ↓ ou k / j : sélectionner une tâche ou l’ajout\nEntrée : détails\ne : modifier\nEspace : terminer\nu : annuler la dernière tâche terminée\no : ouvrir dans Todoist\nx : supprimer\nCtrl+a / Ctrl+d / Ctrl+i : aujourd’hui / demain / sans date\nCtrl+a sans curseur : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
                 }
                 Action { fontFamily: root.fontFamily; text: "Fermer"; onClicked: shortcutHelp.close() }
             }
