@@ -66,7 +66,7 @@ ShellRoot {
             service.captured = []; service.completions = []; service.failNext = false; taskList.reset(); taskList.anchors.bottomMargin = 18;
             var list = findChild(taskList, "taskListView"); list.positionViewAtBeginning();
             tryCompare(findChild(taskList, "taskDetailsPopup"), "visible", false);
-            taskList.forceActiveFocus();
+            list.forceActiveFocus();
             wait(150);
         }
         function test_only_selected_tab_has_a_filled_background() {
@@ -262,6 +262,35 @@ ShellRoot {
             keyClick(Qt.Key_Return); compare(taskList.composerKey, "add");
             keyClick(Qt.Key_Escape);
             taskList.view = "inbox"; compare(taskList.keyboardAddKey, "");
+        }
+        function test_focused_add_button_opens_composer_data() {
+            return [{tag: "Return", key: Qt.Key_Return}, {tag: "Enter", key: Qt.Key_Enter}, {tag: "Space", key: Qt.Key_Space}];
+        }
+        function test_focused_add_button_opens_composer(data) {
+            taskList.keyboardTaskId = "23";
+            findChild(taskList, "taskListView").positionViewAtEnd();
+            var add = findChild(taskList, "addTask_add");
+            tryVerify(function() { return add !== null; });
+            add.forceActiveFocus();
+            keyClick(data.key);
+            compare(taskList.composerKey, "add");
+            tryVerify(function() { var input = findChild(taskList, "taskName"); return input && input.activeFocus; });
+            compare(service.completions.length, 0);
+            compare(findChild(taskList, "taskDetailsPopup").visible, false);
+            keyClick(Qt.Key_Escape);
+        }
+        function test_keyboard_selected_add_opens_composer_data() {
+            return [{tag: "Return", key: Qt.Key_Return}, {tag: "Enter", key: Qt.Key_Enter}, {tag: "Space", key: Qt.Key_Space}];
+        }
+        function test_keyboard_selected_add_opens_composer(data) {
+            taskList.forceActiveFocus(); taskList.keyboardTaskId = "23";
+            keyClick(Qt.Key_Down);
+            compare(taskList.keyboardAddKey, "add");
+            keyClick(data.key);
+            compare(taskList.composerKey, "add");
+            tryVerify(function() { var input = findChild(taskList, "taskName"); return input && input.activeFocus; });
+            compare(service.completions.length, 0);
+            keyClick(Qt.Key_Escape);
         }
         function test_add_shortcut_and_french_picker() {
             taskList.forceActiveFocus(); keyClick(Qt.Key_Q);

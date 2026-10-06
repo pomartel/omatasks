@@ -339,6 +339,12 @@ FocusScope {
                         y: Style.space(5)
                         text: "+   Ajouter une tâche"
                         objectName: "addTask_" + rowLoader.modelData.key
+                        Keys.onPressed: function(event) {
+                            if (!(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)) && [Qt.Key_Return, Qt.Key_Enter, Qt.Key_Space].indexOf(event.key) >= 0) {
+                                event.accepted = true;
+                                if (!event.isAutoRepeat) root.addAt(rowLoader.modelData.key, rowLoader.modelData.projectId);
+                            }
+                        }
                         selected: root.keyboardAddKey === rowLoader.modelData.key
                         foreground: Color.popups.text
                         onClicked: root.addAt(rowLoader.modelData.key, rowLoader.modelData.projectId)
@@ -352,8 +358,8 @@ FocusScope {
                             service: root.service
                             initialProjectId: root.composerProject
                             initialDue: root.view === "today" ? "aujourd’hui" : root.view === "upcoming" ? "demain" : ""
-                            onFinished: { root.composerKey = ""; root.forceActiveFocus(); }
-                            onCancelled: { root.composerKey = ""; root.forceActiveFocus(); }
+                            onFinished: { root.composerKey = ""; list.forceActiveFocus(); }
+                            onCancelled: { root.composerKey = ""; list.forceActiveFocus(); }
                             Component.onCompleted: Qt.callLater(focusInput)
                         }
                     }
