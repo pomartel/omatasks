@@ -27,7 +27,7 @@ function service() {
     vm.runInContext(fs.readFileSync('ui/EditModel.js', 'utf8'), Edit);
     const Bulk = vm.createContext({ Model, Edit, Date });
     vm.runInContext(fs.readFileSync('ui/BulkModel.js', 'utf8').replace(/^\.import.*$/gm, ''), Bulk);
-    const ctx = vm.createContext({ Order, preferences: {}, now: new Date(2026, 8, 15, 12), pendingReorder: null, reorderCache: {}, settingsFile: { setText() {} }, Model, XMLHttpRequest: XHR, Date, requests: [], completionIds: {}, generation: 0, token: 'test-token', configured: true, loading: false, saving: false, connecting: false, storageReady: true, error: '', retryAfter: 0, nextSyncRetry: 0, syncFailures: 0, syncToken: '*', tasks: [], projects: [], sections: [], labels: [], collaborators: [], reminders: [], completedInfo: [], user: {}, lastSync: 0, taskAdded() { ctx.added = true; }, taskUpdated(id) { ctx.updated = id; }, taskCompleted(id) { ctx.completed = id; }, operationFailed(message) { ctx.failed = message; } });
+    const ctx = vm.createContext({ completingTask: false, undoRequested: false, Order, preferences: {}, now: new Date(2026, 8, 15, 12), pendingReorder: null, reorderCache: {}, settingsFile: { setText() {} }, Model, XMLHttpRequest: XHR, Date, requests: [], completionIds: {}, generation: 0, token: 'test-token', configured: true, loading: false, saving: false, connecting: false, storageReady: true, error: '', retryAfter: 0, nextSyncRetry: 0, syncFailures: 0, syncToken: '*', tasks: [], projects: [], sections: [], labels: [], collaborators: [], reminders: [], completedInfo: [], user: {}, lastSync: 0, taskAdded() { ctx.added = true; }, taskUpdated(id) { ctx.updated = id; }, taskCompleted(id) { ctx.completed = id; }, operationFailed(message) { ctx.failed = message; } });
     ctx.root = ctx;
     ctx.Bulk = Bulk; ctx.bulkRetry = null; ctx.taskActionFinished = () => { ctx.bulkFinished = true; };
     const source = fs.readFileSync('Service.qml', 'utf8');
@@ -372,4 +372,30 @@ test('Undo of recurring completion restores the original due date and resets on 
     assert.equal(command.args.is_forward, false);
     assert.equal(command.args.due.date, '2026-09-15');
     s.applyToken('other'); assert.equal(s.lastCompletion, null);
+});
+
+test('Undo pressed while completion is in flight waits for confirmation and does not reopen an older task', () => {
+    const {s, wires} = service();
+    s.lastCompletion = {task: {id: 'older'}, uuid: 'old'};
+    s.tasks = [{id: 'new'}];
+    s.completeTask(s.tasks[0]);
+    assert.equal(s.undoCompletion(), true);
+    assert.equal(wires.length, 1);
+    wires[0].respond(200, null);
+    const command = commandsOf(wires[1])[0];
+    assert.equal(command.args.id, 'new');
+    assert.equal(command.type, 'item_uncomplete');
+    wires[1].respond(200, {sync_token: 'undo', sync_status: {[command.uuid]: 'ok'}, items: [{id: 'new'}]});
+    assert.equal(s.lastCompletion, null);
+    assert.equal(s.undoRequested, false);
+});
+test('Failed completion discards a queued undo and leaves the previous completion available', () => {
+    const {s, wires} = service();
+    s.lastCompletion = {task: {id: 'older'}, uuid: 'old'};
+    s.completeTask({id: 'new'}); s.undoCompletion();
+    wires[0].respond(500, {});
+    assert.equal(s.undoRequested, false);
+    assert.equal(s.completingTask, false);
+    assert.equal(s.lastCompletion.task.id, 'older');
+    assert.equal(wires.length, 1);
 });

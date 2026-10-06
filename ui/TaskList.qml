@@ -445,6 +445,7 @@ FocusScope {
     C.Popup {
         id: details
         objectName: "taskDetailsPopup"
+        onClosed: list.forceActiveFocus()
         x: 0; y: header.height + Style.space(8)
         width: root.width
         height: Math.min(root.height - y, (detailLoader.item ? detailLoader.item.implicitHeight : 0) + padding * 2)

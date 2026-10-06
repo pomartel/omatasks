@@ -27,6 +27,21 @@ ShellRoot {
             callback({sync_token: "fixture", sync_status: statuses}, "");
         }
     }
+    Plugin.Service {
+        id: completionService
+        enableShortcuts: false
+        stateDir: Quickshell.env("TODOIST_TEST_DIR") + "/completion-state"
+        property var captured: []
+        function applyToken(value) {}
+        function refresh(manual) {}
+        function request(method, path, body, credential, callback, requestId) {
+            if (path.indexOf("/close") >= 0) { Qt.callLater(function() { callback({}, ""); }); return; }
+            captured = captured.concat(body.commands);
+            var command = body.commands[0], statuses = {};
+            statuses[command.uuid] = "ok";
+            Qt.callLater(function() { callback({sync_token: "undo", sync_status: statuses, items: [{id: "completed", content: "Synthetic task", priority: 1, project_id: "inbox", due: {date: "2026-09-15"}}]}, ""); });
+        }
+    }
     FloatingWindow {
         id: window
         visible: true
@@ -41,6 +56,7 @@ ShellRoot {
         function cleanupTestCase() { console.log("DRAG UI RESULTS", qtest_results.passCount, "passed", qtest_results.failCount, "failed"); Qt.callLater(Qt.quit); }
         function cleanup() { console.log("TEST", qtest_results.functionName, qtest_results.failed ? "FAILED" : "PASSED"); }
         function init() {
+            taskList.service = service;
             mouseMove(taskList, 1, 1);
             service.token = "fixture"; service.loaded = true; service.error = ""; service.bulkRetry = null;
             service.now = new Date(2026, 8, 15, 12);
@@ -130,6 +146,49 @@ ShellRoot {
             compare(service.captured[1].args.due,null);
             keyClick(Qt.Key_A,Qt.ControlModifier);
             compare(service.captured[2].args.due.date,"2026-09-15");
+        }
+        function test_real_completion_then_keyboard_undo() {
+            completionService.token = "fixture"; completionService.now = service.now;
+            completionService.projects = service.projects; completionService.user = service.user;
+            completionService.tasks = [{id: "completed", content: "Synthetic task", priority: 1, project_id: "inbox", due: {date: "2026-09-15"}}];
+            completionService.captured = []; completionService.lastCompletion = null;
+            taskList.service = completionService;
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_Space);
+            tryCompare(completionService, "saving", false);
+            compare(completionService.tasks.length, 0);
+            keyClick(Qt.Key_U);
+            tryCompare(completionService, "lastCompletion", null);
+            compare(completionService.captured.length, 1);
+            taskList.service = service;
+        }
+        function test_undo_while_completion_is_in_flight() {
+            completionService.token = "fixture"; completionService.now = service.now;
+            completionService.projects = service.projects; completionService.user = service.user;
+            completionService.tasks = [{id: "completed", content: "Synthetic task", priority: 1, project_id: "inbox", due: {date: "2026-09-15"}}];
+            completionService.captured = []; completionService.lastCompletion = null;
+            taskList.service = completionService;
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_Space);
+            keyClick(Qt.Key_U);
+            tryCompare(completionService, "lastCompletion", null);
+            compare(completionService.captured.length, 1);
+            taskList.service = service;
+        }
+        function test_details_completion_then_keyboard_undo() {
+            completionService.token = "fixture"; completionService.now = service.now;
+            completionService.projects = service.projects; completionService.user = service.user;
+            completionService.tasks = [{id: "completed", content: "Synthetic task", priority: 1, project_id: "inbox", due: {date: "2026-09-15"}}];
+            completionService.captured = []; completionService.lastCompletion = null;
+            taskList.service = completionService;
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_Return);
+            tryVerify(function() { return findChild(taskList, "taskDetailScroll") !== null; });
+            findChild(taskList, "taskDetailScroll").parent.complete();
+            tryCompare(completionService, "saving", false);
+            compare(completionService.tasks.length, 0);
+            tryCompare(findChild(taskList, "taskDetailsPopup"), "visible", false);
+            keyClick(Qt.Key_U);
+            tryCompare(completionService, "lastCompletion", null);
+            compare(completionService.captured.length, 1);
+            taskList.service = service;
         }
         function test_keyboard_navigation_moves_focus_from_buttons_before_space() {
             findChild(taskList, "viewTab_today").forceActiveFocus();

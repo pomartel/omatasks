@@ -55,6 +55,8 @@ Les erreurs de synchronisation transitoires déclenchent des essais espacés de 
 
 Les liens « Ouvrir dans Todoist » et le raccourci **o** lancent directement la page de la tâche avec `omarchy-launch-webapp`, puis ferment le panneau. La règle de fenêtre Todoist d’Omarchy détermine son affichage flottant.
 
+Le raccourci **u** peut être pressé immédiatement après la complétion : si Todoist n’a pas encore répondu, l’annulation attend sa confirmation.
+
 Entrée ou Espace sur « Ajouter une tâche » ouvre le formulaire. Dans la description, Tab passe au champ suivant et Maj+Tab au précédent.
 
 Les champs de texte gardent leurs touches habituelles. **Alt+Space** ouvre l’ajout rapide global natif ; ce raccourci est configurable dans les réglages. Pour associer **Super+Maj+T** au panneau, utilisez la commande :

@@ -33,6 +33,8 @@ Item {
     property var requests: []
     property var completionIds: ({})
     property var lastCompletion: null
+    property bool completingTask: false
+    property bool undoRequested: false
     property var reorderCache: ({})
     property var pendingReorder: null
     property var bulkRetry: null
@@ -117,6 +119,7 @@ Item {
         var old = requests; requests = [];
         old.forEach(function(r) { r.xhr.abort(); });
         loading = false; saving = false; connecting = false;
+        completingTask = false; undoRequested = false;
         if (pendingReorder) finishReorder(false);
     }
     function applyToken(value) {
@@ -234,21 +237,25 @@ Item {
     }
     function completeTask(task) {
         if (!beginWrite()) return false;
+        completingTask = true;
+        var snapshot = JSON.parse(JSON.stringify(task));
         var key = task.id + ":" + String(task.updated_at || "") + ":" + String((task.due || {}).date || "");
         if (!completionIds[key]) completionIds[key] = Model.uuid();
         request("POST", "/tasks/" + encodeURIComponent(task.id) + "/close", null, token, function(data, message) {
-            saving = false;
-            if (message) { error = message; operationFailed(message); return; }
+            saving = false; completingTask = false;
+            if (message) { undoRequested = false; error = message; operationFailed(message); return; }
             // Recurring tasks are rescheduled by Todoist, then restored by sync.
             tasks = tasks.filter(function(t) { return t.id !== task.id && t.parent_id !== task.id; });
-            lastCompletion = {task: JSON.parse(JSON.stringify(task)), uuid: Model.uuid()};
+            lastCompletion = {task: snapshot, uuid: Model.uuid()};
             delete completionIds[key];
             taskCompleted(String(task.id));
-            refresh();
+            if (undoRequested) { undoRequested = false; undoCompletion(); }
+            else refresh();
         }, completionIds[key]);
         return true;
     }
     function undoCompletion() {
+        if (completingTask) { undoRequested = true; return true; }
         if (!lastCompletion || !beginWrite()) return false;
         var record = lastCompletion, task = record.task;
         var recurring = task.due && task.due.is_recurring;
