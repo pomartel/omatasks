@@ -40,6 +40,7 @@ Item {
     property var pendingReorder: null
     property var bulkRetry: null
     property int generation: 0
+    property int lastNetworkStatus: 0
     property real lastSync: 0
     property real retryAfter: 0
     property real nextSyncRetry: 0
@@ -87,7 +88,7 @@ Item {
     IpcHandler {
         target: "pomartel.omatasks"
         function togglePanel(): void { root.togglePanel(); }
-        function status(): string { return JSON.stringify({connected: root.configured, loaded: root.loaded, loading: root.loading, taskCount: root.tasks.length, hasError: !!root.error, selectedView: root.selectedView}); }
+        function status(): string { return JSON.stringify({connected: root.configured, loaded: root.loaded, loading: root.loading, taskCount: root.tasks.length, hasError: !!root.error, selectedView: root.selectedView, transport: "curl", lastNetworkStatus: root.lastNetworkStatus, lastSync: root.lastSync, syncFailures: root.syncFailures}); }
     }
     function viewOptions(view) { return Object.assign({}, Model.DEFAULT_VIEW, view === "inbox" ? {assignee: "all"} : {}, preferences[view] || {}); }
     function selectView(view) {
@@ -123,7 +124,7 @@ Item {
         nextSyncRetry = 0;
         generation++;
         var old = requests; requests = [];
-        old.forEach(function(r) { r.xhr.abort(); });
+        old.forEach(function(r) { r.done = true; r.transport.dispose(); });
         loading = false; saving = false; connecting = false;
         completingTask = false; undoRequested = false;
         if (pendingReorder) finishReorder(false);
@@ -157,36 +158,38 @@ Item {
         credentialWriter.pendingToken = "";
         credentialWriter.running = true;
     }
+    Component { id: httpRequest; HttpRequest {} }
     function request(method, path, body, credential, callback, requestId) {
-        var xhr = new XMLHttpRequest(), epoch = generation;
-        var entry = {xhr: xhr, started: Date.now(), done: false};
+        var transport = httpRequest.createObject(root), epoch = generation;
+        var entry = {transport: transport, started: Date.now(), done: false};
         function finish(data, message, status) {
             if (entry.done) return;
             entry.done = true;
             requests = requests.filter(function(r) { return r !== entry; });
+            transport.dispose();
+            lastNetworkStatus = status;
             if (epoch === generation) callback(data, message, status);
         }
-        entry.timeout = function() { finish(null, Model.errorMessage(0), 0); xhr.abort(); };
+        entry.timeout = function() { finish(null, Model.errorMessage(0), 0); };
         requests = requests.concat([entry]);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState !== XMLHttpRequest.DONE || epoch !== generation) return;
-            if (xhr.status < 200 || xhr.status >= 300) {
-                if (xhr.status === 429) root.retryAfter = Date.now() + Math.max(60, Number(xhr.getResponseHeader("Retry-After")) || 60) * 1000;
-                finish(null, Model.errorMessage(xhr.status), xhr.status); return;
-            }
-            try { var data = xhr.responseText ? JSON.parse(xhr.responseText) : {}; }
-            catch (e) { finish(null, "Todoist returned an unreadable response. Try refreshing.", 502); return; }
-            finish(data, "");
-        };
-        xhr.open(method, Model.API_BASE + path);
-        xhr.setRequestHeader("Authorization", "Bearer " + credential);
-        xhr.setRequestHeader("Content-Type", path === "/sync" ? "application/x-www-form-urlencoded" : "application/json");
-        if (requestId) xhr.setRequestHeader("X-Request-Id", requestId);
+        var headers = {Authorization: "Bearer " + credential,
+                       "Content-Type": path === "/sync" ? "application/x-www-form-urlencoded" : "application/json"};
+        if (requestId) headers["X-Request-Id"] = requestId;
         var payload = body === null ? "" : JSON.stringify(body);
         if (path === "/sync") payload = Object.keys(body).map(function(key) {
             return encodeURIComponent(key) + "=" + encodeURIComponent(typeof body[key] === "string" ? body[key] : JSON.stringify(body[key]));
         }).join("&");
-        xhr.send(payload);
+        transport.send(method, Model.API_BASE + path, payload, headers, function(response) {
+            if (entry.done || epoch !== generation) return;
+            var status = response.status;
+            if (status < 200 || status >= 300) {
+                if (status === 429) root.retryAfter = Date.now() + Math.max(60, Number(response.retryAfter) || 60) * 1000;
+                finish(null, Model.errorMessage(status), status); return;
+            }
+            try { var data = response.body ? JSON.parse(response.body) : {}; }
+            catch (e) { finish(null, "Todoist returned an unreadable response. Try refreshing.", 502); return; }
+            finish(data, "", status);
+        });
     }
     function ingest(data) {
         var full = data.full_sync === true;

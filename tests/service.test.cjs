@@ -1,4 +1,4 @@
-// Run the service's JavaScript methods with controlled XMLHttpRequest responses.
+// Run the service's JavaScript methods with controlled transport responses.
 // Rendering and FileView/Process behavior are checked separately in Quickshell.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -7,15 +7,13 @@ const vm = require('node:vm');
 
 function service() {
     const wires = [];
-    class XHR {
-        static DONE = 4;
-        constructor() { this.headers = {}; wires.push(this); }
-        open(method, url) { this.method = method; this.url = url; }
-        setRequestHeader(key, value) { this.headers[key] = value; }
-        getResponseHeader(key) { return this.responseHeaders?.[key] || ''; }
-        send(body) { this.body = body; }
-        abort() { this.aborted = true; this.respond(0, ''); }
-        respond(status, body, headers = {}) { this.status = status; this.responseText = typeof body === 'string' ? body : JSON.stringify(body); this.responseHeaders = headers; this.readyState = 4; this.onreadystatechange(); }
+    class Transport {
+        constructor() { wires.push(this); }
+        send(method, url, body, headers, callback) { Object.assign(this, {method, url, body, headers, callback}); }
+        dispose() { this.aborted = true; }
+        respond(status, body, headers = {}) {
+            this.callback({status, body: typeof body === 'string' ? body : JSON.stringify(body), retryAfter: headers['Retry-After'] || ''});
+        }
     }
     const Model = vm.createContext({ Date });
     vm.runInContext(fs.readFileSync('Model.js', 'utf8'), Model);
@@ -27,7 +25,7 @@ function service() {
     vm.runInContext(fs.readFileSync('ui/EditModel.js', 'utf8'), Edit);
     const Bulk = vm.createContext({ Model, Edit, Date });
     vm.runInContext(fs.readFileSync('ui/BulkModel.js', 'utf8').replace(/^\.import.*$/gm, ''), Bulk);
-    const ctx = vm.createContext({ completingTask: false, undoRequested: false, Order, preferences: {}, now: new Date(2026, 8, 15, 12), pendingReorder: null, reorderCache: {}, settingsFile: { setText() {} }, Model, XMLHttpRequest: XHR, Date, requests: [], completionIds: {}, generation: 0, token: 'test-token', configured: true, loading: false, saving: false, connecting: false, storageReady: true, error: '', retryAfter: 0, nextSyncRetry: 0, syncFailures: 0, syncToken: '*', tasks: [], projects: [], sections: [], labels: [], collaborators: [], reminders: [], completedInfo: [], user: {}, lastSync: 0, taskAdded() { ctx.added = true; }, taskUpdated(id) { ctx.updated = id; }, taskCompleted(id) { ctx.completed = id; }, operationFailed(message) { ctx.failed = message; } });
+    const ctx = vm.createContext({ completingTask: false, undoRequested: false, Order, preferences: {}, now: new Date(2026, 8, 15, 12), pendingReorder: null, reorderCache: {}, settingsFile: { setText() {} }, Model, httpRequest: {createObject() { return new Transport(); }}, Date, requests: [], completionIds: {}, generation: 0, token: 'test-token', configured: true, loading: false, saving: false, connecting: false, storageReady: true, error: '', retryAfter: 0, nextSyncRetry: 0, syncFailures: 0, syncToken: '*', tasks: [], projects: [], sections: [], labels: [], collaborators: [], reminders: [], completedInfo: [], user: {}, lastSync: 0, taskAdded() { ctx.added = true; }, taskUpdated(id) { ctx.updated = id; }, taskCompleted(id) { ctx.completed = id; }, operationFailed(message) { ctx.failed = message; } });
     ctx.root = ctx;
     ctx.Bulk = Bulk; ctx.bulkRetry = null; ctx.taskActionFinished = () => { ctx.bulkFinished = true; };
     const source = fs.readFileSync('Service.qml', 'utf8');

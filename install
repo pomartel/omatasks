@@ -13,6 +13,7 @@ if [[ -e $todoist_target || -L $todoist_target ]]; then
 fi
 mkdir -p "$todoist_target"
 cp -r "$todoist_source/manifest.json" "$todoist_source/Model.js" "$todoist_source/EditParser.js" \
+  "$todoist_source/Http.js" "$todoist_source/HttpRequest.qml" \
   "$todoist_source/Service.qml" "$todoist_source/BarWidget.qml" \
   "$todoist_source/ShortcutManager.qml" "$todoist_source/ShortcutModel.js" \
   "$todoist_source/QuickAdd.qml" "$todoist_source/ui" \

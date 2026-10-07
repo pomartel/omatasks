@@ -20,7 +20,7 @@ L’icône de la barre dépasse légèrement la hauteur visible du « Y » de qs
 omarchy plugin add https://github.com/pomartel/omatasks.git --enable --yes
 ```
 
-Identifiant du plugin : `pomartel.omatasks`. Nécessite Omarchy Quattro, Quickshell et un compte Todoist. Aucun outil Todoist supplémentaire n’est requis. L’ancien plugin peut rester installé, mais désactivé, pour revenir en arrière.
+Identifiant du plugin : `pomartel.omatasks`. Nécessite Omarchy Quattro, Quickshell, curl (7.84 ou plus récent) et un compte Todoist. Aucun outil Todoist supplémentaire n’est requis. L’ancien plugin peut rester installé, mais désactivé, pour revenir en arrière.
 
 Depuis un dépôt local, `./install` copie les composants et active le plugin. Après une modification, rechargez les plugins avec `omarchy restart shell`.
 
@@ -29,6 +29,8 @@ Depuis un dépôt local, `./install` copie les composants et active le plugin. A
 Ouvrez le panneau, puis les paramètres développeur de Todoist depuis le lien proposé. Collez le jeton API dans le champ protégé et cliquez sur **Se connecter**.
 
 Le jeton reste dans `$XDG_CONFIG_HOME/omatasks-fr/token`, normalement `~/.config/omatasks-fr/token`, avec les permissions `0600` dans un dossier `0700`. Il passe par l’entrée standard pour son enregistrement et par un en-tête HTTPS pour les appels à Todoist. Les préférences sont stockées dans `views.json` au même endroit ; les tâches restent en mémoire. Aucun jeton ne doit être ajouté à ce dépôt ou à YADM.
+
+Chaque requête utilise un processus curl indépendant, avec une nouvelle connexion réseau et un délai maximal de 20 secondes. Cela évite de réutiliser une connexion bloquée après une veille ou un passage entre Wi-Fi et Ethernet. Le jeton et le contenu passent par l’entrée standard de curl, jamais par les arguments du processus. Les écritures ne sont pas rejouées automatiquement par curl.
 
 Les erreurs de synchronisation transitoires déclenchent des essais espacés de 5 secondes jusqu’à 5 minutes. Les modifications échouées gardent leurs brouillons et permettent de réessayer. Les actions groupées vérifient chaque commande et ne renvoient que les modifications non confirmées.
 
@@ -88,7 +90,7 @@ node --test tests/*.test.cjs
 omarchy plugin validate .
 ```
 
-Les tests utilisent des tâches synthétiques et des requêtes interceptées. Les contrôles visuels couvrent les thèmes clair et sombre à plusieurs largeurs. Le raccourci IPC `omarchy-shell pomartel.omatasks status` retourne uniquement un état agrégé, sans contenu de tâche ni identifiant de connexion.
+Les tests utilisent des tâches synthétiques et des requêtes interceptées. Les contrôles visuels couvrent les thèmes clair et sombre à plusieurs largeurs. Le raccourci IPC `omarchy-shell pomartel.omatasks status` retourne uniquement un état agrégé, sans contenu de tâche ni identifiant de connexion, avec le transport, le dernier statut HTTP, la dernière synchronisation réussie et le nombre d’échecs consécutifs. Les tests du transport utilisent uniquement un serveur local et des données synthétiques ; le test QML est exécuté lorsque Quickshell est disponible.
 
 ## Origine et licence
 
