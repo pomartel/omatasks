@@ -8,7 +8,7 @@ Fork de [crmne/omatasks](https://github.com/crmne/omatasks), conservant ses comp
 - **Inbox** : tâches principales **sans date de planification, dans tous les projets**. Le nom reste Inbox ; le filtre ne se limite pas au projet Boîte de réception. Une date limite seule n’exclut pas la tâche.
 - **Prochainement** : de demain au sixième jour inclus, sans les tâches d’aujourd’hui ou en retard. Les jours contenant des tâches sont regroupés sous **Demain**, puis les noms des jours en français. Les heures restent visibles sur les tâches, sans répéter leur date.
 
-Seul l’onglet sélectionné a un fond rempli. Le survol éclaircit son texte et ses icônes ; le focus clavier est indiqué par un contour.
+Seul l’onglet sélectionné a un fond rempli. Le survol éclaircit son texte et ses icônes ; le focus clavier est indiqué par un contour. Le panneau conserve le dernier onglet utilisé à chaque réouverture. Après un redémarrage du shell ou un rechargement du plugin, il démarre sur Aujourd’hui.
 
 Les sous-tâches se consultent et se terminent dans les détails de leur parent. Elles ne figurent pas dans les listes principales ni dans le compteur. Aujourd’hui et Inbox n’ont pas de sous-titres avec le regroupement par défaut. Les options natives de regroupement, de tri et de filtrage restent disponibles ; Inbox inclut par défaut tous les responsables, les autres vues conservent le filtre natif « Moi et non attribuées ».
 
@@ -58,6 +58,8 @@ Les liens « Ouvrir dans Todoist » et le raccourci **o** lancent directement la
 Le raccourci **u** peut être pressé immédiatement après la complétion : si Todoist n’a pas encore répondu, l’annulation attend sa confirmation.
 
 Entrée ou Espace sur « Ajouter une tâche » ouvre le formulaire. Dans la description, Tab passe au champ suivant et Maj+Tab au précédent.
+
+Après avoir terminé une tâche dans la liste avec sa case ou Espace, le focus clavier passe à la tâche suivante, ou à la précédente s’il n’y a pas de suivante. Il reste sur la tâche en cas d’échec et aucune tâche n’est sélectionnée si la liste devient vide.
 
 Les champs de texte gardent leurs touches habituelles. **Alt+Space** ouvre l’ajout rapide global natif ; ce raccourci est configurable dans les réglages. Pour associer **Super+Maj+T** au panneau, utilisez la commande :
 

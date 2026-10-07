@@ -23,6 +23,7 @@ Item {
     signal dragMoved(real x, real y)
     signal dragEnded()
     signal dragCancelled()
+    function completeTask() { return service.completeTask(task); }
     readonly property string dueText: Model.dueLabel(task, service.now, view, grouping)
     readonly property string projectText: Model.projectPath(task.project_id, service.projectMap, task.section_id, service.sectionMap)
     readonly property int childCount: service.tasks.filter(function(t) { return String(t.parent_id) === String(root.task.id); }).length
@@ -90,7 +91,7 @@ Item {
         x: 0; y: Style.space(5)
         task: root.task
         enabled: !root.service.saving && !root.listDragging
-        onClicked: root.service.completeTask(root.task)
+        onClicked: root.completeTask()
     }
     MouseArea {
         // Modified clicks on the completion circle select instead of completing.

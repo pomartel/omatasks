@@ -14,6 +14,7 @@ FocusScope {
     property string view: "today"
     property string keyboardTaskId: ""
     property string keyboardAddKey: ""
+    property var completionFocus: null
     property bool helpOpen: false
     property bool settingsOpen: false
     property string composerKey: ""
@@ -72,7 +73,23 @@ FocusScope {
         display.close();
         taskMenu.open();
     }
-    function reset() { keyboardTaskId = ""; keyboardAddKey = ""; helpOpen = false; clearSelection(); view = "today"; settingsOpen = false; display.close(); details.close(); }
+    function reset() { completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; helpOpen = false; clearSelection(); settingsOpen = false; display.close(); details.close(); }
+    function completeTask(task) {
+        if (service.saving) return;
+        var ids = Bulk.visibleIds(rows), id = String(task.id), index = ids.indexOf(id);
+        completionFocus = {id: id, candidates: ids.slice(index + 1).concat(ids.slice(0, index).reverse())};
+        if (!service.completeTask(task)) completionFocus = null;
+    }
+    function focusAfterCompletion(taskId) {
+        if (!completionFocus || completionFocus.id !== taskId) return;
+        var visibleIds = Bulk.visibleIds(rows);
+        keyboardTaskId = completionFocus.candidates.find(function(id) { return visibleIds.indexOf(id) >= 0; }) || "";
+        keyboardAddKey = "";
+        completionFocus = null;
+        list.forceActiveFocus();
+        var index = rows.findIndex(function(row) { return row.kind === "task" && String(row.task.id) === root.keyboardTaskId; });
+        if (index >= 0) list.positionViewAtIndex(index, ListView.Contain);
+    }
     function showTask(task) { clearSelection(); selectedTask = task; details.open(); }
     function startDrag(index, point) {
         if (service.saving || composerKey || setupVisible || selectedIds.length) return;
@@ -164,7 +181,7 @@ FocusScope {
         } else if (!ctrl && task && key === Qt.Key_E) {
             editKeyboardTask(task);
         } else if (!ctrl && task && key === Qt.Key_Space) {
-            if (!event.isAutoRepeat) service.completeTask(task);
+            if (!event.isAutoRepeat) completeTask(task);
         } else if (!ctrl && key === Qt.Key_U) {
             if (!event.isAutoRepeat) service.undoCompletion();
         } else if (!ctrl && task && key === Qt.Key_O) {
@@ -182,9 +199,9 @@ FocusScope {
         event.accepted = true;
     }
     Keys.onPressed: function(event) { handleShortcut(event); }
-    onViewChanged: { keyboardTaskId = ""; keyboardAddKey = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
+    onViewChanged: { completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
     onSetupVisibleChanged: if (setupVisible) { cancelDrag(); clearSelection(); }
-    onVisibleChanged: if (!visible) { cancelDrag(); clearSelection(); }
+    onVisibleChanged: if (!visible) { completionFocus = null; cancelDrag(); clearSelection(); }
     onComposerKeyChanged: if (!composerKey) heldRows = null
 
     RowLayout {
@@ -301,6 +318,7 @@ FocusScope {
             Component {
                 id: taskComponent
                 TaskRow {
+                    function completeTask() { root.completeTask(task); }
                     task: rowLoader.modelData.task; service: root.service; view: root.view; grouping: root.options.grouping
                     reorderEnabled: !root.service.saving && !root.composerKey && !root.selectedIds.length
                     selected: root.keyboardTaskId === String(task.id)
@@ -471,6 +489,8 @@ FocusScope {
     }
     Connections {
         target: root.service
+        function onTaskCompleted(taskId) { root.focusAfterCompletion(taskId); }
+        function onOperationFailed(message) { root.completionFocus = null; }
         function onTasksChanged() {
             if (!root.selectedTask) return;
             var current = root.service.tasks.find(function(t) { return String(t.id) === String(root.selectedTask.id); });

@@ -17,7 +17,7 @@ ShellRoot {
         function applyToken(value) {}
         property bool manualRefresh: false
         function refresh(manual) { manualRefresh = manual === true; }
-        function completeTask(task) { completions = completions.concat([String(task.id)]); }
+        function completeTask(task) { completions = completions.concat([String(task.id)]); return true; }
         function request(method, path, body, credential, callback, requestId) {
             if (path !== "/sync" || !body.commands) throw new Error("Unexpected request");
             captured = captured.concat(body.commands);
@@ -63,11 +63,74 @@ ShellRoot {
             service.user = {id: "me"}; service.preferences = {};
             service.projects = [{id: "inbox", name: "Inbox", inbox_project: true}];
             service.tasks = Array.from({length: 24}, function(_, i) { return {id: String(i), content: "Task " + (i + 1) + " with a useful description", description: "Description of the task to check dragging and layout.", priority: 1, project_id: "inbox", day_order: i, due: {date: "2026-09-15"}}; });
-            service.captured = []; service.completions = []; service.failNext = false; taskList.reset(); taskList.anchors.bottomMargin = 18;
+            service.captured = []; service.completions = []; service.failNext = false; taskList.view = "today"; taskList.reset(); taskList.anchors.bottomMargin = 18;
             var list = findChild(taskList, "taskListView"); list.positionViewAtBeginning();
             tryCompare(findChild(taskList, "taskDetailsPopup"), "visible", false);
             list.forceActiveFocus();
             wait(150);
+        }
+        function test_completion_focus_data() {
+            return [{tag: "next-click", index: 0, count: 3, expected: "1", keyboard: false},
+                {tag: "middle-keyboard", index: 1, count: 3, expected: "2", keyboard: true},
+                {tag: "last-click", index: 2, count: 3, expected: "1", keyboard: false},
+                {tag: "only-keyboard", index: 0, count: 1, expected: "", keyboard: true}];
+        }
+        function test_completion_focus(data) {
+            service.tasks = service.tasks.slice(0, data.count);
+            wait(30);
+            var id = String(data.index);
+            taskList.keyboardTaskId = id;
+            if (data.keyboard) keyClick(Qt.Key_Space);
+            else mouseClick(findChild(taskList, "taskPointer_" + id).parent, 13, 19);
+            compare(service.completions.join(","), id);
+            // Confirm focus only moves once the asynchronous completion succeeds.
+            compare(taskList.keyboardTaskId, id);
+            service.tasks = service.tasks.filter(function(task) { return String(task.id) !== id; });
+            service.taskCompleted(id);
+            wait(30);
+            compare(taskList.keyboardTaskId, data.expected);
+            compare(taskList.keyboardAddKey, "");
+            verify(taskList.activeFocus);
+            if (data.expected) {
+                keyClick(Qt.Key_Space);
+                compare(service.completions.join(","), id + "," + data.expected);
+            }
+        }
+        function test_failed_completion_keeps_focus() {
+            taskList.keyboardTaskId = "0";
+            keyClick(Qt.Key_Space);
+            service.operationFailed("Offline");
+            compare(taskList.keyboardTaskId, "0");
+            compare(taskList.completionFocus, null);
+        }
+        function test_completion_does_not_move_focus_after_changing_tab() {
+            taskList.keyboardTaskId = "0";
+            keyClick(Qt.Key_Space);
+            taskList.view = "inbox";
+            service.taskCompleted("0");
+            compare(taskList.keyboardTaskId, "");
+        }
+        function test_reopening_preserves_last_tab_data() {
+            return [{tag: "today", view: "today"}, {tag: "upcoming", view: "upcoming"}, {tag: "inbox", view: "inbox"}];
+        }
+        function test_reopening_preserves_last_tab(data) {
+            mouseClick(findChild(taskList, "viewTab_" + data.view));
+            compare(taskList.view, data.view);
+            taskList.keyboardTaskId = "0";
+            taskList.keyboardAddKey = "add";
+            taskList.selectedIds = ["0"];
+            taskList.helpOpen = true;
+            taskList.settingsOpen = true;
+            taskList.visible = false;
+            taskList.visible = true;
+            taskList.reset();
+            compare(taskList.view, data.view);
+            compare(findChild(taskList, "viewTab_" + data.view).selected, true);
+            compare(taskList.keyboardTaskId, "");
+            compare(taskList.keyboardAddKey, "");
+            compare(taskList.selectedIds.length, 0);
+            compare(taskList.helpOpen, false);
+            compare(taskList.settingsOpen, false);
         }
         function test_only_selected_tab_has_a_filled_background() {
             var today = findChild(taskList, "viewTab_today");
