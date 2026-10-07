@@ -11,7 +11,7 @@ FocusScope {
     id: root
     required property var service
     readonly property string fontFamily: service.fontFamily
-    property string view: "today"
+    property string view: service.selectedView
     property string keyboardTaskId: ""
     property string keyboardAddKey: ""
     property var completionFocus: null
@@ -199,7 +199,7 @@ FocusScope {
         event.accepted = true;
     }
     Keys.onPressed: function(event) { handleShortcut(event); }
-    onViewChanged: { completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
+    onViewChanged: { service.selectView(view); completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
     onSetupVisibleChanged: if (setupVisible) { cancelDrag(); clearSelection(); }
     onVisibleChanged: if (!visible) { completionFocus = null; cancelDrag(); clearSelection(); }
     onComposerKeyChanged: if (!composerKey) heldRows = null

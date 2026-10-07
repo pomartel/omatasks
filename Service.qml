@@ -30,6 +30,7 @@ Item {
     property var completedInfo: []
     property var user: ({})
     property var preferences: ({})
+    readonly property string selectedView: ["today", "upcoming", "inbox"].indexOf(preferences.selectedView) >= 0 ? preferences.selectedView : "today"
     property var requests: []
     property var completionIds: ({})
     property var lastCompletion: null
@@ -86,9 +87,14 @@ Item {
     IpcHandler {
         target: "pomartel.omatasks"
         function togglePanel(): void { root.togglePanel(); }
-        function status(): string { return JSON.stringify({connected: root.configured, loaded: root.loaded, loading: root.loading, taskCount: root.tasks.length, hasError: !!root.error}); }
+        function status(): string { return JSON.stringify({connected: root.configured, loaded: root.loaded, loading: root.loading, taskCount: root.tasks.length, hasError: !!root.error, selectedView: root.selectedView}); }
     }
     function viewOptions(view) { return Object.assign({}, Model.DEFAULT_VIEW, view === "inbox" ? {assignee: "all"} : {}, preferences[view] || {}); }
+    function selectView(view) {
+        if (["today", "upcoming", "inbox"].indexOf(view) < 0 || view === selectedView) return;
+        preferences = Object.assign({}, preferences, {selectedView: view});
+        if (storageReady) settingsFile.setText(JSON.stringify(preferences));
+    }
     function setOption(view, key, value) {
         var next = Object.assign({}, preferences), options = viewOptions(view);
         options[key] = value;

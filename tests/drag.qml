@@ -7,6 +7,15 @@ import "plugin" as Plugin
 import "plugin/ui" as Tasks
 
 ShellRoot {
+    Component {
+        id: restoredServiceComponent
+        Plugin.Service {
+            enableShortcuts: false
+            function applyToken(value) {}
+            function refresh(manual) {}
+        }
+    }
+    Component { id: restoredListComponent; Tasks.TaskList { visible: false } }
     Plugin.Service {
         id: service
         enableShortcuts: false
@@ -109,6 +118,23 @@ ShellRoot {
             taskList.view = "inbox";
             service.taskCompleted("0");
             compare(taskList.keyboardTaskId, "");
+        }
+        function test_selected_tab_survives_service_and_panel_recreation() {
+            tryCompare(service, "preferencesLoaded", true);
+            taskList.view = "inbox";
+            compare(service.selectedView, "inbox");
+            wait(100);
+            var restored = restoredServiceComponent.createObject(window, {stateDir: service.stateDir});
+            verify(restored !== null);
+            tryCompare(restored, "preferencesLoaded", true);
+            compare(restored.selectedView, "inbox");
+            var panel = restoredListComponent.createObject(window.contentItem, {service: restored});
+            verify(panel !== null);
+            compare(panel.view, "inbox");
+            panel.reset();
+            compare(panel.view, "inbox");
+            panel.destroy();
+            restored.destroy();
         }
         function test_reopening_preserves_last_tab_data() {
             return [{tag: "today", view: "today"}, {tag: "upcoming", view: "upcoming"}, {tag: "inbox", view: "inbox"}];
