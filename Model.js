@@ -48,6 +48,24 @@ function dueLabel(task, now, view, grouping) {
 function plain(text) {
     return String(text || "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/\s+/g, " ").trim();
 }
+function linkText(text) {
+    function escape(value) { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+    function anchor(url, label) { return '<a href="' + escape(url) + '"><u>' + escape(label) + '</u></a>'; }
+    var source = String(text || ""), result = "", end = 0;
+    var pattern = /\[([^\]\n]+)\]\((https?:\/\/(?:[^\s()]|\([^\s()]*\))+)\)|(https?:\/\/[^\s<>"\[\]]+)/gi;
+    var match;
+    while ((match = pattern.exec(source))) {
+        result += escape(source.slice(end, match.index));
+        if (match[2]) result += anchor(match[2], match[1]);
+        else {
+            var url = match[3].replace(/[.,;:!?]+$/, "");
+            while (url.endsWith(")") && (url.match(/\)/g) || []).length > (url.match(/\(/g) || []).length) url = url.slice(0, -1);
+            result += anchor(url, url) + escape(match[3].slice(url.length));
+        }
+        end = pattern.lastIndex;
+    }
+    return (result + escape(source.slice(end))).replace(/\n/g, "<br>");
+}
 function asArray(items) { return Array.isArray(items) ? items : items && typeof items === "object" ? Object.keys(items).map(function(k) { return items[k]; }).filter(function(x) { return x && typeof x === "object"; }) : []; }
 function byId(items) { var out = {}; asArray(items).forEach(function(x) { out[String(x.id)] = x; }); return out; }
 function merge(previous, updates, full) {

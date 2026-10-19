@@ -62,9 +62,9 @@ Item {
                     Layout.fillWidth: true; Layout.minimumWidth: 0
                     spacing: Style.space(5)
                     TaskCheck { fontFamily: root.fontFamily; Layout.alignment: Qt.AlignTop; task: root.task; enabled: !root.service.saving; onClicked: root.complete() }
-                    Label { font.family: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.alignment: Qt.AlignTop; Layout.topMargin: Style.space(5); text: Model.plain(root.task.content); wrapMode: Text.Wrap; elide: Text.ElideNone; font.bold: true }
+                    LinkLabel { font.family: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.alignment: Qt.AlignTop; Layout.topMargin: Style.space(5); sourceText: root.task.content || ""; wrapMode: Text.Wrap; elide: Text.ElideNone; font.bold: true }
                 }
-                Label { font.family: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.description || ""; visible: text !== ""; wrapMode: Text.Wrap; elide: Text.ElideNone; opacity: 0.7 }
+                LinkLabel { font.family: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; sourceText: root.task.description || ""; visible: text !== ""; wrapMode: Text.Wrap; elide: Text.ElideNone; opacity: 0.7 }
                 Rectangle { Layout.fillWidth: true; height: 1; color: Color.popups.text; opacity: 0.12 }
                 Repeater {
                     model: root.information

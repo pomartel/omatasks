@@ -70,6 +70,8 @@ Les champs de texte gardent leurs touches habituelles. **Alt+Space** ouvre l’a
 omarchy-shell pomartel.omatasks togglePanel
 ```
 
+Dans le titre et la description des tâches, les liens HTTP/HTTPS et les liens nommés Markdown sont soulignés et s’ouvrent dans le navigateur par défaut. Un clic sur un lien n’ouvre pas les détails de la tâche ; Ctrl+clic conserve la sélection multiple dans la liste.
+
 Le clic droit sur l’icône ouvre l’ajout rapide et le clic du milieu actualise. Les raccourcis globaux existants en conflit ne sont pas remplacés automatiquement.
 
 ## Tâches et formulaires

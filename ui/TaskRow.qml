@@ -109,16 +109,16 @@ Item {
         anchors.right: parent.right; anchors.rightMargin: Style.space(3)
         y: Style.space(9)
         spacing: Style.space(4)
-        Label { font.family: root.fontFamily;
+        LinkLabel { font.family: root.fontFamily;
             width: parent.width
-            text: Model.plain(root.task.content)
+            sourceText: root.task.content || ""
             wrapMode: Text.WordWrap
             maximumLineCount: 2
         }
-        Label { font.family: root.fontFamily;
+        LinkLabel { font.family: root.fontFamily;
             visible: text !== ""
             width: parent.width
-            text: Model.plain(root.task.description)
+            sourceText: root.task.description || ""
             font.pixelSize: Style.font.bodySmall
             opacity: 0.6
         }
