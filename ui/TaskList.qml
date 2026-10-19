@@ -3,6 +3,7 @@ import QtQuick.Window
 import QtQuick.Controls as C
 import QtQuick.Layouts
 import qs.Commons
+import qs.Commons as Commons
 import "../Model.js" as Model
 import "OrderModel.js" as Order
 import "BulkModel.js" as Bulk
@@ -362,7 +363,7 @@ FocusScope {
                             }
                         }
                         selected: root.keyboardAddKey === rowLoader.modelData.key
-                        foreground: Color.popups.text
+                        foreground: Commons.Color.popups.text
                         onClicked: root.addAt(rowLoader.modelData.key, rowLoader.modelData.projectId)
                     }
                     Loader {
