@@ -364,7 +364,7 @@ FocusScope {
                             }
                         }
                         selected: root.keyboardAddKey === rowLoader.modelData.key
-                        foreground: Color.popups.text
+                        foreground: Color.accent
                         onClicked: root.addAt(rowLoader.modelData.key, rowLoader.modelData.projectId)
                     }
                     Loader {

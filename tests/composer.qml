@@ -159,6 +159,31 @@ ShellRoot {
             compare(composer.dateColor("tomorrow"), "#ff9a00");
             Color.popups.background = original;
         }
+        function test_add_link_tracks_theme_changes_and_opens_composer() {
+            var originalAccent = Color.accent;
+            var originalBackground = Color.popups.background;
+            try {
+                composer.visible = false; inlineList.visible = true;
+                var row = inlineList.rows.filter(function(value) { return value.kind === "add"; })[0];
+                verify(row !== undefined);
+                wait(80);
+                var link = findChild(inlineList, "addTask_" + row.key);
+                verify(link !== null);
+                Color.popups.background = "#ffffff"; Color.accent = "#246fe0";
+                compare(link.foreground, Color.accent);
+                Color.popups.background = "#131c2f"; Color.accent = "#59acf5";
+                compare(link.foreground, Color.accent);
+                inlineList.keyboardAddKey = row.key;
+                compare(link.selected, true);
+                compare(link.foreground, Color.accent);
+                mouseClick(link);
+                compare(inlineList.composerKey, row.key);
+            } finally {
+                Color.accent = originalAccent;
+                Color.popups.background = originalBackground;
+                inlineList.keyboardAddKey = "";
+            }
+        }
         function test_description_keeps_shortcuts_literal_and_ctrl_enter_submits() {
             enter("Review"); keyClick(Qt.Key_Down);
             var description = findChild(composer, "taskDescription"); verify(description.activeFocus);
