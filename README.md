@@ -60,7 +60,7 @@ Le raccourci **u** peut être pressé immédiatement après la complétion : si 
 
 Entrée ou Espace sur « Ajouter une tâche » ouvre le formulaire. Dans la description, Tab passe au champ suivant et Maj+Tab au précédent.
 
-Le lien d’ajout utilise la couleur d’accent du thème. L’aide (`?`), son texte et ses contrôles suivent les couleurs du panneau, en thème clair comme sombre.
+Le lien d’ajout utilise la couleur du texte du panneau pour rester lisible en thème clair comme sombre. L’aide (`?`), son texte et ses contrôles suivent également les couleurs du panneau.
 
 Après avoir terminé une tâche dans la liste avec sa case ou Espace, le focus clavier passe à la tâche suivante, ou à la précédente s’il n’y a pas de suivante. Il reste sur la tâche en cas d’échec et aucune tâche n’est sélectionnée si la liste devient vide.
 
