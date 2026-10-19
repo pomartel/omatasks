@@ -446,7 +446,7 @@ FocusScope {
                     objectName: "shortcutHelpText"
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap; elide: Text.ElideNone
-                    text: "Tab / Maj+Tab ou ← / → : changer de vue\n↑ / ↓ ou k / j : sélectionner une tâche ou l’ajout\nEntrée : détails de la tâche\nEntrée / Espace sur l’ajout : ouvrir le formulaire\ne : modifier\nEspace : terminer\nu : annuler la dernière tâche terminée\no : ouvrir dans Todoist\nx : supprimer\na / d / i : aujourd’hui / demain / sans date\nCtrl+a : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
+                    text: "OUVERTURE\nSuper + Maj + T : ouvrir / fermer le panneau (selon la configuration Hyprland)\nAlt + Espace : ajout rapide par défaut, configurable dans les réglages\n\nDANS LE PANNEAU\nTab / Maj+Tab ou ← / → : parcourir Aujourd’hui, Prochainement et Inbox\n↑ / ↓ ou k / j : sélectionner une tâche ou l’ajout\nEntrée : ouvrir les détails de la tâche sélectionnée\nEntrée / Espace sur l’ajout : ouvrir le formulaire\ne : modifier la tâche sélectionnée\nEspace : terminer la tâche sélectionnée\nu : annuler la dernière tâche terminée dans cette session\no : ouvrir la tâche dans Todoist\nx : supprimer immédiatement, sans confirmation\na / d / i : aujourd’hui / demain / sans date\nCtrl+a : tout sélectionner parmi les tâches visibles\nq : ajouter une tâche\nr : actualiser\np : ouvrir / fermer les réglages\n? : afficher cette aide\nÉchap : revenir / fermer\n\nLes champs de texte gardent leurs touches habituelles."
                 }
                 Action { fontFamily: root.fontFamily; text: "Fermer"; onClicked: shortcutHelp.close() }
             }
