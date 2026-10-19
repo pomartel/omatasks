@@ -165,12 +165,10 @@ FocusScope {
         }
         if (key === Qt.Key_Tab || key === Qt.Key_Backtab || key === Qt.Key_Left || key === Qt.Key_Right) {
             view = tabs[(tabs.indexOf(view) + ((event.modifiers & Qt.ShiftModifier) || key === Qt.Key_Backtab || key === Qt.Key_Left ? 2 : 1)) % 3];
-        } else if (ctrl && [Qt.Key_A, Qt.Key_D, Qt.Key_I].indexOf(key) >= 0 && task) {
+        } else if (!ctrl && [Qt.Key_A, Qt.Key_D, Qt.Key_I].indexOf(key) >= 0 && task) {
             service.applyTaskAction([String(task.id)], "date", key === Qt.Key_A ? "today" : key === Qt.Key_D ? "tomorrow" : "");
         } else if (ctrl && key === Qt.Key_A) {
             selectedIds = Bulk.visibleIds(rows);
-        } else if (!ctrl && [Qt.Key_A, Qt.Key_D, Qt.Key_I].indexOf(key) >= 0) {
-            view = key === Qt.Key_A ? "today" : key === Qt.Key_D ? "upcoming" : "inbox";
         } else if (!ctrl && [Qt.Key_J, Qt.Key_Down, Qt.Key_K, Qt.Key_Up].indexOf(key) >= 0) {
             moveKeyboard(key === Qt.Key_J || key === Qt.Key_Down ? 1 : -1);
         } else if (!ctrl && keyboardAddKey && [Qt.Key_Return, Qt.Key_Enter, Qt.Key_Space].indexOf(key) >= 0) {
@@ -427,8 +425,17 @@ FocusScope {
         padding: Style.space(16)
         focus: true
         closePolicy: C.Popup.CloseOnEscape | C.Popup.CloseOnPressOutside
+        palette.window: Color.popups.background
+        palette.windowText: Color.popups.text
+        palette.base: Color.popups.background
+        palette.text: Color.popups.text
+        palette.button: Color.popups.background
+        palette.buttonText: Color.popups.text
+        palette.highlight: Color.accent
+        palette.highlightedText: Color.popups.background
         background: Rectangle { color: Color.popups.background; border.color: Color.popups.border; radius: Style.cornerRadius }
         contentItem: C.ScrollView {
+            clip: true
             contentWidth: availableWidth
             ColumnLayout {
                 id: helpBody
@@ -436,9 +443,10 @@ FocusScope {
                 spacing: Style.space(10)
                 Label { font.family: root.fontFamily; text: "Raccourcis clavier"; font.bold: true }
                 Label { font.family: root.fontFamily;
+                    objectName: "shortcutHelpText"
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap; elide: Text.ElideNone
-                    text: "Tab / Maj+Tab : changer de vue\na / d / i : Aujourd’hui / Prochainement / Inbox\n↑ / ↓ ou k / j : sélectionner une tâche ou l’ajout\nEntrée : détails\ne : modifier\nEspace : terminer\nu : annuler la dernière tâche terminée\no : ouvrir dans Todoist\nx : supprimer\nCtrl+a / Ctrl+d / Ctrl+i : aujourd’hui / demain / sans date\nCtrl+a sans curseur : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
+                    text: "Tab / Maj+Tab ou ← / → : changer de vue\n↑ / ↓ ou k / j : sélectionner une tâche ou l’ajout\nEntrée : détails de la tâche\nEntrée / Espace sur l’ajout : ouvrir le formulaire\ne : modifier\nEspace : terminer\nu : annuler la dernière tâche terminée\no : ouvrir dans Todoist\nx : supprimer\na / d / i : aujourd’hui / demain / sans date\nCtrl+a : tout sélectionner\nq : ajouter une tâche\nr : actualiser\np : réglages\n? : cette aide\nÉchap : revenir / fermer"
                 }
                 Action { fontFamily: root.fontFamily; text: "Fermer"; onClicked: shortcutHelp.close() }
             }

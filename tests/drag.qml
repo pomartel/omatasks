@@ -217,9 +217,10 @@ ShellRoot {
             tryCompare(menu,"opened",false); taskList.clearSelection();
             taskList.forceActiveFocus(); keyClick(Qt.Key_R); compare(service.manualRefresh,true);
 
-            keyClick(Qt.Key_D); compare(taskList.view,"upcoming");
-            keyClick(Qt.Key_I); compare(taskList.view,"inbox");
-            keyClick(Qt.Key_A); compare(taskList.view,"today");
+            keyClick(Qt.Key_Right); compare(taskList.view,"upcoming");
+            keyClick(Qt.Key_Right); compare(taskList.view,"inbox");
+            keyClick(Qt.Key_Left); compare(taskList.view,"upcoming");
+            keyClick(Qt.Key_Left); compare(taskList.view,"today");
             keyClick(Qt.Key_Tab); compare(taskList.view,"upcoming");
             keyClick(Qt.Key_Tab); compare(taskList.view,"inbox");
             keyClick(Qt.Key_Backtab); compare(taskList.view,"upcoming");
@@ -229,12 +230,54 @@ ShellRoot {
         }
         function test_imported_date_shortcuts() {
             taskList.forceActiveFocus(); keyClick(Qt.Key_J);
-            keyClick(Qt.Key_D,Qt.ControlModifier);
+            keyClick(Qt.Key_D);
             compare(service.captured[0].args.due.date,"2026-09-16");
-            keyClick(Qt.Key_I,Qt.ControlModifier);
+            keyClick(Qt.Key_I);
             compare(service.captured[1].args.due,null);
-            keyClick(Qt.Key_A,Qt.ControlModifier);
+            keyClick(Qt.Key_A);
             compare(service.captured[2].args.due.date,"2026-09-15");
+            compare(taskList.view,"today");
+            keyClick(Qt.Key_A,Qt.ControlModifier);
+            compare(taskList.selectedIds.length,24);
+            keyClick(Qt.Key_D,Qt.ControlModifier); keyClick(Qt.Key_I,Qt.ControlModifier);
+            compare(service.captured.length,3);
+        }
+        function test_date_shortcuts_without_a_task_do_nothing() {
+            taskList.forceActiveFocus();
+            keyClick(Qt.Key_A); keyClick(Qt.Key_D); keyClick(Qt.Key_I);
+            compare(taskList.view,"today");
+            compare(service.captured.length,0);
+        }
+        function test_help_shortcuts_and_theme_changes() {
+            var originalBackground = Color.popups.background, originalText = Color.popups.text, originalAccent = Color.accent;
+            try {
+                taskList.helpOpen = true;
+                var help = findChild(taskList, "shortcutHelp");
+                tryCompare(help, "opened", true);
+                var caption = findChild(taskList, "shortcutHelpText");
+                verify(caption.text.indexOf("a / d / i : aujourd’hui / demain / sans date") >= 0);
+                verify(caption.text.indexOf("Ctrl+a : tout sélectionner") >= 0);
+                verify(caption.text.indexOf("Ctrl+d") < 0);
+                verify(caption.text.indexOf("← / →") >= 0);
+                verify(caption.text.indexOf("Entrée / Espace sur l’ajout") >= 0);
+                for (var dark of [false, true]) {
+                    Color.popups.background = dark ? "#131c2f" : "#ffffff";
+                    Color.popups.text = dark ? "#ebedf5" : "#202020";
+                    Color.accent = dark ? "#59acf5" : "#246fe0";
+                    compare(help.background.color, Color.popups.background);
+                    compare(caption.color, Color.popups.text);
+                    compare(help.palette.window, Color.popups.background);
+                    compare(help.palette.text, Color.popups.text);
+                    compare(help.contentItem.palette.text, Color.popups.text);
+                    compare(help.palette.highlight, Color.accent);
+                    compare(help.contentItem.clip, true);
+                }
+                help.close();
+                tryCompare(taskList, "helpOpen", false);
+            } finally {
+                Color.popups.background = originalBackground; Color.popups.text = originalText; Color.accent = originalAccent;
+                taskList.helpOpen = false;
+            }
         }
         function test_real_completion_then_keyboard_undo() {
             completionService.token = "fixture"; completionService.now = service.now;

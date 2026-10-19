@@ -39,7 +39,7 @@ Les erreurs de synchronisation transitoires déclenchent des essais espacés de 
 | Touche | Action |
 | --- | --- |
 | Tab / Maj+Tab ou ← / → | Parcourir Aujourd’hui, Prochainement, Inbox |
-| a / d / i | Ouvrir Aujourd’hui, Prochainement, Inbox |
+| a / d / i | Planifier la tâche sélectionnée aujourd’hui, demain, ou retirer la date |
 | ↑ / ↓ ou k / j | Sélectionner une tâche ou « Ajouter une tâche » |
 | Entrée | Ouvrir les détails de la tâche sélectionnée |
 | e | Modifier la tâche sélectionnée |
@@ -47,8 +47,7 @@ Les erreurs de synchronisation transitoires déclenchent des essais espacés de 
 | u | Annuler la dernière tâche terminée dans le plugin (session courante) |
 | o | Ouvrir la page de la tâche dans la fenêtre flottante Todoist |
 | x | Supprimer immédiatement |
-| Ctrl+a / Ctrl+d / Ctrl+i | Planifier aujourd’hui, demain, ou retirer la date |
-| Ctrl+a sans curseur de tâche | Sélectionner toutes les tâches visibles |
+| Ctrl+a | Sélectionner toutes les tâches visibles |
 | q | Ouvrir le formulaire d’ajout dans la liste |
 | r | Actualiser |
 | p | Ouvrir ou fermer les réglages |
@@ -60,6 +59,8 @@ Les liens « Ouvrir dans Todoist » et le raccourci **o** lancent directement la
 Le raccourci **u** peut être pressé immédiatement après la complétion : si Todoist n’a pas encore répondu, l’annulation attend sa confirmation.
 
 Entrée ou Espace sur « Ajouter une tâche » ouvre le formulaire. Dans la description, Tab passe au champ suivant et Maj+Tab au précédent.
+
+Le lien d’ajout utilise la couleur d’accent du thème. L’aide (`?`), son texte et ses contrôles suivent les couleurs du panneau, en thème clair comme sombre.
 
 Après avoir terminé une tâche dans la liste avec sa case ou Espace, le focus clavier passe à la tâche suivante, ou à la précédente s’il n’y a pas de suivante. Il reste sur la tâche en cas d’échec et aucune tâche n’est sélectionnée si la liste devient vide.
 
@@ -79,7 +80,7 @@ L’ajout utilise le parseur Todoist. Les modifications reconnaissent aussi les 
 
 Un clic simple sélectionne uniquement la tâche cliquée, avec la même couleur que le survol, efface la sélection multiple éventuelle et ouvre ses détails. Le clic sur le cercle termine la tâche. Le survol sélectionne la tâche pour les raccourcis clavier. Cette sélection simple utilise la couleur du survol. Ctrl+clic sélectionne plusieurs tâches, y compris sur leur cercle, avec une couleur distincte qui reste visible lors du survol d’une autre tâche. Le menu contextuel conserve les actions natives : terminer, replanifier, changer la priorité, déplacer, dupliquer, copier les liens et supprimer sans confirmation. Les rappels dépendent des fonctionnalités disponibles sur le compte Todoist.
 
-Le glissement conserve le fonctionnement natif d’OmaTasks : réorganisation dans le groupe affiché, et dans le même projet/section pour Inbox. Le tri manuel est synchronisé avec Todoist. Les raccourcis Ctrl+a/d/i servent à changer la date ; ce fork ne reprend pas le glissement entre onglets de l’ancien plugin.
+Le glissement conserve le fonctionnement natif d’OmaTasks : réorganisation dans le groupe affiché, et dans le même projet/section pour Inbox. Le tri manuel est synchronisé avec Todoist. Les raccourcis a/d/i servent à changer la date ; ce fork ne reprend pas le glissement entre onglets de l’ancien plugin.
 
 ## Vérification
 
