@@ -1,13 +1,14 @@
 import QtQuick
 import QtQuick.Controls as C
 import qs.Commons
+import qs.Commons as Commons
 
 C.AbstractButton {
     id: root
     property string fontFamily: Qt.application.font.family
     property bool selected: false
     property bool highlightOnHover: true
-    property color foreground: Color.popups.text
+    property color foreground: Commons.Color.popups.text
     property string tip: ""
     property bool bold: selected
     property bool bordered: false
@@ -38,7 +39,7 @@ C.AbstractButton {
     }
     background: Rectangle {
         radius: Style.cornerRadius
-        color: root.selected ? Style.selectedFillFor(root.foreground, Color.accent) : root.highlightOnHover && (root.hovered || root.visualFocus) ? Style.hoverFillFor(root.foreground, Color.accent) : "transparent"
+        color: root.selected ? Style.selectedFillFor(root.foreground, Commons.Color.accent) : root.highlightOnHover && (root.hovered || root.visualFocus) ? Style.hoverFillFor(root.foreground, Commons.Color.accent) : "transparent"
         border.width: root.selected || root.visualFocus || root.bordered ? 1 : 0
         border.color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, root.bordered ? 0.35 : 0.12)
     }

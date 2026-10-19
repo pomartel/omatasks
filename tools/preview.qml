@@ -3,6 +3,7 @@ import QtQuick
 import QtTest
 import Quickshell
 import qs.Commons
+import qs.Commons as Commons
 import "plugin" as Plugin
 import "plugin/ui" as Tasks
 
@@ -71,14 +72,14 @@ ShellRoot {
             Row {
                 anchors.right: parent.right; anchors.rightMargin: 22
                 spacing: 7
-                Tasks.TodoistIcon { width: 16; height: 16; color: Color.foreground }
+                Tasks.TodoistIcon { width: 16; height: 16; color: Commons.Color.foreground }
                 Tasks.Label { text: String(service.todayCount); font.pixelSize: 13 }
             }
             Rectangle {
                 id: panel
                 y: 34; width: parent.width; height: 620
-                color: Color.popups.background; radius: Style.cornerRadius
-                border.color: Color.popups.border; border.width: 2
+                color: Commons.Color.popups.background; radius: Style.cornerRadius
+                border.color: Commons.Color.popups.border; border.width: 2
                 Tasks.TaskList { id: taskList; anchors.fill: parent; anchors.margins: 18; service: service }
             }
             Text { anchors.horizontalCenter: parent.horizontalCenter; y: panel.y + panel.height + 20; text: "Today, without leaving your desktop."; color: "#947f75"; font.family: Style.font.family; font.pixelSize: 12 }
@@ -87,8 +88,8 @@ ShellRoot {
             id: quickCard
             visible: false
             width: 460; height: composer.implicitHeight + 36
-            color: Color.popups.background; radius: Style.cornerRadius
-            border.color: Color.popups.border; border.width: 1
+            color: Commons.Color.popups.background; radius: Style.cornerRadius
+            border.color: Commons.Color.popups.border; border.width: 1
             Tasks.Composer {
                 id: composer
                 x: 18; y: 18; width: parent.width - 36
@@ -102,10 +103,10 @@ ShellRoot {
         id: selectionWindow
         visible: false
         implicitWidth: 456; implicitHeight: 620
-        color: Color.popups.background
+        color: Commons.Color.popups.background
         Rectangle {
             id: selectionCanvas
-            anchors.fill: parent; color: Color.popups.background
+            anchors.fill: parent; color: Commons.Color.popups.background
             Tasks.TaskList { id: selectionList; anchors.fill: parent; anchors.margins: 18; service: service }
         }
     }

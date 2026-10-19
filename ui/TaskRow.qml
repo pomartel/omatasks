@@ -1,5 +1,6 @@
 import QtQuick
 import qs.Commons
+import qs.Commons as Commons
 import "../Model.js" as Model
 
 Item {
@@ -35,19 +36,19 @@ Item {
     readonly property var person: Model.byId(service.collaborators)[Model.assigned(task)]
     readonly property var metadata: {
         var parts = [];
-        if (childCount + completedChildren) parts.push({text: "⑂ " + completedChildren + "/" + (childCount + completedChildren), color: Color.popups.text});
+        if (childCount + completedChildren) parts.push({text: "⑂ " + completedChildren + "/" + (childCount + completedChildren), color: Commons.Color.popups.text});
         if (dueText) parts.push({text: "▣ " + dueText, color: Model.overdue(task, service.now) ? "#ef615b" : "#4baf63"});
         if ((task.due || {}).is_recurring) parts.push({text: "↻", color: "#4baf63"});
-        if (hasReminder) parts.push({text: "◷", color: Color.popups.text});
+        if (hasReminder) parts.push({text: "◷", color: Commons.Color.popups.text});
         if (task.deadline) parts.push({text: "⚑ " + Model.dayLabel(task.deadline.date, Model.dateKey(service.now)), color: "#b58ce8"});
         (task.labels || []).forEach(function(label) { parts.push({text: "♢ " + label, color: "#5297ff"}); });
-        if (person) parts.push({text: person.full_name || person.name, color: Color.popups.text});
+        if (person) parts.push({text: person.full_name || person.name, color: Commons.Color.popups.text});
         return parts;
     }
     implicitHeight: content.implicitHeight + Style.space(18)
 
-    Rectangle { objectName: "taskHighlight_" + root.task.id; anchors.fill: parent; color: root.bulkSelected ? Style.selectedFillFor(Color.popups.text, Color.accent) : Style.hoverFillFor(Color.popups.text, Color.accent); visible: root.bulkSelected || root.selected || hover.hovered; opacity: root.bulkSelected ? 1 : 0.5; radius: Style.cornerRadius }
-    Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: Style.space(2); color: Color.accent; visible: root.bulkSelected || root.selected }
+    Rectangle { objectName: "taskHighlight_" + root.task.id; anchors.fill: parent; color: root.bulkSelected ? Style.selectedFillFor(Commons.Color.popups.text, Commons.Color.accent) : Style.hoverFillFor(Commons.Color.popups.text, Commons.Color.accent); visible: root.bulkSelected || root.selected || hover.hovered; opacity: root.bulkSelected ? 1 : 0.5; radius: Style.cornerRadius }
+    Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: Style.space(2); color: Commons.Color.accent; visible: root.bulkSelected || root.selected }
     HoverHandler {
         id: hover
         onHoveredChanged: if (hovered && !root.listDragging) root.hoverHighlighted(root.task)
@@ -148,6 +149,6 @@ Item {
             }
         }
     }
-    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Color.popups.text; opacity: 0.09 }
+    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Commons.Color.popups.text; opacity: 0.09 }
     Tip { visible: hover.hovered && !root.listDragging && !root.selected && !root.bulkSelected; text: root.projectText + (root.task.description ? "\n" + Model.plain(root.task.description) : ""); delay: 1200 }
 }

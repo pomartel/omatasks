@@ -3,6 +3,7 @@ import QtQuick.Controls as C
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
+import qs.Commons as Commons
 import qs.Ui as UI
 import "../Model.js" as Model
 
@@ -28,7 +29,7 @@ C.Popup {
     padding: Style.space(10)
     focus: true
     closePolicy: busy ? C.Popup.NoAutoClose : C.Popup.CloseOnEscape | C.Popup.CloseOnPressOutside
-    background: Rectangle { color: Color.popups.background; border.color: Color.popups.border; radius: Style.cornerRadius }
+    background: Rectangle { color: Commons.Color.popups.background; border.color: Commons.Color.popups.border; radius: Style.cornerRadius }
     onOpened: { page = "main"; message = ""; canRetry = false; input.text = ""; search.text = ""; }
     onPageChanged: Qt.callLater(function() { scroll.contentItem.contentY = 0; })
 
@@ -57,7 +58,7 @@ C.Popup {
                 Action { fontFamily: root.fontFamily; text: "×"; tip: "Fermer le menu"; enabled: !root.busy; onClicked: root.close() }
             }
             Label { font.family: root.fontFamily; visible: root.busy; text: "Enregistrement…"; opacity: 0.6 }
-            Label { font.family: root.fontFamily; visible: text !== ""; text: root.message; color: Color.urgent; Layout.fillWidth: true; wrapMode: Text.Wrap; elide: Text.ElideNone }
+            Label { font.family: root.fontFamily; visible: text !== ""; text: root.message; color: Commons.Color.urgent; Layout.fillWidth: true; wrapMode: Text.Wrap; elide: Text.ElideNone }
             Action { fontFamily: root.fontFamily;
                 visible: root.canRetry && !!root.service.bulkRetry
                 text: "Réessayer les modifications restantes"; enabled: !root.busy
@@ -70,7 +71,7 @@ C.Popup {
                 spacing: Style.space(5)
                 Action { fontFamily: root.fontFamily; visible: root.tasks.length === 1; text: "Modifier"; leftAligned: true; Layout.fillWidth: true; onClicked: { var task = root.tasks[0]; root.close(); root.editRequested(task); } }
                 Action { fontFamily: root.fontFamily; text: "✓   Terminer"; objectName: "bulkComplete"; leftAligned: true; Layout.fillWidth: true; onClicked: root.run("complete", null) }
-                Rectangle { Layout.fillWidth: true; height: 1; color: Color.popups.text; opacity: 0.12 }
+                Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Color.popups.text; opacity: 0.12 }
                 Label { font.family: root.fontFamily; text: "Date"; font.bold: true; Layout.topMargin: Style.space(4) }
                 RowLayout {
                     Layout.fillWidth: true
@@ -81,8 +82,8 @@ C.Popup {
                             {value: "tomorrow", text: "☀", tip: "Demain", color: "#eb9700"},
                             {value: "weekend", text: "▱", tip: "Cette fin de semaine", color: "#5297ff"},
                             {value: "nextweek", text: "→", tip: "Lundi prochain", color: "#b58ce8"},
-                            {value: "", text: "∅", tip: "Retirer la date", color: Color.popups.text},
-                            {value: "custom", text: "…", tip: "Choisir une date ou une récurrence", color: Color.popups.text}
+                            {value: "", text: "∅", tip: "Retirer la date", color: Commons.Color.popups.text},
+                            {value: "custom", text: "…", tip: "Choisir une date ou une récurrence", color: Commons.Color.popups.text}
                         ]
                         Action { fontFamily: root.fontFamily;
                             required property var modelData
@@ -108,7 +109,7 @@ C.Popup {
                         }
                     }
                 }
-                Rectangle { Layout.fillWidth: true; height: 1; color: Color.popups.text; opacity: 0.12; Layout.topMargin: Style.space(4) }
+                Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Color.popups.text; opacity: 0.12; Layout.topMargin: Style.space(4) }
                 Action { fontFamily: root.fontFamily; text: "⚑   Date limite…"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("deadline") }
                 Action { fontFamily: root.fontFamily; text: "◷   Ajouter un rappel…"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("reminder") }
                 Action { fontFamily: root.fontFamily; text: "Déplacer vers…"; objectName: "bulkMove"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("move") }
@@ -118,8 +119,8 @@ C.Popup {
                     leftAligned: true; Layout.fillWidth: true
                     onClicked: { Quickshell.clipboardText = root.tasks.map(function(t) { return "https://app.todoist.com/app/task/" + encodeURIComponent(t.id); }).join("\n"); root.close(); }
                 }
-                Rectangle { Layout.fillWidth: true; height: 1; color: Color.popups.text; opacity: 0.12 }
-                Action { fontFamily: root.fontFamily; text: "Supprimer"; objectName: "bulkDelete"; foreground: Color.urgent; leftAligned: true; Layout.fillWidth: true; onClicked: root.run("delete", null) }
+                Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Color.popups.text; opacity: 0.12 }
+                Action { fontFamily: root.fontFamily; text: "Supprimer"; objectName: "bulkDelete"; foreground: Commons.Color.urgent; leftAligned: true; Layout.fillWidth: true; onClicked: root.run("delete", null) }
             }
             ColumnLayout {
                 visible: ["customDate", "deadline", "reminder"].indexOf(root.page) >= 0

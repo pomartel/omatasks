@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls as C
 import QtQuick.Layouts
 import qs.Commons
+import qs.Commons as Commons
 import qs.Ui as UI
 import "../Model.js" as Model
 import "ComposerModel.js" as Draft
@@ -61,7 +62,7 @@ ColumnLayout {
     readonly property string projectName: inlineEdit && inlineEdit.projectName ? inlineEdit.projectName : shownProject ? shownProject.name : "Inbox"
     readonly property var typedDate: parsed.tokens.filter(function(t) { return t.kind === "due"; }).slice(-1)[0] || null
     readonly property string shownDate: inlineEdit && inlineEdit.update.due_string !== undefined ? (inlineEdit.update.due_string === "no date" ? "Sans date" : inlineEdit.update.due_string) : typedDate ? /^(?:no (?:due )?date|sans date)$/i.test(typedDate.value) ? "" : typedDate.value : due
-    readonly property bool dark: Color.popups.background.r * 0.299 + Color.popups.background.g * 0.587 + Color.popups.background.b * 0.114 < 0.5
+    readonly property bool dark: Commons.Color.popups.background.r * 0.299 + Commons.Color.popups.background.g * 0.587 + Commons.Color.popups.background.b * 0.114 < 0.5
     onParsedChanged: Qt.callLater(updateHighlights)
     signal finished()
     signal cancelled()
@@ -149,11 +150,11 @@ ColumnLayout {
         if (kind === "assignee") assignee = null;
         if (kind === "label") taskLabels = taskLabels.filter(function(l) { return l !== value; });
     }
-    function priorityColor(value) { return value > 0 && value < 4 ? (dark ? ["#ff5c50", "#ff9a00", "#438eff"] : ["#d1453b", "#eb8909", "#246fe0"])[value - 1] : Color.popups.text; }
+    function priorityColor(value) { return value > 0 && value < 4 ? (dark ? ["#ff5c50", "#ff9a00", "#438eff"] : ["#d1453b", "#eb8909", "#246fe0"])[value - 1] : Commons.Color.popups.text; }
     function dateColor(value) {
-        if (!value) return Color.popups.text;
+        if (!value) return Commons.Color.popups.text;
         var offset = Draft.dateOffset(value, service.now, service.user);
-        if (offset === null || offset > 7) return Color.popups.text;
+        if (offset === null || offset > 7) return Commons.Color.popups.text;
         if (offset < 0) return priorityColor(1);
         if (offset === 0) return dark ? "#25b84c" : "#058527";
         if (offset === 1) return dark ? "#ff9a00" : "#ad6200";
@@ -254,10 +255,10 @@ ColumnLayout {
         implicitHeight: Math.max(Style.space(30), contentHeight)
         wrapMode: TextEdit.Wrap
         textFormat: TextEdit.PlainText
-        padding: 0; color: Color.popups.text
+        padding: 0; color: Commons.Color.popups.text
         font.family: root.fontFamily; font.pixelSize: Style.font.body; font.bold: true
-        placeholderText: "Nom de la tâche"; placeholderTextColor: Qt.rgba(Color.popups.text.r, Color.popups.text.g, Color.popups.text.b, 0.4)
-        selectionColor: Color.accent; selectedTextColor: Color.popups.background
+        placeholderText: "Nom de la tâche"; placeholderTextColor: Qt.rgba(Commons.Color.popups.text.r, Commons.Color.popups.text.g, Commons.Color.popups.text.b, 0.4)
+        selectionColor: Commons.Color.accent; selectedTextColor: Commons.Color.popups.background
         // Keep a plain TextArea for cursor movement, selection, undo, paste
         // and input methods. Only the recognized spans' backgrounds are drawn.
         background: Item {
@@ -297,9 +298,9 @@ ColumnLayout {
             width: parent.width
             objectName: "taskDescription"
             padding: 0; wrapMode: TextEdit.Wrap
-            color: Color.popups.text
+            color: Commons.Color.popups.text
             font.family: root.fontFamily; font.pixelSize: Style.font.bodySmall
-            placeholderText: "Description"; placeholderTextColor: Qt.rgba(Color.popups.text.r, Color.popups.text.g, Color.popups.text.b, 0.4)
+            placeholderText: "Description"; placeholderTextColor: Qt.rgba(Commons.Color.popups.text.r, Commons.Color.popups.text.g, Commons.Color.popups.text.b, 0.4)
             background: Item {}
             enabled: !root.submitting
             Keys.onPressed: function(event) {
@@ -365,7 +366,7 @@ ColumnLayout {
         visible: root.pickerKind !== ""
         Layout.fillWidth: true
         implicitHeight: pickerBody.implicitHeight + Style.space(16)
-        radius: Style.cornerRadius; color: Color.popups.background; border.color: Color.popups.border; border.width: 1
+        radius: Style.cornerRadius; color: Commons.Color.popups.background; border.color: Commons.Color.popups.border; border.width: 1
         ColumnLayout {
             id: pickerBody
             anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top; anchors.margins: Style.space(8)
@@ -401,12 +402,12 @@ ColumnLayout {
                     padding: Style.space(6)
                     contentItem: RowLayout {
                         spacing: Style.space(8)
-                        ViewIcon { visible: !!option.modelData.icon; name: option.modelData.icon || ""; color: root.pickerKind === "priority" ? root.priorityColor(option.modelData.value) : option.modelData.color || Color.popups.text }
+                        ViewIcon { visible: !!option.modelData.icon; name: option.modelData.icon || ""; color: root.pickerKind === "priority" ? root.priorityColor(option.modelData.value) : option.modelData.color || Commons.Color.popups.text }
                         Label { font.family: root.fontFamily; visible: !!option.modelData.prefix; text: option.modelData.prefix || ""; opacity: 0.6 }
                         Label { font.family: root.fontFamily; Layout.fillWidth: true; text: option.modelData.label; font.pixelSize: Style.font.bodySmall }
                         Label { font.family: root.fontFamily; Layout.maximumWidth: parent.width * 0.35; text: option.modelData.detail || ""; opacity: 0.4; font.pixelSize: Style.font.caption }
                     }
-                    background: Rectangle { radius: Style.cornerRadius; color: option.hovered || root.choiceIndex === option.index ? Style.hoverFillFor(Color.popups.text, Color.accent) : "transparent" }
+                    background: Rectangle { radius: Style.cornerRadius; color: option.hovered || root.choiceIndex === option.index ? Style.hoverFillFor(Commons.Color.popups.text, Commons.Color.accent) : "transparent" }
                     onClicked: root.choose(modelData)
                 }
             }
@@ -414,7 +415,7 @@ ColumnLayout {
             Label { font.family: root.fontFamily; visible: root.pickerKind === "reminder"; Layout.fillWidth: true; text: "Les rappels avant une tâche nécessitent une heure. Leur disponibilité dépend de votre forfait Todoist."; font.pixelSize: Style.font.caption; opacity: 0.5; wrapMode: Text.WordWrap; elide: Text.ElideNone }
         }
     }
-    Rectangle { Layout.fillWidth: true; height: 1; color: Color.popups.text; opacity: 0.12 }
+    Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Color.popups.text; opacity: 0.12 }
     RowLayout {
         Layout.fillWidth: true
         spacing: Style.space(4)
@@ -422,7 +423,7 @@ ColumnLayout {
         Action { fontFamily: root.fontFamily; text: "Annuler"; enabled: !root.submitting; onClicked: { root.reset(); root.cancelled(); } }
         Action { fontFamily: root.fontFamily; text: root.submitting ? (root.editing ? "Enregistrement…" : "Ajout…") : root.editing ? "Enregistrer" : "Ajouter une tâche"; selected: true; enabled: !root.service.saving && input.text.trim().length > 0; onClicked: root.submit() }
     }
-    Label { font.family: root.fontFamily; Layout.fillWidth: true; visible: text !== ""; text: root.message; wrapMode: Text.WordWrap; elide: Text.ElideNone; color: Color.urgent }
+    Label { font.family: root.fontFamily; Layout.fillWidth: true; visible: text !== ""; text: root.message; wrapMode: Text.WordWrap; elide: Text.ElideNone; color: Commons.Color.urgent }
     Connections {
         target: root.service
         function onTaskAdded() { if (root.submitting) { root.submitting = false; root.reset(); root.finished(); } }

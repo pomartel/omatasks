@@ -3,6 +3,7 @@ import QtQuick
 import QtTest
 import Quickshell
 import qs.Commons
+import qs.Commons as Commons
 import "plugin" as Plugin
 import "plugin/ui" as Tasks
 
@@ -55,7 +56,7 @@ ShellRoot {
         id: window
         visible: true
         implicitWidth: 456; implicitHeight: 540
-        color: Color.popups.background
+        color: Commons.Color.popups.background
         Tasks.TaskList { id: taskList; property string openedTask: ""; function openInTodoist(task) { openedTask = String(task.id); } anchors.fill: parent; anchors.margins: 18; service: service }
     }
     TestCase {
@@ -183,18 +184,18 @@ ShellRoot {
             compare(taskList.keyboardAddKey, "");
             compare(taskList.selectedIds.length, 0);
             var simple = findChild(taskList, "taskHighlight_0");
-            compare(simple.color, Style.hoverFillFor(Color.popups.text, Color.accent));
+            compare(simple.color, Style.hoverFillFor(Commons.Color.popups.text, Commons.Color.accent));
             compare(simple.opacity, 0.5);
             mouseClick(first, 65, 12, Qt.LeftButton, Qt.ControlModifier);
             compare(taskList.selectedIds.join(","), "0");
-            compare(simple.color, Style.selectedFillFor(Color.popups.text, Color.accent));
+            compare(simple.color, Style.selectedFillFor(Commons.Color.popups.text, Commons.Color.accent));
             compare(simple.opacity, 1);
             mouseMove(second, 65, 12);
             compare(taskList.keyboardTaskId, "1");
             compare(taskList.selectedIds.join(","), "0");
             verify(simple.visible);
             var next = findChild(taskList, "taskHighlight_1");
-            compare(next.color, Style.hoverFillFor(Color.popups.text, Color.accent));
+            compare(next.color, Style.hoverFillFor(Commons.Color.popups.text, Commons.Color.accent));
             verify(simple.color.toString() !== next.color.toString());
             keyClick(Qt.Key_Down); compare(taskList.keyboardTaskId, "2");
             mouseMove(second, 75, 12); compare(taskList.keyboardTaskId, "1");
@@ -249,7 +250,7 @@ ShellRoot {
             compare(service.captured.length,0);
         }
         function test_help_shortcuts_and_theme_changes() {
-            var originalBackground = Color.popups.background, originalText = Color.popups.text, originalAccent = Color.accent;
+            var originalBackground = Commons.Color.popups.background, originalText = Commons.Color.popups.text, originalAccent = Commons.Color.accent;
             try {
                 taskList.helpOpen = true;
                 var help = findChild(taskList, "shortcutHelp");
@@ -261,22 +262,46 @@ ShellRoot {
                 verify(caption.text.indexOf("← / →") >= 0);
                 verify(caption.text.indexOf("Entrée / Espace sur l’ajout") >= 0);
                 for (var dark of [false, true]) {
-                    Color.popups.background = dark ? "#131c2f" : "#ffffff";
-                    Color.popups.text = dark ? "#ebedf5" : "#202020";
-                    Color.accent = dark ? "#59acf5" : "#246fe0";
-                    compare(help.background.color, Color.popups.background);
-                    compare(caption.color, Color.popups.text);
-                    compare(help.palette.window, Color.popups.background);
-                    compare(help.palette.text, Color.popups.text);
-                    compare(help.contentItem.palette.text, Color.popups.text);
-                    compare(help.palette.highlight, Color.accent);
+                    Commons.Color.popups.background = dark ? "#131c2f" : "#ffffff";
+                    Commons.Color.popups.text = dark ? "#ebedf5" : "#202020";
+                    Commons.Color.accent = dark ? "#59acf5" : "#246fe0";
+                    compare(help.background.color, Commons.Color.popups.background);
+                    compare(caption.color, Commons.Color.popups.text);
+                    compare(help.palette.window, Commons.Color.popups.background);
+                    compare(help.palette.text, Commons.Color.popups.text);
+                    compare(help.contentItem.palette.text, Commons.Color.popups.text);
+                    compare(help.palette.highlight, Commons.Color.accent);
                     compare(help.contentItem.clip, true);
                 }
                 help.close();
                 tryCompare(taskList, "helpOpen", false);
             } finally {
-                Color.popups.background = originalBackground; Color.popups.text = originalText; Color.accent = originalAccent;
+                Commons.Color.popups.background = originalBackground; Commons.Color.popups.text = originalText; Commons.Color.accent = originalAccent;
                 taskList.helpOpen = false;
+            }
+        }
+        function test_detail_and_display_follow_theme() {
+            var background = Commons.Color.popups.background, text = Commons.Color.popups.text;
+            try {
+                for (var name of ["taskDetailsPopup", "displayPopup"]) {
+                    if (name === "taskDetailsPopup") taskList.showTask(service.tasks[0]);
+                    else findChild(taskList, "displayButton").clicked();
+                    var popup = findChild(taskList, name);
+                    tryCompare(popup, "opened", true);
+                    for (var dark of [false, true]) {
+                        Commons.Color.popups.background = dark ? "#131c2f" : "#ffffff";
+                        Commons.Color.popups.text = dark ? "#ebedf5" : "#202020";
+                        compare(popup.background.color, Commons.Color.popups.background);
+                        compare(popup.palette.window, Commons.Color.popups.background);
+                        compare(popup.palette.text, Commons.Color.popups.text);
+                        if (name === "displayPopup") compare(popup.contentItem.palette.text, Commons.Color.popups.text);
+                    }
+                    popup.close();
+                    tryCompare(popup, "opened", false);
+                }
+            } finally {
+                Commons.Color.popups.background = background;
+                Commons.Color.popups.text = text;
             }
         }
         function test_real_completion_then_keyboard_undo() {
@@ -517,7 +542,7 @@ ShellRoot {
             compare(taskList.selectedIds.length, 0);
             compare(taskList.keyboardTaskId, "0");
             var highlight = findChild(taskList, "taskHighlight_0");
-            compare(highlight.color, Style.hoverFillFor(Color.popups.text, Color.accent));
+            compare(highlight.color, Style.hoverFillFor(Commons.Color.popups.text, Commons.Color.accent));
             compare(highlight.opacity, 0.5);
             verify(findChild(taskList, "taskDetailsPopup").opened);
             keyClick(Qt.Key_Escape);

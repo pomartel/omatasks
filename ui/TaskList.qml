@@ -239,7 +239,7 @@ FocusScope {
             id: statusText
             Layout.fillWidth: true
             text: root.service.error || (!root.service.loaded && root.service.configured ? "Chargement des tâches…" : "")
-            color: root.service.error ? Color.urgent : Color.popups.text
+            color: root.service.error ? Commons.Color.urgent : Commons.Color.popups.text
             wrapMode: Text.WordWrap; elide: Text.ElideNone
             font.pixelSize: Style.font.bodySmall
         }
@@ -257,7 +257,7 @@ FocusScope {
         width: parent.width
         height: visible ? Style.space(34) : 0
         visible: root.selectedIds.length > 0 && !root.setupVisible
-        Label { font.family: root.fontFamily; Layout.fillWidth: true; text: root.selectedIds.length + " sélectionnée(s)"; color: Color.accent; font.pixelSize: Style.font.bodySmall }
+        Label { font.family: root.fontFamily; Layout.fillWidth: true; text: root.selectedIds.length + " sélectionnée(s)"; color: Commons.Color.accent; font.pixelSize: Style.font.bodySmall }
         Action { fontFamily: root.fontFamily;
             text: "Actions…"; objectName: "selectionActions"; enabled: !root.service.saving
             onClicked: {
@@ -310,8 +310,8 @@ FocusScope {
                 id: groupComponent
                 Item {
                     implicitHeight: Style.space(40)
-                    Label { font.family: root.fontFamily; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.bottomMargin: Style.space(9); text: rowLoader.modelData.title; font.bold: true; color: text === "En retard" ? "#ef615b" : Color.popups.text }
-                    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Color.popups.text; opacity: 0.12 }
+                    Label { font.family: root.fontFamily; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.bottomMargin: Style.space(9); text: rowLoader.modelData.title; font.bold: true; color: text === "En retard" ? "#ef615b" : Commons.Color.popups.text }
+                    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Commons.Color.popups.text; opacity: 0.12 }
                 }
             }
             Component {
@@ -401,13 +401,13 @@ FocusScope {
         visible: root.dragging && root.dropIndex >= 0
         x: Style.space(31); y: root.dropY - 1
         width: root.width - x; height: Style.space(2)
-        color: Color.accent; z: 2
+        color: Commons.Color.accent; z: 2
     }
     Rectangle {
         visible: root.dragging
         x: Style.space(24); y: Math.max(list.y, Math.min(root.height - height, root.dragY + Style.space(18)))
         width: root.width - x; height: dragLabel.implicitHeight + Style.space(16)
-        color: Color.popups.background; border.color: Color.popups.border
+        color: Commons.Color.popups.background; border.color: Commons.Color.popups.border
         radius: Style.cornerRadius; opacity: 0.95; z: 3
         Label { font.family: root.fontFamily;
             id: dragLabel
@@ -426,15 +426,15 @@ FocusScope {
         padding: Style.space(16)
         focus: true
         closePolicy: C.Popup.CloseOnEscape | C.Popup.CloseOnPressOutside
-        palette.window: Color.popups.background
-        palette.windowText: Color.popups.text
-        palette.base: Color.popups.background
-        palette.text: Color.popups.text
-        palette.button: Color.popups.background
-        palette.buttonText: Color.popups.text
-        palette.highlight: Color.accent
-        palette.highlightedText: Color.popups.background
-        background: Rectangle { color: Color.popups.background; border.color: Color.popups.border; radius: Style.cornerRadius }
+        palette.window: Commons.Color.popups.background
+        palette.windowText: Commons.Color.popups.text
+        palette.base: Commons.Color.popups.background
+        palette.text: Commons.Color.popups.text
+        palette.button: Commons.Color.popups.background
+        palette.buttonText: Commons.Color.popups.text
+        palette.highlight: Commons.Color.accent
+        palette.highlightedText: Commons.Color.popups.background
+        background: Rectangle { color: Commons.Color.popups.background; border.color: Commons.Color.popups.border; radius: Style.cornerRadius }
         contentItem: C.ScrollView {
             clip: true
             contentWidth: availableWidth
@@ -462,6 +462,14 @@ FocusScope {
     C.Popup {
         id: display
         objectName: "displayPopup"
+        palette.window: Commons.Color.popups.background
+        palette.windowText: Commons.Color.popups.text
+        palette.base: Commons.Color.popups.background
+        palette.text: Commons.Color.popups.text
+        palette.button: Commons.Color.popups.background
+        palette.buttonText: Commons.Color.popups.text
+        palette.highlight: Commons.Color.accent
+        palette.highlightedText: Commons.Color.popups.background
         parent: displayButton
         x: displayButton.width - width; y: displayButton.height + Style.space(8)
         width: Math.min(root.width, Style.space(340))
@@ -469,7 +477,7 @@ FocusScope {
         padding: Style.space(16)
         focus: true
         closePolicy: C.Popup.CloseOnEscape | C.Popup.CloseOnPressOutsideParent
-        background: Rectangle { color: Color.popups.background; border.width: 1; border.color: Color.popups.border; radius: Style.cornerRadius }
+        background: Rectangle { color: Commons.Color.popups.background; border.width: 1; border.color: Commons.Color.popups.border; radius: Style.cornerRadius }
         contentItem: C.ScrollView {
             clip: true; contentWidth: availableWidth
             DisplayOptions { id: displayOptions; width: parent.width; service: root.service; view: root.view }
@@ -478,13 +486,21 @@ FocusScope {
     C.Popup {
         id: details
         objectName: "taskDetailsPopup"
+        palette.window: Commons.Color.popups.background
+        palette.windowText: Commons.Color.popups.text
+        palette.base: Commons.Color.popups.background
+        palette.text: Commons.Color.popups.text
+        palette.button: Commons.Color.popups.background
+        palette.buttonText: Commons.Color.popups.text
+        palette.highlight: Commons.Color.accent
+        palette.highlightedText: Commons.Color.popups.background
         onClosed: list.forceActiveFocus()
         x: 0; y: header.height + Style.space(8)
         width: root.width
         height: Math.min(root.height - y, (detailLoader.item ? detailLoader.item.implicitHeight : 0) + padding * 2)
         padding: Style.space(16); focus: true
         closePolicy: detailLoader.item && (detailLoader.item.editing || detailLoader.item.busy) ? C.Popup.NoAutoClose : C.Popup.CloseOnEscape | C.Popup.CloseOnPressOutside
-        background: Rectangle { color: Color.popups.background; border.width: 1; border.color: Color.popups.border; radius: Style.cornerRadius }
+        background: Rectangle { color: Commons.Color.popups.background; border.width: 1; border.color: Commons.Color.popups.border; radius: Style.cornerRadius }
         contentItem: Loader {
             id: detailLoader
             active: details.visible && root.selectedTask !== null
