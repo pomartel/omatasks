@@ -162,6 +162,7 @@ ShellRoot {
         }
         function test_add_link_tracks_theme_changes_and_opens_composer() {
             var originalAccent = Commons.Color.accent;
+            var originalText = Commons.Color.popups.text;
             var originalBackground = Commons.Color.popups.background;
             try {
                 composer.visible = false; inlineList.visible = true;
@@ -170,17 +171,18 @@ ShellRoot {
                 wait(80);
                 var link = findChild(inlineList, "addTask_" + row.key);
                 verify(link !== null);
-                Commons.Color.popups.background = "#ffffff"; Commons.Color.accent = "#246fe0";
-                compare(link.foreground, Commons.Color.accent);
-                Commons.Color.popups.background = "#131c2f"; Commons.Color.accent = "#59acf5";
-                compare(link.foreground, Commons.Color.accent);
+                Commons.Color.popups.background = "#ffffff"; Commons.Color.accent = "#246fe0"; Commons.Color.popups.text = "#202020";
+                compare(link.foreground, Commons.Color.popups.text);
+                Commons.Color.popups.background = "#131c2f"; Commons.Color.accent = "#59acf5"; Commons.Color.popups.text = "#ebedf5";
+                compare(link.foreground, Commons.Color.popups.text);
                 inlineList.keyboardAddKey = row.key;
                 compare(link.selected, true);
-                compare(link.foreground, Commons.Color.accent);
+                compare(link.foreground, Commons.Color.popups.text);
                 mouseClick(link);
                 compare(inlineList.composerKey, row.key);
             } finally {
                 Commons.Color.accent = originalAccent;
+                Commons.Color.popups.text = originalText;
                 Commons.Color.popups.background = originalBackground;
                 inlineList.keyboardAddKey = "";
             }
