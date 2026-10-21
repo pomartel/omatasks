@@ -8,6 +8,7 @@ import "plugin" as Plugin
 import "plugin/ui" as Tasks
 
 ShellRoot {
+    property var taskList: taskListLoader.item
     Component {
         id: restoredServiceComponent
         Plugin.Service {
@@ -60,7 +61,11 @@ ShellRoot {
         visible: true
         implicitWidth: 456; implicitHeight: 540
         color: Commons.Color.popups.background
-        Tasks.TaskList { id: taskList; property string openedTask: ""; function openInTodoist(task) { openedTask = String(task.id); } anchors.fill: parent; anchors.margins: 18; service: service }
+        Loader {
+            id: taskListLoader
+            anchors.fill: parent
+            sourceComponent: Tasks.TaskList { property string openedTask: ""; function openInTodoist(task) { openedTask = String(task.id); } anchors.fill: parent; anchors.margins: 18; service: service }
+        }
     }
     TestCase {
         id: checks
@@ -69,6 +74,9 @@ ShellRoot {
         function cleanupTestCase() { console.log("DRAG UI RESULTS", qtest_results.passCount, "passed", qtest_results.failCount, "failed"); Qt.callLater(Qt.quit); }
         function cleanup() { console.log("TEST", qtest_results.functionName, qtest_results.failed ? "FAILED" : "PASSED"); }
         function init() {
+            // Give each scenario fresh delegates, popup overlays and input state.
+            taskListLoader.active = false;
+            taskListLoader.active = true;
             taskList.service = service;
             mouseMove(taskList, 1, 1);
             service.token = "fixture"; service.loaded = true; service.error = ""; service.bulkRetry = null;

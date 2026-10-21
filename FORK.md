@@ -69,6 +69,7 @@ des évolutions upstream. `EditParser.js` porte le parseur de modification,
 
 ```sh
 node --test tests/*.test.cjs
+tests/check-drag
 tests/check-composer
 tests/check-french-input
 omarchy plugin validate "$PWD"
@@ -76,6 +77,8 @@ omarchy plugin validate "$PWD"
 
 Les tests utilisent des données synthétiques. Le test de saisie nécessite
 Qt 6 et un compilateur C++ ; il ne remplace pas un essai physique du clavier.
-La suite supplémentaire `tests/check-drag` contient un échec connu du scénario
-de date personnalisée groupée, reproduit avant l’intégration upstream.
+La suite `tests/check-drag` recrée la liste et ses menus entre les scénarios
+pour isoler la sélection, les délégués et l’état de saisie.
+Les captures acceptent tout moteur OpenGL matériel, dont Intel, AMD et NVIDIA ;
+les moteurs logiciels sont refusés.
 Conserver [LICENSE](LICENSE) et [LICENSE.EditParser](LICENSE.EditParser).
