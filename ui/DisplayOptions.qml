@@ -1,3 +1,4 @@
+import "../i18n/Fr.js" as Fr
 import QtQuick
 import QtQuick.Layouts
 import qs.Commons
@@ -10,11 +11,11 @@ ColumnLayout {
     required property string view
     readonly property var options: service.viewOptions(view)
     spacing: Style.space(10)
-    Label { font.family: root.fontFamily; text: "Tri"; font.bold: true }
+    Label { font.family: root.fontFamily; text: Fr.t("text.tri"); font.bold: true }
     Repeater {
         model: [
-            {key: "grouping", label: "Regroupement", values: [{value: "none", label: "Aucune"}, {value: "project", label: "Projet"}, {value: "priority", label: "Priorité"}, {value: "date", label: "Date"}, {value: "label", label: "Étiquette"}]},
-            {key: "sorting", label: "Ordre", values: [{value: "smart", label: "Intelligent"}, {value: "manual", label: "Manuel"}, {value: "name", label: "Nom"}, {value: "assignee", label: "Responsable"}, {value: "date", label: "Date"}, {value: "added", label: "Date d’ajout"}, {value: "deadline", label: "Date limite"}, {value: "priority", label: "Priorité"}, {value: "project", label: "Projet"}]}
+            {key: "grouping", label: Fr.t("text.regroupement"), values: [{value: "none", label: Fr.t("text.aucune")}, {value: "project", label: Fr.t("text.projet")}, {value: "priority", label: Fr.t("text.priorite")}, {value: "date", label: Fr.t("text.date")}, {value: "label", label: Fr.t("text.etiquette")}]},
+            {key: "sorting", label: Fr.t("text.ordre"), values: [{value: "smart", label: Fr.t("text.intelligent")}, {value: "manual", label: Fr.t("text.manuel")}, {value: "name", label: Fr.t("text.nom")}, {value: "assignee", label: Fr.t("text.responsable")}, {value: "date", label: Fr.t("text.date")}, {value: "added", label: Fr.t("text.date_dajout")}, {value: "deadline", label: Fr.t("text.date_limite")}, {value: "priority", label: Fr.t("text.priorite")}, {value: "project", label: Fr.t("text.projet")}]}
         ]
         RowLayout {
             required property var modelData
@@ -23,13 +24,13 @@ ColumnLayout {
             UI.Dropdown { Layout.fillWidth: true; showLabel: false; fontFamily: root.fontFamily; value: root.options[modelData.key]; options: modelData.values; onChanged: function(value) { root.service.setOption(root.view, modelData.key, value); } }
         }
     }
-    Label { font.family: root.fontFamily; text: "Filtres"; font.bold: true; Layout.topMargin: Style.space(6) }
+    Label { font.family: root.fontFamily; text: Fr.t("text.filtres"); font.bold: true; Layout.topMargin: Style.space(6) }
     Repeater {
         model: [
-            {key: "assignee", label: "Responsable", values: [{value: "mine", label: "Moi et non attribuées"}, {value: "all", label: "Tout le monde"}, {value: "me", label: "Moi"}, {value: "unassigned", label: "Non attribuée"}]},
-            {key: "deadline", label: "Date limite", values: [{value: "all", label: "Toutes"}, {value: "has", label: "Avec date limite"}, {value: "none", label: "Sans date limite"}, {value: "overdue", label: "En retard"}]},
-            {key: "priority", label: "Priorité", values: [{value: "all", label: "Toutes"}, {value: "4", label: "Priorité 1"}, {value: "3", label: "Priorité 2"}, {value: "2", label: "Priorité 3"}, {value: "1", label: "Priorité 4"}]},
-            {key: "label", label: "Étiquette", values: [{value: "all", label: "Toutes"}].concat(root.service.labels.map(function(l) { return {value: l.name, label: l.name}; }))}
+            {key: "assignee", label: Fr.t("text.responsable"), values: [{value: "mine", label: Fr.t("text.moi_et_non_attribuees")}, {value: "all", label: Fr.t("text.tout_le_monde")}, {value: "me", label: Fr.t("text.moi")}, {value: "unassigned", label: Fr.t("text.non_attribuee")}]},
+            {key: "deadline", label: Fr.t("text.date_limite"), values: [{value: "all", label: Fr.t("text.toutes")}, {value: "has", label: Fr.t("text.avec_date_limite")}, {value: "none", label: Fr.t("text.sans_date_limite")}, {value: "overdue", label: Fr.t("text.en_retard")}]},
+            {key: "priority", label: Fr.t("text.priorite"), values: [{value: "all", label: Fr.t("text.toutes")}, {value: "4", label: Fr.t("text.priorite_1")}, {value: "3", label: Fr.t("text.priorite_2")}, {value: "2", label: Fr.t("text.priorite_3")}, {value: "1", label: Fr.t("text.priorite_4")}]},
+            {key: "label", label: Fr.t("text.etiquette"), values: [{value: "all", label: Fr.t("text.toutes")}].concat(root.service.labels.map(function(l) { return {value: l.name, label: l.name}; }))}
         ]
         RowLayout {
             required property var modelData
@@ -39,8 +40,8 @@ ColumnLayout {
         }
     }
     RowLayout {
-        Action { fontFamily: root.fontFamily; text: "Réinitialiser la vue"; onClicked: root.service.resetView(root.view) }
+        Action { fontFamily: root.fontFamily; text: Fr.t("text.reinitialiser_la_vue"); onClicked: root.service.resetView(root.view) }
         Item { Layout.fillWidth: true }
-        Action { fontFamily: root.fontFamily; text: root.service.loading ? "Actualisation…" : "Actualiser"; enabled: !root.service.loading; onClicked: root.service.refresh(true) }
+        Action { fontFamily: root.fontFamily; text: root.service.loading ? Fr.t("text.actualisation") : Fr.t("text.actualiser"); enabled: !root.service.loading; onClicked: root.service.refresh(true) }
     }
 }

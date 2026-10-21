@@ -1,3 +1,4 @@
+import "../i18n/Fr.js" as Fr
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls as C
@@ -208,7 +209,7 @@ FocusScope {
         anchors.top: parent.top; width: parent.width
         height: Style.space(28); spacing: Style.space(4)
         Repeater {
-            model: [{id: "today", title: "Aujourd’hui"}, {id: "upcoming", title: "Prochainement"}, {id: "inbox", title: "Inbox"}]
+            model: [{id: "today", title: Fr.t("text.aujourdhui")}, {id: "upcoming", title: Fr.t("text.prochainement")}, {id: "inbox", title: Fr.t("text.inbox")}]
             Action { fontFamily: root.fontFamily;
                 required property var modelData
                 objectName: "viewTab_" + modelData.id
@@ -217,7 +218,7 @@ FocusScope {
                 Layout.preferredWidth: implicitWidth
                 Layout.minimumWidth: 0
                 text: modelData.title
-                tip: modelData.id === "inbox" ? "Tâches sans date dans tous les projets" : modelData.title
+                tip: modelData.id === "inbox" ? Fr.t("text.taches_sans_date_dans_tous_les_projets") : modelData.title
                 iconName: modelData.id
                 iconDay: root.service.now.getDate()
                 bold: true
@@ -225,8 +226,8 @@ FocusScope {
                 onClicked: { root.view = modelData.id; root.settingsOpen = false; }
             }
         }
-        Action { fontFamily: root.fontFamily; id: displayButton; objectName: "displayButton"; iconName: "display"; iconSize: Style.space(17); tip: "Affichage"; selected: display.opened; enabled: root.service.configured; onClicked: display.opened ? display.close() : display.open() }
-        Action { fontFamily: root.fontFamily; iconName: "settings"; iconSize: Style.space(17); tip: "Réglages"; selected: root.settingsOpen; onClicked: root.settingsOpen = !root.settingsOpen }
+        Action { fontFamily: root.fontFamily; id: displayButton; objectName: "displayButton"; iconName: "display"; iconSize: Style.space(17); tip: Fr.t("text.affichage"); selected: display.opened; enabled: root.service.configured; onClicked: display.opened ? display.close() : display.open() }
+        Action { fontFamily: root.fontFamily; iconName: "settings"; iconSize: Style.space(17); tip: Fr.t("text.reglages"); selected: root.settingsOpen; onClicked: root.settingsOpen = !root.settingsOpen }
     }
     ColumnLayout {
         id: status
@@ -238,7 +239,7 @@ FocusScope {
         Label { font.family: root.fontFamily;
             id: statusText
             Layout.fillWidth: true
-            text: root.service.error || (!root.service.loaded && root.service.configured ? "Chargement des tâches…" : "")
+            text: root.service.error || (!root.service.loaded && root.service.configured ? Fr.t("text.chargement_des_taches") : "")
             color: root.service.error ? Commons.Color.urgent : Commons.Color.popups.text
             wrapMode: Text.WordWrap; elide: Text.ElideNone
             font.pixelSize: Style.font.body
@@ -246,7 +247,7 @@ FocusScope {
         Action { fontFamily: root.fontFamily;
             objectName: "retrySync"
             visible: root.service.configured && root.service.error !== ""
-            text: root.service.loading ? "Nouvel essai…" : "Réessayer"
+            text: root.service.loading ? Fr.t("text.nouvel_essai") : Fr.t("text.reessayer")
             enabled: !root.service.loading && !root.service.saving && !root.service.connecting
             onClicked: root.service.refresh(true)
         }
@@ -257,15 +258,15 @@ FocusScope {
         width: parent.width
         height: visible ? Style.space(34) : 0
         visible: root.selectedIds.length > 0 && !root.setupVisible
-        Label { font.family: root.fontFamily; Layout.fillWidth: true; text: root.selectedIds.length + " sélectionnée(s)"; color: Commons.Color.accent; font.pixelSize: Style.font.bodySmall }
+        Label { font.family: root.fontFamily; Layout.fillWidth: true; text: Fr.t("selection.count", root.selectedIds.length); color: Commons.Color.accent; font.pixelSize: Style.font.bodySmall }
         Action { fontFamily: root.fontFamily;
-            text: "Actions…"; objectName: "selectionActions"; enabled: !root.service.saving
+            text: Fr.t("text.actions"); objectName: "selectionActions"; enabled: !root.service.saving
             onClicked: {
                 var task = root.service.tasks.find(function(t) { return String(t.id) === root.selectedIds[0]; });
                 if (task) root.openTaskMenu(task, mapToItem(root, 0, height));
             }
         }
-        Action { fontFamily: root.fontFamily; text: "Effacer"; enabled: !root.service.saving; onClicked: root.clearSelection() }
+        Action { fontFamily: root.fontFamily; text: Fr.t("text.effacer"); enabled: !root.service.saving; onClicked: root.clearSelection() }
     }
     C.ScrollView {
         visible: root.setupVisible
@@ -295,7 +296,7 @@ FocusScope {
             width: list.width
             height: visible ? Style.space(60) : 0
             visible: root.service.loaded && !root.rows.some(function(row) { return row.kind === "task"; })
-            text: "Aucune tâche dans cette vue."
+            text: Fr.t("text.aucune_tache_dans_cette_vue")
             verticalAlignment: Text.AlignVCenter
             opacity: 0.5
         }
@@ -310,7 +311,7 @@ FocusScope {
                 id: groupComponent
                 Item {
                     implicitHeight: Style.space(40)
-                    Label { font.family: root.fontFamily; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.bottomMargin: Style.space(9); text: rowLoader.modelData.title; font.bold: true; color: text === "En retard" ? "#ef615b" : Commons.Color.popups.text }
+                    Label { font.family: root.fontFamily; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.bottomMargin: Style.space(9); text: rowLoader.modelData.title; font.bold: true; color: text === Fr.t("text.en_retard") ? "#ef615b" : Commons.Color.popups.text }
                     Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Commons.Color.popups.text; opacity: 0.12 }
                 }
             }
@@ -354,7 +355,7 @@ FocusScope {
                     Action { fontFamily: root.fontFamily;
                         visible: root.composerKey !== rowLoader.modelData.key
                         y: Style.space(5)
-                        text: "+   Ajouter une tâche"
+                        text: Fr.t("text.ajouter_une_tache")
                         objectName: "addTask_" + rowLoader.modelData.key
                         Keys.onPressed: function(event) {
                             if (!(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)) && [Qt.Key_Return, Qt.Key_Enter, Qt.Key_Space].indexOf(event.key) >= 0) {
@@ -442,14 +443,14 @@ FocusScope {
                 id: helpBody
                 width: parent.width
                 spacing: Style.space(10)
-                Label { font.family: root.fontFamily; text: "Raccourcis clavier"; font.bold: true }
+                Label { font.family: root.fontFamily; text: Fr.t("text.raccourcis_clavier"); font.bold: true }
                 Label { font.family: root.fontFamily;
                     objectName: "shortcutHelpText"
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap; elide: Text.ElideNone
-                    text: "OUVERTURE\nSuper + Maj + T : ouvrir / fermer le panneau (selon la configuration Hyprland)\nAlt + Espace : ajout rapide par défaut, configurable dans les réglages\n\nDANS LE PANNEAU\nTab / Maj+Tab ou ← / → : parcourir Aujourd’hui, Prochainement et Inbox\n↑ / ↓ ou k / j : sélectionner une tâche ou l’ajout\nEntrée : ouvrir les détails de la tâche sélectionnée\nEntrée / Espace sur l’ajout : ouvrir le formulaire\ne : modifier la tâche sélectionnée\nEspace : terminer la tâche sélectionnée\nu : annuler la dernière tâche terminée dans cette session\no : ouvrir la tâche dans Todoist\nx : supprimer immédiatement, sans confirmation\na / d / i : aujourd’hui / demain / sans date\nCtrl+a : tout sélectionner parmi les tâches visibles\nq : ajouter une tâche\nr : actualiser\np : ouvrir / fermer les réglages\n? : afficher cette aide\nÉchap : revenir / fermer\n\nLes champs de texte gardent leurs touches habituelles."
+                    text: Fr.t("text.ouverture_super_maj_t_ouvrir_fermer_le_panneau_selon_la_configura")
                 }
-                Action { fontFamily: root.fontFamily; text: "Fermer"; onClicked: shortcutHelp.close() }
+                Action { fontFamily: root.fontFamily; text: Fr.t("text.fermer"); onClicked: shortcutHelp.close() }
             }
         }
     }

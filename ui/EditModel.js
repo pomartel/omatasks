@@ -1,3 +1,4 @@
+.import "../i18n/Fr.js" as Fr
 // Todoist keeps the words a date was typed with, so a task scheduled for
 // "tomorrow" yesterday still says "tomorrow" today. Name its day from now,
 // or a picked "tomorrow" would look unchanged and never be sent.
@@ -29,11 +30,11 @@ function deadlineDate(value, now) {
         var parts = input.split("-").map(Number), parsed = new Date(parts[0], parts[1] - 1, parts[2]);
         if (dateKey(parsed) === input) return input;
     }
-    throw new Error("Utilisez aujourd’hui, demain, la semaine prochaine ou AAAA-MM-JJ pour la date limite.");
+    throw new Error(Fr.t("text.utilisez_aujourdhui_demain_la_semaine_prochaine_ou_aaaa_mm_jj_pou"));
 }
 function changes(task, draft, now) {
     var original = snapshot(task, now), args = {}, move = null;
-    if (!draft.text.trim()) throw new Error("Indiquez un nom de tâche.");
+    if (!draft.text.trim()) throw new Error(Fr.t("text.indiquez_un_nom_de_tache"));
     if (draft.text !== original.text) args.content = draft.text.trim();
     if (draft.description !== original.description) args.description = draft.description;
     if (JSON.stringify(draft.labels.slice().sort()) !== JSON.stringify(original.labels.slice().sort())) args.labels = draft.labels;
@@ -48,20 +49,20 @@ function changes(task, draft, now) {
     if (draft.deadline !== original.deadline) args.deadline = draft.deadline.trim() ? {date: deadlineDate(draft.deadline, now)} : null;
     if (draft.assigneeId !== original.assigneeId) args.responsible_uid = draft.assigneeId || null;
     var amount = Number(draft.duration);
-    if (!Number.isInteger(amount) || amount < 0) throw new Error("La durée doit être un entier, ou 0 pour aucune.");
+    if (!Number.isInteger(amount) || amount < 0) throw new Error(Fr.t("text.la_duree_doit_etre_un_entier_ou_0_pour_aucune"));
     if (amount !== original.duration || draft.durationUnit !== original.durationUnit) args.duration = amount ? {amount: amount, unit: draft.durationUnit} : null;
     if (draft.projectId !== original.projectId || draft.sectionId !== original.sectionId) {
-        if (!draft.projectId) throw new Error("Choisissez un projet.");
+        if (!draft.projectId) throw new Error(Fr.t("text.choisissez_un_projet"));
         move = draft.sectionId ? {section_id: draft.sectionId} : {project_id: draft.projectId};
     }
     return {update: args, move: move};
 }
 function reminderText(reminder) {
     var text;
-    if (reminder.type === "location") text = (reminder.loc_trigger === "on_leave" ? "Départ de " : "Arrivée à ") + (reminder.name || "lieu");
-    else if (reminder.minute_offset != null && Number(reminder.minute_offset) >= 0) text = Number(reminder.minute_offset) === 0 ? "À l’heure prévue" : reminder.minute_offset + " minutes avant";
-    else text = (reminder.due || {}).string || (reminder.due || {}).date || "Rappel";
-    return text + (reminder.is_urgent ? " · Urgent" : "");
+    if (reminder.type === "location") text = (reminder.loc_trigger === "on_leave" ? Fr.t("text.depart_de") : Fr.t("text.arrivee_a")) + (reminder.name || Fr.t("text.lieu"));
+    else if (reminder.minute_offset != null && Number(reminder.minute_offset) >= 0) text = Number(reminder.minute_offset) === 0 ? Fr.t("text.a_lheure_prevue") : Fr.t("reminder.minutes_before", reminder.minute_offset);
+    else text = (reminder.due || {}).string || (reminder.due || {}).date || Fr.t("text.rappel");
+    return text + (reminder.is_urgent ? Fr.t("text.urgent") : "");
 }
 function reminderArgs(value, taskId) {
     var match = /^(\d+)(mb|m|h)$/i.exec(value.trim());

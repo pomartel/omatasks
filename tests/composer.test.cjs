@@ -2,8 +2,8 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const draft = vm.createContext({});
-vm.runInContext(fs.readFileSync('ui/ComposerModel.js', 'utf8'), draft);
+const draft = vm.createContext({ Fr: require("../i18n/Fr.js"),});
+vm.runInContext(fs.readFileSync('ui/ComposerModel.js', 'utf8').replace(/^\.import.*$/gm, ''), draft);
 const input = overrides => ({text: 'Review tomorrow at 4pm', description: '', labels: [], ...overrides});
 const service = {
   projects: [{id: 'in', name: 'Inbox', inbox_project: true}, {id: 'a', name: 'Client Work'}, {id: 'b', name: 'Archived', is_archived: true}],

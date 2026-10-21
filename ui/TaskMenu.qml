@@ -1,3 +1,4 @@
+import "../i18n/Fr.js" as Fr
 import QtQuick
 import QtQuick.Controls as C
 import QtQuick.Layouts
@@ -37,7 +38,7 @@ C.Popup {
         pending = true; message = ""; canRetry = false;
         if (!service.applyTaskAction(taskIds, action, value)) {
             pending = false;
-            message = service.error || "Attendez la fin de l’opération en cours.";
+            message = service.error || Fr.t("text.attendez_la_fin_de_loperation_en_cours");
         }
     }
     function showPage(value) { page = value; input.text = ""; if (["customDate", "deadline", "reminder"].indexOf(page) >= 0) input.forceActiveFocus(); }
@@ -53,37 +54,37 @@ C.Popup {
             spacing: Style.space(5)
             RowLayout {
                 Layout.fillWidth: true
-                Action { fontFamily: root.fontFamily; visible: root.page !== "main"; text: "‹"; tip: "Retour"; enabled: !root.busy; onClicked: root.page = "main" }
-                Label { font.family: root.fontFamily; Layout.fillWidth: true; text: root.tasks.length === 1 ? "1 tâche sélectionnée" : root.tasks.length + " tâches sélectionnées"; font.bold: true }
-                Action { fontFamily: root.fontFamily; text: "×"; tip: "Fermer le menu"; enabled: !root.busy; onClicked: root.close() }
+                Action { fontFamily: root.fontFamily; visible: root.page !== "main"; text: "‹"; tip: Fr.t("text.retour"); enabled: !root.busy; onClicked: root.page = "main" }
+                Label { font.family: root.fontFamily; Layout.fillWidth: true; text: root.tasks.length === 1 ? Fr.t("text.1_tache_selectionnee") : Fr.t("selection.many", root.tasks.length); font.bold: true }
+                Action { fontFamily: root.fontFamily; text: "×"; tip: Fr.t("text.fermer_le_menu"); enabled: !root.busy; onClicked: root.close() }
             }
-            Label { font.family: root.fontFamily; visible: root.busy; text: "Enregistrement…"; opacity: 0.6 }
+            Label { font.family: root.fontFamily; visible: root.busy; text: Fr.t("text.enregistrement"); opacity: 0.6 }
             Label { font.family: root.fontFamily; visible: text !== ""; text: root.message; color: Commons.Color.urgent; Layout.fillWidth: true; wrapMode: Text.Wrap; elide: Text.ElideNone }
             Action { fontFamily: root.fontFamily;
                 visible: root.canRetry && !!root.service.bulkRetry
-                text: "Réessayer les modifications restantes"; enabled: !root.busy
-                onClicked: { root.pending = true; root.message = ""; if (!root.service.retryTaskAction()) { root.pending = false; root.message = root.service.error || "Veuillez patienter avant de réessayer."; } }
+                text: Fr.t("text.reessayer_les_modifications_restantes"); enabled: !root.busy
+                onClicked: { root.pending = true; root.message = ""; if (!root.service.retryTaskAction()) { root.pending = false; root.message = root.service.error || Fr.t("text.veuillez_patienter_avant_de_reessayer"); } }
             }
             ColumnLayout {
                 visible: root.page === "main"
                 enabled: !root.busy
                 Layout.fillWidth: true
                 spacing: Style.space(5)
-                Action { fontFamily: root.fontFamily; visible: root.tasks.length === 1; text: "Modifier"; leftAligned: true; Layout.fillWidth: true; onClicked: { var task = root.tasks[0]; root.close(); root.editRequested(task); } }
-                Action { fontFamily: root.fontFamily; text: "✓   Terminer"; objectName: "bulkComplete"; leftAligned: true; Layout.fillWidth: true; onClicked: root.run("complete", null) }
+                Action { fontFamily: root.fontFamily; visible: root.tasks.length === 1; text: Fr.t("text.modifier"); leftAligned: true; Layout.fillWidth: true; onClicked: { var task = root.tasks[0]; root.close(); root.editRequested(task); } }
+                Action { fontFamily: root.fontFamily; text: Fr.t("text.terminer_dac711"); objectName: "bulkComplete"; leftAligned: true; Layout.fillWidth: true; onClicked: root.run("complete", null) }
                 Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Color.popups.text; opacity: 0.12 }
-                Label { font.family: root.fontFamily; text: "Date"; font.bold: true; Layout.topMargin: Style.space(4) }
+                Label { font.family: root.fontFamily; text: Fr.t("text.date"); font.bold: true; Layout.topMargin: Style.space(4) }
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: Style.space(2)
                     Repeater {
                         model: [
-                            {value: "today", text: String(root.service.now.getDate()), tip: "Aujourd’hui", color: "#4baf63"},
-                            {value: "tomorrow", text: "☀", tip: "Demain", color: "#eb9700"},
-                            {value: "weekend", text: "▱", tip: "Cette fin de semaine", color: "#5297ff"},
-                            {value: "nextweek", text: "→", tip: "Lundi prochain", color: "#b58ce8"},
-                            {value: "", text: "∅", tip: "Retirer la date", color: Commons.Color.popups.text},
-                            {value: "custom", text: "…", tip: "Choisir une date ou une récurrence", color: Commons.Color.popups.text}
+                            {value: "today", text: String(root.service.now.getDate()), tip: Fr.t("text.aujourdhui"), color: "#4baf63"},
+                            {value: "tomorrow", text: "☀", tip: Fr.t("text.demain"), color: "#eb9700"},
+                            {value: "weekend", text: "▱", tip: Fr.t("text.cette_fin_de_semaine"), color: "#5297ff"},
+                            {value: "nextweek", text: "→", tip: Fr.t("text.lundi_prochain"), color: "#b58ce8"},
+                            {value: "", text: "∅", tip: Fr.t("text.retirer_la_date"), color: Commons.Color.popups.text},
+                            {value: "custom", text: "…", tip: Fr.t("text.choisir_une_date_ou_une_recurrence"), color: Commons.Color.popups.text}
                         ]
                         Action { fontFamily: root.fontFamily;
                             required property var modelData
@@ -94,7 +95,7 @@ C.Popup {
                         }
                     }
                 }
-                Label { font.family: root.fontFamily; text: "Priorité"; font.bold: true; Layout.topMargin: Style.space(4) }
+                Label { font.family: root.fontFamily; text: Fr.t("text.priorite"); font.bold: true; Layout.topMargin: Style.space(4) }
                 RowLayout {
                     Layout.fillWidth: true
                     Repeater {
@@ -110,39 +111,39 @@ C.Popup {
                     }
                 }
                 Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Color.popups.text; opacity: 0.12; Layout.topMargin: Style.space(4) }
-                Action { fontFamily: root.fontFamily; text: "⚑   Date limite…"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("deadline") }
-                Action { fontFamily: root.fontFamily; text: "◷   Ajouter un rappel…"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("reminder") }
-                Action { fontFamily: root.fontFamily; text: "Déplacer vers…"; objectName: "bulkMove"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("move") }
-                Action { fontFamily: root.fontFamily; text: "Dupliquer"; objectName: "bulkDuplicate"; leftAligned: true; Layout.fillWidth: true; tip: "Copier les tâches et sous-tâches, sans commentaires ni rappels"; onClicked: root.run("duplicate", null) }
+                Action { fontFamily: root.fontFamily; text: Fr.t("text.date_limite_1d0c16"); leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("deadline") }
+                Action { fontFamily: root.fontFamily; text: Fr.t("text.ajouter_un_rappel_219fb9"); leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("reminder") }
+                Action { fontFamily: root.fontFamily; text: Fr.t("text.deplacer_vers"); objectName: "bulkMove"; leftAligned: true; Layout.fillWidth: true; onClicked: root.showPage("move") }
+                Action { fontFamily: root.fontFamily; text: Fr.t("text.dupliquer"); objectName: "bulkDuplicate"; leftAligned: true; Layout.fillWidth: true; tip: Fr.t("text.copier_les_taches_et_sous_taches_sans_commentaires_ni_rappels"); onClicked: root.run("duplicate", null) }
                 Action { fontFamily: root.fontFamily;
-                    text: root.tasks.length === 1 ? "Copier le lien de la tâche" : "Copier les liens des tâches"
+                    text: root.tasks.length === 1 ? Fr.t("text.copier_le_lien_de_la_tache") : Fr.t("text.copier_les_liens_des_taches")
                     leftAligned: true; Layout.fillWidth: true
                     onClicked: { Quickshell.clipboardText = root.tasks.map(function(t) { return "https://app.todoist.com/app/task/" + encodeURIComponent(t.id); }).join("\n"); root.close(); }
                 }
                 Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Color.popups.text; opacity: 0.12 }
-                Action { fontFamily: root.fontFamily; text: "Supprimer"; objectName: "bulkDelete"; foreground: Commons.Color.urgent; leftAligned: true; Layout.fillWidth: true; onClicked: root.run("delete", null) }
+                Action { fontFamily: root.fontFamily; text: Fr.t("text.supprimer"); objectName: "bulkDelete"; foreground: Commons.Color.urgent; leftAligned: true; Layout.fillWidth: true; onClicked: root.run("delete", null) }
             }
             ColumnLayout {
                 visible: ["customDate", "deadline", "reminder"].indexOf(root.page) >= 0
                 enabled: !root.busy
                 Layout.fillWidth: true
-                Label { font.family: root.fontFamily; text: root.page === "customDate" ? "Date ou récurrence" : root.page === "deadline" ? "Date limite" : "Ajouter un rappel"; font.bold: true }
+                Label { font.family: root.fontFamily; text: root.page === "customDate" ? Fr.t("text.date_ou_recurrence") : root.page === "deadline" ? Fr.t("text.date_limite") : Fr.t("text.ajouter_un_rappel"); font.bold: true }
                 UI.TextField {
                     id: input
                     objectName: "bulkDateInput"
                     Layout.fillWidth: true
-                    placeholderText: root.page === "deadline" ? "AAAA-MM-JJ ou demain" : root.page === "reminder" ? "Demain à 9h ou 30mb" : "Vendredi à 10h ou chaque lundi"
+                    placeholderText: root.page === "deadline" ? Fr.t("text.aaaa_mm_jj_ou_demain") : root.page === "reminder" ? Fr.t("text.demain_a_9h_ou_30mb") : Fr.t("text.vendredi_a_10h_ou_chaque_lundi")
                     onAccepted: root.submitInput()
                 }
-                Action { fontFamily: root.fontFamily; text: "Appliquer à " + root.tasks.length + (root.tasks.length === 1 ? " tâche" : " tâches"); enabled: input.text.trim() !== ""; objectName: "bulkApplyInput"; onClicked: root.submitInput() }
-                Action { fontFamily: root.fontFamily; visible: root.page === "deadline"; text: "Retirer la date limite"; onClicked: root.run("deadline", "") }
+                Action { fontFamily: root.fontFamily; text: Fr.t("text.appliquer_a") + root.tasks.length + (root.tasks.length === 1 ? Fr.t("text.tache") : Fr.t("text.taches")); enabled: input.text.trim() !== ""; objectName: "bulkApplyInput"; onClicked: root.submitInput() }
+                Action { fontFamily: root.fontFamily; visible: root.page === "deadline"; text: Fr.t("text.retirer_la_date_limite"); onClicked: root.run("deadline", "") }
             }
             ColumnLayout {
                 visible: root.page === "move"
                 enabled: !root.busy
                 Layout.fillWidth: true
-                Label { font.family: root.fontFamily; text: "Déplacer vers un projet ou une section"; font.bold: true }
-                UI.TextField { id: search; Layout.fillWidth: true; placeholderText: "Rechercher un projet ou une section…" }
+                Label { font.family: root.fontFamily; text: Fr.t("text.deplacer_vers_un_projet_ou_une_section"); font.bold: true }
+                UI.TextField { id: search; Layout.fillWidth: true; placeholderText: Fr.t("text.rechercher_un_projet_ou_une_section") }
                 Repeater {
                     model: {
                         var destinations = [];

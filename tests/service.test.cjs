@@ -15,22 +15,22 @@ function service() {
             this.callback({status, body: typeof body === 'string' ? body : JSON.stringify(body), retryAfter: headers['Retry-After'] || ''});
         }
     }
-    const Model = vm.createContext({ Date });
-    vm.runInContext(fs.readFileSync('Model.js', 'utf8'), Model);
-    const Fractional = vm.createContext({});
-    vm.runInContext(fs.readFileSync('ui/Fractional.js', 'utf8'), Fractional);
-    const Order = vm.createContext({ Model, Fractional });
+    const Model = vm.createContext({ Fr: require("../i18n/Fr.js"), Date });
+    vm.runInContext(fs.readFileSync('Model.js', 'utf8').replace(/^\.import.*$/gm, ''), Model);
+    const Fractional = vm.createContext({ Fr: require("../i18n/Fr.js"),});
+    vm.runInContext(fs.readFileSync('ui/Fractional.js', 'utf8').replace(/^\.import.*$/gm, ''), Fractional);
+    const Order = vm.createContext({ Fr: require("../i18n/Fr.js"), Model, Fractional });
     vm.runInContext(fs.readFileSync('ui/OrderModel.js', 'utf8').replace(/^\.import.*$/gm, ''), Order);
-    const Edit = vm.createContext({ Date });
-    vm.runInContext(fs.readFileSync('ui/EditModel.js', 'utf8'), Edit);
-    const Bulk = vm.createContext({ Model, Edit, Date });
+    const Edit = vm.createContext({ Fr: require("../i18n/Fr.js"), Date });
+    vm.runInContext(fs.readFileSync('ui/EditModel.js', 'utf8').replace(/^\.import.*$/gm, ''), Edit);
+    const Bulk = vm.createContext({ Fr: require("../i18n/Fr.js"), Model, Edit, Date });
     vm.runInContext(fs.readFileSync('ui/BulkModel.js', 'utf8').replace(/^\.import.*$/gm, ''), Bulk);
-    const ctx = vm.createContext({ completingTask: false, undoRequested: false, Order, preferences: {}, now: new Date(2026, 8, 15, 12), pendingReorder: null, reorderCache: {}, settingsFile: { setText() {} }, Model, httpRequest: {createObject() { return new Transport(); }}, Date, requests: [], completionIds: {}, generation: 0, token: 'test-token', configured: true, loading: false, saving: false, connecting: false, storageReady: true, error: '', retryAfter: 0, nextSyncRetry: 0, syncFailures: 0, syncToken: '*', tasks: [], projects: [], sections: [], labels: [], collaborators: [], reminders: [], completedInfo: [], user: {}, lastSync: 0, taskAdded() { ctx.added = true; }, taskUpdated(id) { ctx.updated = id; }, taskCompleted(id) { ctx.completed = id; }, operationFailed(message) { ctx.failed = message; } });
+    const ctx = vm.createContext({ Fr: require("../i18n/Fr.js"), completingTask: false, undoRequested: false, Order, preferences: {}, now: new Date(2026, 8, 15, 12), pendingReorder: null, reorderCache: {}, settingsFile: { setText() {} }, Model, httpRequest: {createObject() { return new Transport(); }}, Date, requests: [], completionIds: {}, generation: 0, token: 'test-token', configured: true, loading: false, saving: false, connecting: false, storageReady: true, error: '', retryAfter: 0, nextSyncRetry: 0, syncFailures: 0, syncToken: '*', tasks: [], projects: [], sections: [], labels: [], collaborators: [], reminders: [], completedInfo: [], user: {}, lastSync: 0, taskAdded() { ctx.added = true; }, taskUpdated(id) { ctx.updated = id; }, taskCompleted(id) { ctx.completed = id; }, operationFailed(message) { ctx.failed = message; } });
     ctx.root = ctx;
-    const Bar = vm.createContext({ Model, Date });
+    const Bar = vm.createContext({ Fr: require("../i18n/Fr.js"), Model, Date });
     vm.runInContext(fs.readFileSync('ui/BarModel.js', 'utf8').replace(/^\.import.*$/gm, ''), Bar);
     ctx.Bar = Bar;
-    const Notify = vm.createContext({ Model, Date });
+    const Notify = vm.createContext({ Fr: require("../i18n/Fr.js"), Model, Date });
     vm.runInContext(fs.readFileSync('ui/NotifyModel.js', 'utf8').replace(/^\.import.*$/gm, ''), Notify);
     ctx.sent = [];
     Object.assign(ctx, { Notify, notifySettings: Notify.settings({}), notifying: true, loaded: true, startedAt: 0, shownAlerts: {}, snoozed: {}, projectMap: {}, sectionMap: {},

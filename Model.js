@@ -1,3 +1,4 @@
+.import "i18n/Fr.js" as Fr
 // Pure data transformations; also exercised by node --test.
 var DEFAULT_VIEW = { grouping: "none", sorting: "smart", assignee: "mine", priority: "all", label: "all", deadline: "all" };
 var API_BASE = "https://api.todoist.com/api/v1";
@@ -27,14 +28,14 @@ function overdue(task, now) {
 }
 function clockText(date) { return String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0"); }
 function dayLabel(key, today) {
-    if (!key) return "Sans date";
-    if (key === today) return "Aujourd’hui";
-    if (key === addDays(today, 1)) return "Demain";
+    if (!key) return Fr.t("text.sans_date");
+    if (key === today) return Fr.t("text.aujourdhui");
+    if (key === addDays(today, 1)) return Fr.t("text.demain");
     return typeof Qt !== "undefined" ? dateFromKey(key).toLocaleDateString(Qt.locale("fr_CA"), "d MMM") : dateFromKey(key).toLocaleDateString("fr-CA", { month: "short", day: "numeric" });
 }
 function upcomingLabel(key, today) {
-    if (key === addDays(today, 1)) return "Demain";
-    return ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"][dateFromKey(key).getDay()];
+    if (key === addDays(today, 1)) return Fr.t("text.demain");
+    return [Fr.t("text.dimanche"), Fr.t("text.lundi"), Fr.t("text.mardi"), Fr.t("text.mercredi"), Fr.t("text.jeudi"), Fr.t("text.vendredi"), Fr.t("text.samedi")][dateFromKey(key).getDay()];
 }
 function dueLabel(task, now, view, grouping) {
     var day = dueDay(task), time = dueTime(task), text = "";
@@ -75,7 +76,7 @@ function merge(previous, updates, full) {
 }
 function projectPath(id, projects, sectionId, sections) {
     var project = projects[String(id)], section = sections ? sections[String(sectionId)] : null;
-    return (project ? project.name : "Inbox") + (section ? " / " + section.name : "");
+    return (project ? project.name : Fr.t("text.inbox")) + (section ? " / " + section.name : "");
 }
 function mergeCompleted(previous, updates, full) {
     var map = {};
@@ -140,16 +141,16 @@ function viewRows(tasks, projectList, collaborators, options, view, userId, now)
 
     selected.forEach(function(t) {
         if (options.grouping === "label") {
-            ((t.labels || []).length ? t.labels : ["Sans étiquette"]).forEach(function(label) {
+            ((t.labels || []).length ? t.labels : [Fr.t("text.sans_etiquette")]).forEach(function(label) {
                 if (!groups[label]) { groups[label] = {label: label, rank: label, tasks: [], projectId: ""}; keys.push(label); }
                 groups[label].tasks.push(t);
             });
             return;
         }
         var key = "", label = "", rank = "", projectId = "";
-        if (options.grouping === "project") { var p = projects[String(t.project_id)] || {id: t.project_id, name: "Inbox"}; key = String(p.id); label = p.name; rank = p.order_key || String(p.child_order || 0).padStart(8, "0"); projectId = String(p.id); }
-        else if (options.grouping === "priority") { key = String(5 - t.priority); label = t.priority > 1 ? "Priorité " + key : "Sans priorité"; rank = key; }
-        else if (options.grouping === "date" || view === "upcoming") { key = scheduledDay(t) || "9999"; if (key < today) key = "0000"; label = key === "0000" ? "En retard" : key === "9999" ? "Sans date" : view === "upcoming" ? upcomingLabel(key, today) : dayLabel(key, today); rank = key; }
+        if (options.grouping === "project") { var p = projects[String(t.project_id)] || {id: t.project_id, name: Fr.t("text.inbox")}; key = String(p.id); label = p.name; rank = p.order_key || String(p.child_order || 0).padStart(8, "0"); projectId = String(p.id); }
+        else if (options.grouping === "priority") { key = String(5 - t.priority); label = t.priority > 1 ? Fr.t("priority.number", key) : Fr.t("text.sans_priorite"); rank = key; }
+        else if (options.grouping === "date" || view === "upcoming") { key = scheduledDay(t) || "9999"; if (key < today) key = "0000"; label = key === "0000" ? Fr.t("text.en_retard") : key === "9999" ? Fr.t("text.sans_date") : view === "upcoming" ? upcomingLabel(key, today) : dayLabel(key, today); rank = key; }
 
         if (!groups[key]) { groups[key] = {label: label, rank: rank, tasks: [], projectId: projectId}; keys.push(key); }
         groups[key].tasks.push(t);
@@ -167,9 +168,9 @@ function viewRows(tasks, projectList, collaborators, options, view, userId, now)
 }
 function uuid() { return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16); }); }
 function errorMessage(status) {
-    if (status === 401 || status === 403) return "Todoist n’a pas autorisé cette requête. Vérifiez votre jeton API dans les réglages.";
-    if (status === 429) return "Todoist reçoit trop de requêtes. Veuillez patienter.";
-    if (status === 0) return "Impossible de joindre Todoist. Vérifiez votre connexion et réessayez.";
-    if (status === 400) return "Impossible d’enregistrer la tâche. Vérifiez le texte et réessayez.";
-    return "Todoist n’a pas pu terminer la requête (" + status + "). Réessayez.";
+    if (status === 401 || status === 403) return Fr.t("text.todoist_na_pas_autorise_cette_requete_verifiez_votre_jeton_api_da");
+    if (status === 429) return Fr.t("text.todoist_recoit_trop_de_requetes_veuillez_patienter");
+    if (status === 0) return Fr.t("text.impossible_de_joindre_todoist_verifiez_votre_connexion_et_reessay");
+    if (status === 400) return Fr.t("text.impossible_denregistrer_la_tache_verifiez_le_texte_et_reessayez");
+    return Fr.t("error.http", status);
 }

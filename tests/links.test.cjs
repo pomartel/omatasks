@@ -2,8 +2,8 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const model = vm.createContext({});
-vm.runInContext(fs.readFileSync('Model.js', 'utf8'), model);
+const model = vm.createContext({ Fr: require("../i18n/Fr.js"),});
+vm.runInContext(fs.readFileSync('Model.js', 'utf8').replace(/^\.import.*$/gm, ''), model);
 
 test('named links and bare URLs are underlined with escaped attributes', () => {
     assert.equal(model.linkText('[Site](https://example.com/?a=1&b=2)'), '<a href="https://example.com/?a=1&amp;b=2"><u>Site</u></a>');

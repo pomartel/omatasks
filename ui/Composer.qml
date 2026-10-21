@@ -1,3 +1,4 @@
+import "../i18n/Fr.js" as Fr
 import QtQuick
 import QtQuick.Controls as C
 import QtQuick.Layouts
@@ -59,9 +60,9 @@ ColumnLayout {
         if (!editing || !originalTask) return null;
         try { return Inline.parse(originalTask, input.text, Model.dueDay(originalTask)); } catch (e) { return null; }
     }
-    readonly property string projectName: inlineEdit && inlineEdit.projectName ? inlineEdit.projectName : shownProject ? shownProject.name : "Inbox"
+    readonly property string projectName: inlineEdit && inlineEdit.projectName ? inlineEdit.projectName : shownProject ? shownProject.name : Fr.t("text.inbox")
     readonly property var typedDate: parsed.tokens.filter(function(t) { return t.kind === "due"; }).slice(-1)[0] || null
-    readonly property string shownDate: inlineEdit && inlineEdit.update.due_string !== undefined ? (inlineEdit.update.due_string === "no date" ? "Sans date" : inlineEdit.update.due_string) : typedDate ? /^(?:no (?:due )?date|sans date)$/i.test(typedDate.value) ? "" : typedDate.value : due
+    readonly property string shownDate: inlineEdit && inlineEdit.update.due_string !== undefined ? (inlineEdit.update.due_string === "no date" ? Fr.t("text.sans_date") : inlineEdit.update.due_string) : typedDate ? /^(?:no (?:due )?date|sans date)$/i.test(typedDate.value) ? "" : typedDate.value : due
     readonly property bool dark: Commons.Color.popups.background.r * 0.299 + Commons.Color.popups.background.g * 0.587 + Commons.Color.popups.background.b * 0.114 < 0.5
     onParsedChanged: Qt.callLater(updateHighlights)
     signal finished()
@@ -73,12 +74,12 @@ ColumnLayout {
         originalTask = JSON.parse(JSON.stringify(editingTask));
         var data = Edit.snapshot(originalTask, service.now);
         input.text = data.text; description.text = data.description; descriptionVisible = true;
-        project = service.projectMap[data.projectId] || {id: data.projectId, name: "Projet"};
+        project = service.projectMap[data.projectId] || {id: data.projectId, name: Fr.t("text.projet")};
         section = service.sectionMap[data.sectionId] || null;
         taskLabels = data.labels; priority = data.priority; due = data.due; deadline = data.deadline;
         duration = String(data.duration); durationUnit = data.durationUnit;
         var person = Model.byId(service.collaborators)[data.assigneeId];
-        assignee = data.assigneeId ? {id: data.assigneeId, name: person ? person.full_name || person.name : "Responsable"} : null;
+        assignee = data.assigneeId ? {id: data.assigneeId, name: person ? person.full_name || person.name : Fr.t("text.responsable")} : null;
     }
     function submitEdit() {
         var change;
@@ -109,7 +110,7 @@ ColumnLayout {
         });
         sentText = signature; message = "";
         submitting = service.updateTask(id, pendingCommands);
-        if (!submitting) message = service.error || "Attendez la fin de l’opération en cours.";
+        if (!submitting) message = service.error || Fr.t("text.attendez_la_fin_de_loperation_en_cours");
     }
 
     function focusInput() { input.forceActiveFocus(); }
@@ -246,7 +247,7 @@ ColumnLayout {
         if (sentText !== text || !requestId) requestId = Model.uuid();
         sentText = text; message = "";
         submitting = service.addTask(text, requestId);
-        if (!submitting) message = service.error || "Attendez la fin de l’opération en cours.";
+        if (!submitting) message = service.error || Fr.t("text.attendez_la_fin_de_loperation_en_cours");
     }
 
     FontMetrics { id: metrics; font: input.font }
@@ -259,7 +260,7 @@ ColumnLayout {
         textFormat: TextEdit.PlainText
         padding: 0; color: Commons.Color.popups.text
         font.family: root.fontFamily; font.pixelSize: Style.font.body; font.bold: true
-        placeholderText: "Nom de la tâche"; placeholderTextColor: Qt.rgba(Commons.Color.popups.text.r, Commons.Color.popups.text.g, Commons.Color.popups.text.b, 0.4)
+        placeholderText: Fr.t("text.nom_de_la_tache"); placeholderTextColor: Qt.rgba(Commons.Color.popups.text.r, Commons.Color.popups.text.g, Commons.Color.popups.text.b, 0.4)
         selectionColor: Commons.Color.accent; selectedTextColor: Commons.Color.popups.background
         // Keep a plain TextArea for cursor movement, selection, undo, paste
         // and input methods. Only the recognized spans' backgrounds are drawn.
@@ -303,7 +304,7 @@ ColumnLayout {
             padding: 0; wrapMode: TextEdit.Wrap
             color: Commons.Color.popups.text
             font.family: root.fontFamily; font.pixelSize: Style.font.bodySmall
-            placeholderText: "Description"; placeholderTextColor: Qt.rgba(Commons.Color.popups.text.r, Commons.Color.popups.text.g, Commons.Color.popups.text.b, 0.4)
+            placeholderText: Fr.t("text.description"); placeholderTextColor: Qt.rgba(Commons.Color.popups.text.r, Commons.Color.popups.text.g, Commons.Color.popups.text.b, 0.4)
             background: Item {}
             enabled: !root.submitting
             Keys.onPressed: function(event) {
@@ -318,14 +319,14 @@ ColumnLayout {
             }
         }
     }
-    Action { fontFamily: root.fontFamily; visible: !root.descriptionVisible; text: "Description"; implicitHeight: Style.space(22); onClicked: { root.descriptionVisible = true; description.forceActiveFocus(); } }
+    Action { fontFamily: root.fontFamily; visible: !root.descriptionVisible; text: Fr.t("text.description"); implicitHeight: Style.space(22); onClicked: { root.descriptionVisible = true; description.forceActiveFocus(); } }
 
     Flow {
         Layout.fillWidth: true
         spacing: Style.space(6)
         enabled: !root.submitting
-        Chip { fontFamily: root.fontFamily; objectName: "dateChip"; foreground: root.dateColor(root.shownDate); text: root.shownDate || "Date"; iconName: "today"; removable: root.shownDate !== ""; maximumWidth: Math.min(root.width, Style.space(230)); onClicked: root.openPicker("due"); onRemoved: root.setDate("") }
-        Chip { fontFamily: root.fontFamily; objectName: "priorityChip"; text: root.shownPriority ? "P" + root.shownPriority : "Priorité"; iconName: "flag"; foreground: root.priorityColor(root.shownPriority); removable: root.shownPriority > 0; onClicked: root.openPicker("priority"); onRemoved: root.clearProperty("priority") }
+        Chip { fontFamily: root.fontFamily; objectName: "dateChip"; foreground: root.dateColor(root.shownDate); text: root.shownDate || Fr.t("text.date"); iconName: "today"; removable: root.shownDate !== ""; maximumWidth: Math.min(root.width, Style.space(230)); onClicked: root.openPicker("due"); onRemoved: root.setDate("") }
+        Chip { fontFamily: root.fontFamily; objectName: "priorityChip"; text: root.shownPriority ? "P" + root.shownPriority : Fr.t("text.priorite"); iconName: "flag"; foreground: root.priorityColor(root.shownPriority); removable: root.shownPriority > 0; onClicked: root.openPicker("priority"); onRemoved: root.clearProperty("priority") }
         Chip { fontFamily: root.fontFamily; visible: root.shownDeadline !== ""; text: root.shownDeadline; iconName: "upcoming"; removable: true; onClicked: root.openPicker("deadline"); onRemoved: root.clearProperty("deadline") }
         Chip { fontFamily: root.fontFamily; visible: root.shownReminder !== ""; text: root.shownReminder; iconName: "bell"; removable: true; onClicked: root.openPicker("reminder"); onRemoved: root.clearProperty("reminder") }
         Chip { fontFamily: root.fontFamily; visible: root.shownDuration !== ""; text: root.shownDuration.replace(/^for /, ""); removable: true; onRemoved: root.removeTyped("duration") }
@@ -335,17 +336,17 @@ ColumnLayout {
             model: root.shownLabels
             Chip { fontFamily: root.fontFamily; required property string modelData; text: modelData; iconName: "label"; removable: true; maximumWidth: root.width; onClicked: root.openPicker("label"); onRemoved: root.clearProperty("label", modelData) }
         }
-        Action { fontFamily: root.fontFamily; iconName: "label"; tip: "Étiquettes (@)"; onClicked: root.openPicker("label") }
-        Action { fontFamily: root.fontFamily; iconName: "more"; tip: "Autres options"; selected: more.visible; onClicked: more.visible = !more.visible }
+        Action { fontFamily: root.fontFamily; iconName: "label"; tip: Fr.t("text.etiquettes_205654"); onClicked: root.openPicker("label") }
+        Action { fontFamily: root.fontFamily; iconName: "more"; tip: Fr.t("text.autres_options"); selected: more.visible; onClicked: more.visible = !more.visible }
     }
     Flow {
         id: more
         visible: false
         Layout.fillWidth: true; spacing: Style.space(6)
-        Action { fontFamily: root.fontFamily; text: "Rappel"; iconName: "bell"; onClicked: { more.visible = false; root.replacingReminder = ""; root.openPicker("reminder"); } }
-        Action { fontFamily: root.fontFamily; text: "Date limite"; iconName: "upcoming"; onClicked: { more.visible = false; root.openPicker("deadline"); } }
-        Action { fontFamily: root.fontFamily; text: "Section"; enabled: root.shownProject !== null; onClicked: { more.visible = false; root.openPicker("section"); } }
-        Action { fontFamily: root.fontFamily; text: "Responsable"; enabled: root.shownProject !== null && root.shownProject.is_shared === true; onClicked: { more.visible = false; root.openPicker("assignee"); } }
+        Action { fontFamily: root.fontFamily; text: Fr.t("text.rappel"); iconName: "bell"; onClicked: { more.visible = false; root.replacingReminder = ""; root.openPicker("reminder"); } }
+        Action { fontFamily: root.fontFamily; text: Fr.t("text.date_limite"); iconName: "upcoming"; onClicked: { more.visible = false; root.openPicker("deadline"); } }
+        Action { fontFamily: root.fontFamily; text: Fr.t("text.section"); enabled: root.shownProject !== null; onClicked: { more.visible = false; root.openPicker("section"); } }
+        Action { fontFamily: root.fontFamily; text: Fr.t("text.responsable"); enabled: root.shownProject !== null && root.shownProject.is_shared === true; onClicked: { more.visible = false; root.openPicker("assignee"); } }
     }
     ColumnLayout {
         visible: root.editing
@@ -353,11 +354,11 @@ ColumnLayout {
         spacing: Style.space(8)
         RowLayout {
             Layout.fillWidth: true
-            Label { font.family: root.fontFamily; text: "Durée"; Layout.fillWidth: true }
+            Label { font.family: root.fontFamily; text: Fr.t("text.duree"); Layout.fillWidth: true }
             UI.TextField { font.family: root.fontFamily; objectName: "taskDuration"; Layout.preferredWidth: Style.space(60); text: root.duration; validator: IntValidator { bottom: 0; top: 100000 } onTextEdited: root.duration = text; enabled: !root.submitting }
-            UI.Dropdown { fontFamily: root.fontFamily; Layout.preferredWidth: Style.space(95); showLabel: false; value: root.durationUnit; options: [{value: "minute", label: "Minutes"}, {value: "day", label: "Jours"}]; onChanged: function(value) { root.durationUnit = value; } enabled: !root.submitting }
+            UI.Dropdown { fontFamily: root.fontFamily; Layout.preferredWidth: Style.space(95); showLabel: false; value: root.durationUnit; options: [{value: "minute", label: Fr.t("text.minutes")}, {value: "day", label: Fr.t("text.jours")}]; onChanged: function(value) { root.durationUnit = value; } enabled: !root.submitting }
         }
-        Label { font.family: root.fontFamily; text: "0 = aucune durée"; opacity: 0.45; font.pixelSize: Style.font.caption }
+        Label { font.family: root.fontFamily; text: Fr.t("text.0_aucune_duree"); opacity: 0.45; font.pixelSize: Style.font.caption }
         Repeater {
             model: root.existingReminders
             Chip { fontFamily: root.fontFamily; required property var modelData; text: Edit.reminderText(modelData); iconName: "bell"; maximumWidth: root.width; removable: !modelData.notify_uid || String(modelData.notify_uid) === String(root.service.user.id); enabled: !root.submitting; onClicked: if (removable) { root.replacingReminder = String(modelData.id); root.openPicker("reminder"); } onRemoved: root.removedReminders = root.removedReminders.concat([String(modelData.id)]) }
@@ -376,15 +377,15 @@ ColumnLayout {
             spacing: Style.space(6)
             RowLayout {
                 Layout.fillWidth: true
-                Label { font.family: root.fontFamily; Layout.fillWidth: true; text: ({project: "Projet", label: "Étiquettes", section: "Section", priority: "Priorité", due: "Date", deadline: "Date limite", reminder: "Rappel", assignee: "Responsable"})[root.pickerKind] || ""; font.bold: true; font.pixelSize: Style.font.bodySmall }
-                Action { fontFamily: root.fontFamily; iconName: "close"; iconSize: Style.space(12); tip: "Fermer le sélecteur"; onClicked: { root.closePicker(); root.focusInput(); } }
+                Label { font.family: root.fontFamily; Layout.fillWidth: true; text: ({project: Fr.t("text.projet"), label: Fr.t("text.etiquettes"), section: Fr.t("text.section"), priority: Fr.t("text.priorite"), due: Fr.t("text.date"), deadline: Fr.t("text.date_limite"), reminder: Fr.t("text.rappel"), assignee: Fr.t("text.responsable")})[root.pickerKind] || ""; font.bold: true; font.pixelSize: Style.font.bodySmall }
+                Action { fontFamily: root.fontFamily; iconName: "close"; iconSize: Style.space(12); tip: Fr.t("text.fermer_le_selecteur"); onClicked: { root.closePicker(); root.focusInput(); } }
             }
             UI.TextField { font.family: root.fontFamily;
                 id: search
                 objectName: "pickerSearch"
                 visible: !root.activeToken
                 Layout.fillWidth: true
-                placeholderText: root.editing && root.pickerKind === "deadline" ? "YYYY-MM-DD" : ["due", "deadline", "reminder"].indexOf(root.pickerKind) >= 0 ? "p. ex. demain à 16h" : "Rechercher…"
+                placeholderText: root.editing && root.pickerKind === "deadline" ? "YYYY-MM-DD" : ["due", "deadline", "reminder"].indexOf(root.pickerKind) >= 0 ? Fr.t("text.p_ex_demain_a_16h") : Fr.t("text.rechercher")
                 onTextEdited: root.choiceIndex = 0
                 Keys.onPressed: event => root.handleKey(event)
             }
@@ -414,17 +415,17 @@ ColumnLayout {
                     onClicked: root.choose(modelData)
                 }
             }
-            Label { font.family: root.fontFamily; visible: root.choices.length === 0; Layout.fillWidth: true; text: root.pickerKind === "section" && !root.shownProject ? "Choisissez d’abord un projet." : root.pickerKind === "assignee" && (!root.shownProject || !root.shownProject.is_shared) ? "Choisissez d’abord un projet partagé." : "Aucun résultat"; opacity: 0.5; wrapMode: Text.WordWrap }
-            Label { font.family: root.fontFamily; visible: root.pickerKind === "reminder"; Layout.fillWidth: true; text: "Les rappels avant une tâche nécessitent une heure. Leur disponibilité dépend de votre forfait Todoist."; font.pixelSize: Style.font.caption; opacity: 0.5; wrapMode: Text.WordWrap; elide: Text.ElideNone }
+            Label { font.family: root.fontFamily; visible: root.choices.length === 0; Layout.fillWidth: true; text: root.pickerKind === "section" && !root.shownProject ? Fr.t("text.choisissez_dabord_un_projet") : root.pickerKind === "assignee" && (!root.shownProject || !root.shownProject.is_shared) ? Fr.t("text.choisissez_dabord_un_projet_partage") : Fr.t("text.aucun_resultat"); opacity: 0.5; wrapMode: Text.WordWrap }
+            Label { font.family: root.fontFamily; visible: root.pickerKind === "reminder"; Layout.fillWidth: true; text: Fr.t("text.les_rappels_avant_une_tache_necessitent_une_heure_leur_disponibil"); font.pixelSize: Style.font.caption; opacity: 0.5; wrapMode: Text.WordWrap; elide: Text.ElideNone }
         }
     }
     Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Color.popups.text; opacity: 0.12 }
     RowLayout {
         Layout.fillWidth: true
         spacing: Style.space(4)
-        Action { fontFamily: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; maximumWidth: root.width; leftAligned: true; text: (root.shownProject && !root.shownProject.inbox_project ? "# " : "") + root.projectName + " ▾"; iconName: !root.shownProject || root.shownProject.inbox_project ? "inbox" : ""; tip: "Projet (#)"; enabled: !root.submitting; onClicked: root.openPicker("project") }
-        Action { fontFamily: root.fontFamily; text: "Annuler"; enabled: !root.submitting; onClicked: { root.reset(); root.cancelled(); } }
-        Action { fontFamily: root.fontFamily; text: root.submitting ? (root.editing ? "Enregistrement…" : "Ajout…") : root.editing ? "Enregistrer" : "Ajouter une tâche"; selected: true; enabled: !root.service.saving && input.text.trim().length > 0; onClicked: root.submit() }
+        Action { fontFamily: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; maximumWidth: root.width; leftAligned: true; text: (root.shownProject && !root.shownProject.inbox_project ? "# " : "") + root.projectName + " ▾"; iconName: !root.shownProject || root.shownProject.inbox_project ? "inbox" : ""; tip: Fr.t("text.projet_e43d18"); enabled: !root.submitting; onClicked: root.openPicker("project") }
+        Action { fontFamily: root.fontFamily; text: Fr.t("text.annuler"); enabled: !root.submitting; onClicked: { root.reset(); root.cancelled(); } }
+        Action { fontFamily: root.fontFamily; text: root.submitting ? (root.editing ? Fr.t("text.enregistrement") : Fr.t("text.ajout")) : root.editing ? Fr.t("text.enregistrer") : Fr.t("text.ajouter_une_tache_207387"); selected: true; enabled: !root.service.saving && input.text.trim().length > 0; onClicked: root.submit() }
     }
     Label { font.family: root.fontFamily; Layout.fillWidth: true; visible: text !== ""; text: root.message; wrapMode: Text.WordWrap; elide: Text.ElideNone; color: Commons.Color.urgent }
     Connections {

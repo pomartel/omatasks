@@ -1,6 +1,6 @@
 const {test}=require('node:test'), assert=require('node:assert/strict');
-const fs=require('node:fs'),vm=require('node:vm'),E={};vm.createContext(E);
-vm.runInContext(fs.readFileSync('EditParser.js','utf8'),E);
+const fs=require('node:fs'),vm=require('node:vm'),E={Fr:require('../i18n/Fr.js')};vm.createContext(E);
+vm.runInContext(fs.readFileSync('EditParser.js','utf8').replace(/^\.import.*$/gm, ''),E);
 const parse=(text,task={content:'Réviser'},date='')=>JSON.parse(JSON.stringify(E.parse(task,text,date)));
 test('French inline dates, time, priority and quoted projects are extracted together',()=>{
   const p=parse('Réviser demain à 17h p1 #"Travail personnel"');

@@ -1,3 +1,4 @@
+.import "../i18n/Fr.js" as Fr
 // Quick Add syntax is interpreted by Todoist. Only selected properties are
 // serialized here; arbitrary dates and recurring expressions stay intact.
 function escapeName(name) {
@@ -185,19 +186,19 @@ function choices(kind, query, service, project) {
     if (kind === "section") rows = service.sections.filter(function(s) { return project && s.project_id === project.id && !s.is_deleted && !s.is_archived; }).map(function(s) { return {id: s.id, label: s.name, value: s, prefix: "/"}; });
     if (kind === "label") {
         rows = service.labels.map(function(l) { return {id: l.name, label: l.name, value: l.name, icon: "label"}; });
-        if (q && !rows.some(function(r) { return r.label.toLowerCase() === q; })) rows.push({id: "new", label: query.trim(), detail: "Créer une étiquette", value: query.trim().replace(/\s+/g, "_"), icon: "label"});
+        if (q && !rows.some(function(r) { return r.label.toLowerCase() === q; })) rows.push({id: "new", label: query.trim(), detail: Fr.t("text.creer_une_etiquette"), value: query.trim().replace(/\s+/g, "_"), icon: "label"});
     }
-    if (kind === "priority") rows = [1, 2, 3, 4].map(function(p) { return {id: String(p), label: "Priorité " + p, detail: p === 4 ? "Par défaut" : "", value: p, icon: "flag", color: ["#ef615b", "#e49b40", "#5295e4", ""][p - 1]}; });
+    if (kind === "priority") rows = [1, 2, 3, 4].map(function(p) { return {id: String(p), label: Fr.t("priority.number", p), detail: p === 4 ? Fr.t("text.par_defaut") : "", value: p, icon: "flag", color: ["#ef615b", "#e49b40", "#5295e4", ""][p - 1]}; });
     if (kind === "assignee" && project && project.is_shared) rows = service.collaborators.filter(function(c) { return !c.project_id || c.project_id === project.id; }).map(function(c) { return {id: c.id, label: c.full_name || c.name || c.email, value: {id: c.id, name: c.full_name || c.name || c.email}, prefix: "+"}; });
     if (kind === "due" || kind === "deadline") {
-        rows = [{id: "today", label: "Aujourd’hui", value: "aujourd’hui", icon: "today"}, {id: "tomorrow", label: "Demain", value: "demain", icon: "upcoming"}, {id: "next week", label: "La semaine prochaine", value: "la semaine prochaine", icon: "upcoming"}];
+        rows = [{id: "today", label: Fr.t("text.aujourdhui"), value: "aujourd’hui", icon: "today"}, {id: "tomorrow", label: Fr.t("text.demain"), value: "demain", icon: "upcoming"}, {id: "next week", label: Fr.t("text.la_semaine_prochaine"), value: "la semaine prochaine", icon: "upcoming"}];
         if (q && !rows.some(function(r) { return r.id === q; })) rows.unshift({id: "custom", label: query.trim(), value: query.trim(), icon: "today"});
-        rows.push({id: "none", label: kind === "due" ? "Sans date" : "Sans date limite", value: "", icon: "close"});
+        rows.push({id: "none", label: kind === "due" ? Fr.t("text.sans_date") : Fr.t("text.sans_date_limite"), value: "", icon: "close"});
     }
     if (kind === "reminder") {
-        rows = [{id: "0mb", label: "À l’heure prévue", value: "0mb", icon: "bell"}, {id: "30mb", label: "30 minutes avant", value: "30mb", icon: "bell"}, {id: "1h", label: "1 heure avant", value: "1h", icon: "bell"}];
+        rows = [{id: "0mb", label: Fr.t("text.a_lheure_prevue"), value: "0mb", icon: "bell"}, {id: "30mb", label: Fr.t("text.30_minutes_avant"), value: "30mb", icon: "bell"}, {id: "1h", label: Fr.t("text.1_heure_avant"), value: "1h", icon: "bell"}];
         if (q) rows.unshift({id: "custom", label: query.trim(), value: query.trim(), icon: "bell"});
-        rows.push({id: "none", label: "Aucun rappel", value: "", icon: "close"});
+        rows.push({id: "none", label: Fr.t("text.aucun_rappel"), value: "", icon: "close"});
     }
     return rows.filter(function(r) { return !q || r.id === "custom" || (r.label + " " + (r.detail || "")).toLowerCase().indexOf(q) >= 0; });
 }

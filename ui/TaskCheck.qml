@@ -1,3 +1,4 @@
+import "../i18n/Fr.js" as Fr
 import QtQuick
 import QtQuick.Controls as C
 import qs.Commons
@@ -10,7 +11,7 @@ C.AbstractButton {
     readonly property color priorityColor: ["#999999", "#999999", "#5297ff", "#eb9700", "#ef615b"][task.priority || 1]
     implicitWidth: Style.space(26)
     implicitHeight: Style.space(28)
-    Accessible.name: "Terminer " + Model.plain(task.content)
+    Accessible.name: Fr.t("action.complete", Model.plain(task.content))
     focusPolicy: Qt.StrongFocus
     background: Item {}
     contentItem: Item {

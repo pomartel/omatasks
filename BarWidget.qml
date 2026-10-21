@@ -1,3 +1,4 @@
+import "i18n/Fr.js" as Fr
 import QtQuick
 import qs.Commons
 import qs.Ui
@@ -53,7 +54,7 @@ Panel {
         fixedWidth: vertical ? barSize : readout.implicitWidth + scaledHorizontalMargin * 2
         fixedHeight: vertical ? readout.implicitHeight + scaledVerticalPadding * 2 : barSize
         tooltipText: !root.service ? "" : root.service.error ? root.service.error
-            : (root.service.barTasks.length ? Bar.tooltip(root.service.barTasks, root.service.now.getTime()) + "\n\n" : "") + "Todoist · Aujourd’hui\nClic droit : ajout rapide"
+            : (root.service.barTasks.length ? Bar.tooltip(root.service.barTasks, root.service.now.getTime()) + "\n\n" : "") + Fr.t("text.todoist_aujourdhui_clic_droit_ajout_rapide")
         onPressed: function(mouseButton) {
             if (mouseButton === Qt.RightButton && root.bar && root.bar.shell) { root.close(); root.bar.shell.summon(root.moduleName, "{}"); }
             else if (mouseButton === Qt.MiddleButton && root.service) root.service.refresh();

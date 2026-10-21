@@ -1,3 +1,4 @@
+import "../i18n/Fr.js" as Fr
 import QtQuick
 import QtQuick.Controls as C
 import QtQuick.Layouts
@@ -26,21 +27,21 @@ Item {
         return record ? Number(record.completed_items) || 0 : 0;
     }
     readonly property var information: [
-        {name: "Projet", value: Model.projectPath(task.project_id, service.projectMap, task.section_id, service.sectionMap)},
-        {name: "Date", value: task.due ? Model.dueLabel(task, service.now, "details", "none") + (task.due.timezone ? " · " + task.due.timezone : "") : "Sans date"},
-        {name: "Répétition", value: task.due && task.due.is_recurring ? task.due.string || "Récurrente" : ""},
-        {name: "Durée", value: task.duration ? task.duration.amount + " " + (task.duration.unit === "day" ? "jours" : "minutes") : ""},
-        {name: "Date limite", value: task.deadline ? task.deadline.date : ""},
-        {name: "Priorité", value: "P" + (5 - Number(task.priority || 1)), color: ["#999999", "#999999", "#5297ff", "#eb9700", "#ef615b"][task.priority || 1]},
-        {name: "Étiquettes", value: (task.labels || []).join(" · ") || "Aucune"},
-        {name: "Responsable", value: person ? person.full_name || person.name || person.email : Model.assigned(task) === String(service.user.id) ? "Moi" : Model.assigned(task) ? "Responsable" : "Non attribuée"}
+        {name: Fr.t("text.projet"), value: Model.projectPath(task.project_id, service.projectMap, task.section_id, service.sectionMap)},
+        {name: Fr.t("text.date"), value: task.due ? Model.dueLabel(task, service.now, "details", "none") + (task.due.timezone ? " · " + task.due.timezone : "") : Fr.t("text.sans_date")},
+        {name: Fr.t("text.repetition"), value: task.due && task.due.is_recurring ? task.due.string || Fr.t("text.recurrente") : ""},
+        {name: Fr.t("text.duree"), value: task.duration ? task.duration.amount + " " + (task.duration.unit === "day" ? Fr.t("text.jours_5cd11d") : Fr.t("text.minutes_90e63d")) : ""},
+        {name: Fr.t("text.date_limite"), value: task.deadline ? task.deadline.date : ""},
+        {name: Fr.t("text.priorite"), value: "P" + (5 - Number(task.priority || 1)), color: ["#999999", "#999999", "#5297ff", "#eb9700", "#ef615b"][task.priority || 1]},
+        {name: Fr.t("text.etiquettes"), value: (task.labels || []).join(" · ") || Fr.t("text.aucune")},
+        {name: Fr.t("text.responsable"), value: person ? person.full_name || person.name || person.email : Model.assigned(task) === String(service.user.id) ? Fr.t("text.moi") : Model.assigned(task) ? Fr.t("text.responsable") : Fr.t("text.non_attribuee")}
     ].filter(function(row) { return row.value; })
     implicitHeight: body.implicitHeight + footer.implicitHeight + Style.space(14)
     signal closeRequested()
     signal taskRequested(var task)
 
     function startEditing() { editing = true; message = ""; scroll.contentItem.contentY = 0; Qt.callLater(function() { if (editor.item) editor.item.focusInput(); }); }
-    function complete() { message = ""; completing = service.completeTask(task); if (!completing) message = service.error || "Attendez la fin de l’opération en cours."; }
+    function complete() { message = ""; completing = service.completeTask(task); if (!completing) message = service.error || Fr.t("text.attendez_la_fin_de_loperation_en_cours"); }
     function dismissEditor() { if (busy) return; if (editing) editing = false; else closeRequested(); }
 
     C.ScrollView {
@@ -83,18 +84,18 @@ Item {
                         required property var modelData
                         Layout.fillWidth: true; Layout.minimumWidth: 0
                         spacing: Style.space(10)
-                        Label { font.family: root.fontFamily; Layout.preferredWidth: Style.space(90); Layout.alignment: Qt.AlignTop; text: "Rappel"; opacity: 0.5; font.pixelSize: Style.font.bodySmall }
+                        Label { font.family: root.fontFamily; Layout.preferredWidth: Style.space(90); Layout.alignment: Qt.AlignTop; text: Fr.t("text.rappel"); opacity: 0.5; font.pixelSize: Style.font.bodySmall }
                         Label { font.family: root.fontFamily; Layout.fillWidth: true; Layout.minimumWidth: 0; text: Edit.reminderText(modelData); wrapMode: Text.Wrap; elide: Text.ElideNone; font.pixelSize: Style.font.bodySmall }
                     }
                 }
-                Action { fontFamily: root.fontFamily; visible: root.parentTask !== null; text: "↑ " + Model.plain((root.parentTask || {}).content); maximumWidth: root.width; tip: "Tâche parente"; onClicked: root.taskRequested(root.parentTask) }
-                Label { font.family: root.fontFamily; visible: root.subtasks.length + root.completedChildren > 0; text: "Sous-tâches · " + root.completedChildren + "/" + (root.completedChildren + root.subtasks.length); font.bold: true }
+                Action { fontFamily: root.fontFamily; visible: root.parentTask !== null; text: "↑ " + Model.plain((root.parentTask || {}).content); maximumWidth: root.width; tip: Fr.t("text.tache_parente"); onClicked: root.taskRequested(root.parentTask) }
+                Label { font.family: root.fontFamily; visible: root.subtasks.length + root.completedChildren > 0; text: Fr.t("task.subtasks", root.completedChildren, root.completedChildren + root.subtasks.length); font.bold: true }
                 Repeater {
                     model: root.subtasks
                     TaskRow { required property var modelData; Layout.fillWidth: true; Layout.minimumWidth: 0; task: modelData; service: root.service; view: "details"; selected: root.highlightedSubtaskId === String(task.id); onHighlighted: function(task) { root.highlightedSubtaskId = String(task.id); } onSelectionToggled: function(task) { root.highlightedSubtaskId = selected ? "" : String(task.id); } onActivated: function(task) { root.taskRequested(task); } }
                 }
-                Action { fontFamily: root.fontFamily; visible: Number(root.task.note_count || root.task.comment_count || 0) > 0; text: (root.task.note_count || root.task.comment_count || 0) + " commentaires · Ouvrir dans Todoist ↗"; maximumWidth: root.width; onClicked: root.service.openTodoist(root.task) }
-                Label { font.family: root.fontFamily; visible: !!root.task.added_at; Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.added_at ? "Ajoutée le " + new Date(root.task.added_at).toLocaleString(Qt.locale("fr_CA"), "d MMM yyyy, HH:mm") : ""; opacity: 0.4; font.pixelSize: Style.font.caption; wrapMode: Text.Wrap; elide: Text.ElideNone }
+                Action { fontFamily: root.fontFamily; visible: Number(root.task.note_count || root.task.comment_count || 0) > 0; text: Fr.t("task.comments", root.task.note_count || root.task.comment_count || 0); maximumWidth: root.width; onClicked: root.service.openTodoist(root.task) }
+                Label { font.family: root.fontFamily; visible: !!root.task.added_at; Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.added_at ? Fr.t("text.ajoutee_le") + new Date(root.task.added_at).toLocaleString(Qt.locale("fr_CA"), "d MMM yyyy, HH:mm") : ""; opacity: 0.4; font.pixelSize: Style.font.caption; wrapMode: Text.Wrap; elide: Text.ElideNone }
             }
             Loader {
                 id: editor
@@ -116,10 +117,10 @@ Item {
         spacing: Style.space(6)
         RowLayout {
             Layout.fillWidth: true
-            Action { fontFamily: root.fontFamily; objectName: "editTaskButton"; visible: !root.editing; text: "Modifier"; bordered: true; enabled: !root.service.saving; onClicked: root.startEditing() }
-            Action { fontFamily: root.fontFamily; text: "Ouvrir dans Todoist ↗"; onClicked: root.service.openTodoist(root.task) }
+            Action { fontFamily: root.fontFamily; objectName: "editTaskButton"; visible: !root.editing; text: Fr.t("text.modifier"); bordered: true; enabled: !root.service.saving; onClicked: root.startEditing() }
+            Action { fontFamily: root.fontFamily; text: Fr.t("text.ouvrir_dans_todoist"); onClicked: root.service.openTodoist(root.task) }
             Item { Layout.fillWidth: true }
-            Action { fontFamily: root.fontFamily; visible: !root.editing; text: "Fermer"; enabled: !root.busy; onClicked: root.dismissEditor() }
+            Action { fontFamily: root.fontFamily; visible: !root.editing; text: Fr.t("text.fermer"); enabled: !root.busy; onClicked: root.dismissEditor() }
         }
     }
     Connections {

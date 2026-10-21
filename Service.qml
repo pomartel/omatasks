@@ -1,3 +1,4 @@
+import "i18n/Fr.js" as Fr
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -185,7 +186,7 @@ Item {
     function connectToken(value) {
         if (connecting || saving || !storageReady) return;
         var candidate = value.trim();
-        if (!candidate || /\s/.test(candidate)) { error = "Collez le jeton API des paramètres développeur de Todoist."; return; }
+        if (!candidate || /\s/.test(candidate)) { error = Fr.t("text.collez_le_jeton_api_des_parametres_developpeur_de_todoist"); return; }
         connecting = true; error = "";
         request("POST", "/sync", {sync_token: "*", resource_types: ["user"]}, candidate, function(data, message) {
             if (message) { connecting = false; error = message; return; }
@@ -252,7 +253,7 @@ Item {
         syncFailures = Math.min(syncFailures + 1, 7);
         var delay = Math.min(300000, 5000 * Math.pow(2, syncFailures - 1));
         nextSyncRetry = Math.max(Date.now() + delay, retryAfter);
-        error = message + " Nouvel essai automatique.";
+        error = message + Fr.t("text.nouvel_essai_automatique");
     }
     function refresh(manual) {
         if (!configured || loading || saving || connecting || Date.now() < retryAfter) return;
@@ -316,7 +317,7 @@ Item {
             var result = data && data.sync_status && data.sync_status[command.uuid];
             if (data && data.sync_token) ingest(data);
             if (message || result !== "ok") {
-                error = message || (result && result.error) || "Todoist n’a pas confirmé l’annulation. Réessayez.";
+                error = message || (result && result.error) || Fr.t("text.todoist_na_pas_confirme_lannulation_reessayez");
                 operationFailed(error); return;
             }
             lastCompletion = null;
@@ -335,7 +336,7 @@ Item {
             if (data && data.sync_token) ingest(data);
             if (failed.length) {
                 var result = status[failed[0].uuid];
-                message = (failed.length < commands.length ? "Certaines modifications ont été enregistrées. " : "") + (result && result.error ? result.error : "Todoist n’a pas confirmé les modifications. Réessayez.");
+                message = (failed.length < commands.length ? Fr.t("text.certaines_modifications_ont_ete_enregistrees") : "") + (result && result.error ? result.error : Fr.t("text.todoist_na_pas_confirme_les_modifications_reessayez"));
                 error = message; operationFailed(message); return;
             }
             error = ""; taskUpdated(String(taskId));
@@ -379,7 +380,7 @@ Item {
             if (failed.length) {
                 var result = statuses[failed[0].uuid];
                 saving = false;
-                error = (job.saved ? job.saved + " modifications enregistrées. " : "") + (message || (result && result.error) || "Todoist n’a pas confirmé les modifications.") + " Réessayez pour terminer les modifications restantes.";
+                error = (job.saved ? job.saved + Fr.t("text.modifications_enregistrees") : "") + (message || (result && result.error) || Fr.t("text.todoist_na_pas_confirme_les_modifications")) + Fr.t("text.reessayez_pour_terminer_les_modifications_restantes");
                 operationFailed(error); return;
             }
             if (job.commands.length) { sendTaskActionBatch(job); return; }
@@ -402,7 +403,7 @@ Item {
         try {
             var rows = Model.viewRows(tasks, projects, collaborators, options, view, user.id, now);
             plan = Order.plan(tasks, rows, view, sourceId, targetId, after, groupKey);
-        } catch (e) { error = "Impossible de calculer l’ordre des tâches. Actualisez et réessayez."; return false; }
+        } catch (e) { error = Fr.t("text.impossible_de_calculer_lordre_des_taches_actualisez_et_reessayez"); return false; }
         if (!plan) return false;
         if (!plan.commands.length) { setOption(view, "sorting", "manual"); return true; }
         if (!beginWrite()) return false;
@@ -426,13 +427,13 @@ Item {
             });
             if (failed.length) {
                 var result = statuses[failed[0].uuid];
-                message = message || (result && result.error) || "Todoist n’a pas confirmé le nouvel ordre. Réessayez.";
+                message = message || (result && result.error) || Fr.t("text.todoist_na_pas_confirme_le_nouvel_ordre_reessayez");
                 finishReorder(false);
                 if (data && data.sync_token) ingest(data);
                 // After an uncertain write, the next sync reconciles server state.
                 else syncToken = "*";
                 saving = false;
-                error = (pending.saved ? "Certaines tâches ont été réordonnées. " : "Impossible d’enregistrer l’ordre des tâches. ") + message;
+                error = (pending.saved ? Fr.t("text.certaines_taches_ont_ete_reordonnees") : Fr.t("text.impossible_denregistrer_lordre_des_taches")) + message;
                 operationFailed(error); return;
             }
             if (data && data.sync_token) {
@@ -457,12 +458,12 @@ Item {
         var task = alert.task;
         return notify({id: "task:" + task.id, marker: alert.key, urgent: alert.urgent, title: Model.plain(task.content),
             body: Notify.taskBody(alert, nowMs, Model.projectPath(task.project_id, projectMap, task.section_id, sectionMap)),
-            actions: [["default", "Ouvrir"], ["complete", "Terminer"], ["snooze", "Reporter de 15 min"]]});
+            actions: [["default", Fr.t("text.ouvrir")], ["complete", Fr.t("text.terminer")], ["snooze", Fr.t("text.reporter_de_15_min")]]});
     }
     // `preview` sends the recap now, even if this morning's was already shown.
     function notifyRecap(preview) {
         var date = new Date(), summary = Notify.recap(tasks, projects, user.id, date);
-        return notify({id: "recap", marker: preview === true ? "" : "recap-" + Model.dateKey(date), title: summary.title, body: summary.body, actions: [["default", "Ouvrir"]]});
+        return notify({id: "recap", marker: preview === true ? "" : "recap-" + Model.dateKey(date), title: summary.title, body: summary.body, actions: [["default", Fr.t("text.ouvrir")]]});
     }
     function checkNotifications(idle) {
         if (!notifying || !loaded) return;
@@ -505,7 +506,7 @@ Item {
         running: true
         onExited: function(code) {
             if (code === 0) root.storageReady = true;
-            else root.error = "Impossible de créer le dossier des réglages Todoist.";
+            else root.error = Fr.t("text.impossible_de_creer_le_dossier_des_reglages_todoist");
         }
     }
     FileView {
@@ -521,7 +522,7 @@ Item {
             catch (e) { root.preferences = {}; }
             root.preferencesLoaded = true;
         }
-        onSaveFailed: root.error = "Impossible d’enregistrer les préférences d’affichage."
+        onSaveFailed: root.error = Fr.t("text.impossible_denregistrer_les_preferences_daffichage")
     }
     ShortcutManager { id: shortcuts; service: root; enabled: root.enableShortcuts && root.preferencesLoaded }
     Process {
@@ -533,7 +534,7 @@ Item {
         onExited: function(code) {
             stdinEnabled = true;
             root.connecting = false;
-            if (code !== 0) { root.error = "Impossible d’enregistrer le jeton API. Réessayez."; pendingToken = ""; return; }
+            if (code !== 0) { root.error = Fr.t("text.impossible_denregistrer_le_jeton_api_reessayez"); pendingToken = ""; return; }
             root.applyToken(pendingToken); pendingToken = "";
             root.connected();
         }
