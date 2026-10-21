@@ -12,26 +12,26 @@ const shown = (mode, tasks, now) => B.label(B.selection(mode, tasks, 'me', now),
 
 test('A task is named ahead, while under way, and once late', () => {
     const tasks = [timed('Review designs', 10, 0, { duration: { amount: 30, unit: 'minute' } })];
-    assert.equal(shown('task', tasks, at(9, 44)), 'Review designs · in 16m');
-    assert.equal(shown('task', tasks, at(9, 48)), 'Review designs · in 12m');
-    assert.equal(shown('task', tasks, at(10, 5)), 'Review designs · until 10:30');
-    assert.equal(shown('task', tasks, at(10, 30)), 'Review designs · 30m late');
+    assert.equal(shown('task', tasks, at(9, 44)), 'Review designs · dans 16 min');
+    assert.equal(shown('task', tasks, at(9, 48)), 'Review designs · dans 12 min');
+    assert.equal(shown('task', tasks, at(10, 5)), 'Review designs · jusqu’à 10:30');
+    assert.equal(shown('task', tasks, at(10, 30)), 'Review designs · 30m de retard');
 });
 
 test('A task without a duration says now for half an hour', () => {
     const tasks = [timed('Call Ana', 10)];
-    assert.equal(shown('task', tasks, at(10, 10)), 'Call Ana · now');
-    assert.equal(shown('task', tasks, at(10, 30)), 'Call Ana · 30m late');
+    assert.equal(shown('task', tasks, at(10, 10)), 'Call Ana · maintenant');
+    assert.equal(shown('task', tasks, at(10, 30)), 'Call Ana · 30m de retard');
 });
 
 test('An imminent task comes before one under way, with a count of the rest', () => {
     const tasks = [timed('Long meeting', 9, 0, { duration: { amount: 120, unit: 'minute' } }), timed('Call Ana', 10)];
-    assert.equal(shown('task', tasks, at(9, 50)), 'Call Ana · in 10m  +1');
+    assert.equal(shown('task', tasks, at(9, 50)), 'Call Ana · dans 10 min  +1');
 });
 
 test('Today’s next timed task is named when nothing is due now; count and icon name none', () => {
     const tasks = [timed('Lunch', 13), { id: 'untimed', content: 'untimed', due: { date: '2026-10-21' } }, timed('Other person', 12, 0, { responsible_uid: 'other' }), timed('Tomorrow', 9, 0, { due: { date: '2026-10-22T09:00:00' } })];
-    assert.equal(shown('task', tasks, at(9)), 'Lunch · at 13:00');
+    assert.equal(shown('task', tasks, at(9)), 'Lunch · à 13:00');
     assert.equal(shown('task', [tasks[1], tasks[3]], at(9)), '');
     assert.equal(shown('count', tasks, at(12, 50)), '');
     assert.equal(shown('icon', tasks, at(12, 50)), '');
@@ -43,16 +43,16 @@ test('Today’s next timed task is named when nothing is due now; count and icon
 test('Long names are shortened for the bar but not the tooltip', () => {
     const name = 'Prepare the quarterly planning document for the team';
     const list = B.selection('task', [timed(name, 10)], 'me', at(10));
-    assert.equal(B.label(list, at(10)), 'Prepare the quarterly plann… · now');
-    assert.equal(B.tooltip(list, at(10)), name + ' · now');
+    assert.equal(B.label(list, at(10)), 'Prepare the quarterly plann… · maintenant');
+    assert.equal(B.tooltip(list, at(10)), name + ' · maintenant');
 });
 
 test('A late task stays until done or the day ends, behind anything due now', () => {
     const tasks = [timed('Tweet about the survey', 12), timed('Post mxc', 13)];
-    assert.equal(shown('task', tasks, at(12, 50)), 'Post mxc · in 10m  +1');
-    assert.equal(shown('task', tasks, at(13, 5)), 'Post mxc · now  +1');
-    assert.equal(shown('task', tasks, at(14, 0)), 'Tweet about the survey · 2h late  +1');
-    assert.equal(shown('task', tasks, at(14, 15)), 'Tweet about the survey · 2h 15m late  +1');
+    assert.equal(shown('task', tasks, at(12, 50)), 'Post mxc · dans 10 min  +1');
+    assert.equal(shown('task', tasks, at(13, 5)), 'Post mxc · maintenant  +1');
+    assert.equal(shown('task', tasks, at(14, 0)), 'Tweet about the survey · 2h de retard  +1');
+    assert.equal(shown('task', tasks, at(14, 15)), 'Tweet about the survey · 2h 15m de retard  +1');
     assert.equal(shown('task', [timed('Yesterday', 12, 0, { due: { date: '2026-10-20T12:00:00' } })], at(9)), '');
 });
 

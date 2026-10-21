@@ -1,4 +1,5 @@
 .import "../Model.js" as Model
+.import "../i18n/Fr.js" as Fr
 
 // What to announce, and when. The service checks this often against the
 // synced tasks and reminders, so notifications need no requests of their own.
@@ -99,40 +100,40 @@ function recap(tasks, projects, userId, now) {
     var list = tasks.filter(function(t) { return mine(t, userId) && Model.inView(t, "today", today, projectMap); });
     list = Model.sortTasks(list, "smart", "today", projectMap, {});
     var overdue = list.filter(function(t) { return Model.scheduledDay(t) < today; }).length;
-    var title = list.length === 0 ? "Nothing due today" : list.length + (list.length === 1 ? " task" : " tasks") + " today";
-    if (overdue) title += ", " + overdue + " overdue";
+    var title = list.length === 0 ? Fr.t("notify.empty") : Fr.t(list.length === 1 ? "notify.today_one" : "notify.today_many", list.length);
+    if (overdue) title = Fr.t("notify.with_overdue", title, overdue);
     var lines = list.slice(0, RECAP_LINES).map(function(t) {
         var due = Model.dueTime(t);
-        var when = Model.scheduledDay(t) < today ? "Overdue" : due && Model.dateKey(due) === today ? Model.clockText(due) : "";
+        var when = Model.scheduledDay(t) < today ? Fr.t("text.en_retard") : due && Model.dateKey(due) === today ? Model.clockText(due) : "";
         return (when ? when + "  " : "") + Model.plain(t.content);
     });
-    if (list.length > RECAP_LINES) lines.push("and " + (list.length - RECAP_LINES) + " more");
+    if (list.length > RECAP_LINES) lines.push(Fr.t("notify.more", list.length - RECAP_LINES));
     var deadlines = tasks.filter(function(t) {
         var day = (t.deadline || {}).date;
         return mine(t, userId) && day && day >= today && day <= horizon;
     }).sort(function(a, b) { return Model.compareText(a.deadline.date, b.deadline.date); });
     deadlines.slice(0, 3).forEach(function(t) {
-        lines.push("Deadline " + deadlineDay(t.deadline.date, today) + ": " + Model.plain(t.content));
+        lines.push(Fr.t("notify.deadline", deadlineDay(t.deadline.date, today), Model.plain(t.content)));
     });
     return {title: title, body: lines.join("\n")};
 }
 function deadlineDay(key, today) {
-    if (key === today) return "today";
-    if (key === Model.addDays(today, 1)) return "tomorrow";
-    return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][Model.dateFromKey(key).getDay()];
+    if (key === today) return Fr.t("notify.today");
+    if (key === Model.addDays(today, 1)) return Fr.t("notify.tomorrow");
+    return [Fr.t("text.dimanche"), Fr.t("text.lundi"), Fr.t("text.mardi"), Fr.t("text.mercredi"), Fr.t("text.jeudi"), Fr.t("text.vendredi"), Fr.t("text.samedi")][Model.dateFromKey(key).getDay()];
 }
 
 // "In 15 min", "Now", "Overdue since 10:00": what a task notification leads with.
 function lead(alert, nowMs) {
     var due = Model.dueTime(alert.task);
-    if (!due || !isFinite(due.getTime())) return "Reminder";
+    if (!due || !isFinite(due.getTime())) return Fr.t("text.rappel");
     var minutes = Math.round((due.getTime() - nowMs) / 60000), time = Model.dueLabel(alert.task, new Date(nowMs), "today", "none");
-    if (minutes < -1) return "Overdue since " + Model.clockText(due);
-    if (minutes <= 0) return "Now · " + time;
-    if (minutes < 60) return "In " + minutes + " min · " + time;
+    if (minutes < -1) return Fr.t("notify.overdue_since", Model.clockText(due));
+    if (minutes <= 0) return Fr.t("notify.now", time);
+    if (minutes < 60) return Fr.t("notify.in_minutes", minutes, time);
     return time;
 }
 function taskBody(alert, nowMs, projectText) {
-    if (alert.kind === "deadline") return (alert.today ? "Deadline today" : "Deadline tomorrow") + "\n" + projectText;
+    if (alert.kind === "deadline") return Fr.t(alert.today ? "notify.deadline_today" : "notify.deadline_tomorrow") + "\n" + projectText;
     return lead(alert, nowMs) + "\n" + projectText;
 }

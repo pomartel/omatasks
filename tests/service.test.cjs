@@ -428,7 +428,7 @@ test('The recap waits while you are away and is sent once a day', () => {
     assert.equal(s.sent.length, 0);
     s.checkNotifications(false);
     s.checkNotifications(false);
-    assert.deepEqual(s.sent.map(r => [r.id, r.title, r.marker.startsWith('recap-')]), [['recap', 'Nothing due today', true]]);
+    assert.deepEqual(s.sent.map(r => [r.id, r.title, r.marker.startsWith('recap-')]), [['recap', 'Aucune tâche prévue aujourd’hui', true]]);
     s.notifyRecap(true);
     assert.equal(s.sent[1].marker, '');
 });

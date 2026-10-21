@@ -229,7 +229,7 @@ Item {
                 finish(null, Model.errorMessage(status), status); return;
             }
             try { var data = response.body ? JSON.parse(response.body) : {}; }
-            catch (e) { finish(null, "Todoist returned an unreadable response. Try refreshing.", 502); return; }
+            catch (e) { finish(null, Fr.t("error.response_unreadable"), 502); return; }
             finish(data, "", status);
         });
     }
@@ -267,7 +267,7 @@ Item {
                 else error = message;
                 return;
             }
-            if (!data || !data.sync_token) { scheduleSyncRetry("Todoist returned an incomplete sync response."); return; }
+            if (!data || !data.sync_token) { scheduleSyncRetry(Fr.t("error.sync_incomplete")); return; }
             ingest(data); error = ""; syncFailures = 0;
         });
     }
@@ -492,7 +492,7 @@ Item {
         var taskId = id.indexOf("task:") === 0 ? id.slice(5) : "";
         var task = tasks.filter(function(t) { return String(t.id) === taskId; })[0];
         if (action === "complete" && task) {
-            if (!completeTask(task)) error = "Could not complete “" + Model.plain(task.content) + "” while another change is saving. Try again.";
+            if (!completeTask(task)) error = Fr.t("error.completion_busy", Model.plain(task.content));
         } else if (action === "snooze" && task) {
             var next = Object.assign({}, snoozed);
             next[taskId] = Date.now() + Notify.SNOOZE_MS;

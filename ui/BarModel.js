@@ -1,4 +1,5 @@
 .import "../Model.js" as Model
+.import "../i18n/Fr.js" as Fr
 
 // What the bar shows beside the Todoist icon. "task" names what to do next
 // among today's timed tasks and falls back to today's count once none is
@@ -41,15 +42,15 @@ function when(entry, nowMs) {
     var s = entry.span;
     if (nowMs < s.start) {
         var minutes = Math.round((s.start - nowMs) / 60000);
-        return minutes <= 0 ? "now" : minutes < 60 ? "in " + minutes + "m" : "at " + Model.clockText(new Date(s.start));
+        return minutes <= 0 ? Fr.t("bar.now") : minutes < 60 ? Fr.t("bar.in_minutes", minutes) : Fr.t("bar.at", Model.clockText(new Date(s.start)));
     }
     if (nowMs >= s.end) return late(nowMs - s.start);
-    return s.timed ? "until " + Model.clockText(new Date(s.end)) : "now";
+    return s.timed ? Fr.t("bar.until", Model.clockText(new Date(s.end))) : Fr.t("bar.now");
 }
 // "35m late", "2h late", "1h 30m late"
 function late(ms) {
     var minutes = Math.floor(ms / 60000), hours = Math.floor(minutes / 60), rest = minutes % 60;
-    return (hours ? hours + "h" + (rest ? " " + rest + "m" : "") : rest + "m") + " late";
+    return Fr.t("bar.late", hours ? hours + "h" + (rest ? " " + rest + "m" : "") : rest + "m");
 }
 // The bar shortens the title further, or drops it, when space runs out.
 function title(list) {

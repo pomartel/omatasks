@@ -75,9 +75,9 @@ test('The recap lists today in Smart order, then deadlines within three days', (
         task('Someone else', { due: { date: '2026-10-21' }, responsible_uid: 'other' })
     ];
     const summary = N.recap(tasks, [], 'me', now);
-    assert.equal(summary.title, '3 tasks today, 1 overdue');
-    assert.deepEqual(summary.body.split('\n'), ['Overdue  Old thing', '09:30  Standup', 'Write notes', 'Deadline Friday: Ship beta']);
-    assert.equal(N.recap([], [], 'me', now).title, 'Nothing due today');
+    assert.equal(summary.title, '3 tâches aujourd’hui, 1 en retard');
+    assert.deepEqual(summary.body.split('\n'), ['En retard  Old thing', '09:30  Standup', 'Write notes', 'Date limite Vendredi : Ship beta']);
+    assert.equal(N.recap([], [], 'me', now).title, 'Aucune tâche prévue aujourd’hui');
 });
 
 test('Deadline warnings cover today and tomorrow, urgent on the day', () => {
@@ -89,8 +89,8 @@ test('Deadline warnings cover today and tomorrow, urgent on the day', () => {
 
 test('Task notifications lead with how soon the task is', () => {
     const alert = { task: timed('a', 10, 0, { duration: { amount: 30, unit: 'minute' } }), kind: 'reminder' };
-    assert.equal(N.lead(alert, at(9, 45)), 'In 15 min · 10:00–10:30');
-    assert.equal(N.lead(alert, at(10)), 'Now · 10:00–10:30');
-    assert.equal(N.lead(alert, at(11)), 'Overdue since 10:00');
-    assert.equal(N.taskBody({ ...alert, kind: 'deadline', today: true }, at(8), 'Work'), 'Deadline today\nWork');
+    assert.equal(N.lead(alert, at(9, 45)), 'Dans 15 min · 10:00–10:30');
+    assert.equal(N.lead(alert, at(10)), 'Maintenant · 10:00–10:30');
+    assert.equal(N.lead(alert, at(11)), 'En retard depuis 10:00');
+    assert.equal(N.taskBody({ ...alert, kind: 'deadline', today: true }, at(8), 'Work'), 'Date limite aujourd’hui\nWork');
 });
