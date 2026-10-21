@@ -136,7 +136,7 @@ ColumnLayout {
                 enabled: !root.service.shortcut.busy
                 onAccepted: root.service.shortcut.apply(text, true)
                 // Typing drops the binding; show a saved or reset shortcut again.
-                Connections { target: root.service.shortcut; function onValueChanged() { shortcutInput.text = root.service.shortcut.value; } }
+                Connections { target: root.service; function onPreferencesChanged() { shortcutInput.text = root.service.shortcut.value; } }
             }
             Action { fontFamily: root.fontFamily; text: "Appliquer"; bordered: true; enabled: !root.service.shortcut.busy; onClicked: root.service.shortcut.apply(shortcutInput.text, true) }
         }

@@ -167,6 +167,8 @@ ColumnLayout {
         return dark ? "#414141" : "#eeeeee";
     }
     function highlightRects() {
+        // A deferred layout callback can outlive the overlay's service.
+        if (!root.service || !root.parsed || !input) return [];
         // Observe text layout changes, including font changes and wrapping.
         input.cursorRectangle; input.width; input.contentHeight; input.font;
         var rects = [];
