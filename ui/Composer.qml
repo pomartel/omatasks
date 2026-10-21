@@ -287,6 +287,7 @@ ColumnLayout {
         }
     }
     C.ScrollView {
+        id: descriptionScroll
         Layout.fillWidth: true
         Layout.preferredHeight: Math.min(Style.space(90), Math.max(Style.space(28), description.implicitHeight))
         visible: root.descriptionVisible || description.text !== ""

@@ -144,7 +144,7 @@ Item {
                 width: Math.min(implicitWidth, parent.width * (root.metadata.length ? 0.4 : 0.85))
                 text: root.projectText + "  #"
                 horizontalAlignment: Text.AlignRight
-                font.pixelSize: Style.font.caption
+                font.pixelSize: Style.font.bodySmall
                 opacity: 0.55
             }
         }

@@ -12,6 +12,7 @@ ShellRoot {
         id: restoredServiceComponent
         Plugin.Service {
             enableShortcuts: false
+        enableNotifications: false
             function applyToken(value) {}
             function refresh(manual) {}
         }
@@ -20,6 +21,7 @@ ShellRoot {
     Plugin.Service {
         id: service
         enableShortcuts: false
+        enableNotifications: false
         stateDir: Quickshell.env("TODOIST_TEST_DIR") + "/state"
         property var captured: []
         property var completions: []
@@ -40,6 +42,7 @@ ShellRoot {
     Plugin.Service {
         id: completionService
         enableShortcuts: false
+        enableNotifications: false
         stateDir: Quickshell.env("TODOIST_TEST_DIR") + "/completion-state"
         property var captured: []
         function applyToken(value) {}

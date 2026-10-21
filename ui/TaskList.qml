@@ -241,7 +241,7 @@ FocusScope {
             text: root.service.error || (!root.service.loaded && root.service.configured ? "Chargement des tâches…" : "")
             color: root.service.error ? Commons.Color.urgent : Commons.Color.popups.text
             wrapMode: Text.WordWrap; elide: Text.ElideNone
-            font.pixelSize: Style.font.bodySmall
+            font.pixelSize: Style.font.body
         }
         Action { fontFamily: root.fontFamily;
             objectName: "retrySync"

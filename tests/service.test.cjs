@@ -27,6 +27,14 @@ function service() {
     vm.runInContext(fs.readFileSync('ui/BulkModel.js', 'utf8').replace(/^\.import.*$/gm, ''), Bulk);
     const ctx = vm.createContext({ completingTask: false, undoRequested: false, Order, preferences: {}, now: new Date(2026, 8, 15, 12), pendingReorder: null, reorderCache: {}, settingsFile: { setText() {} }, Model, httpRequest: {createObject() { return new Transport(); }}, Date, requests: [], completionIds: {}, generation: 0, token: 'test-token', configured: true, loading: false, saving: false, connecting: false, storageReady: true, error: '', retryAfter: 0, nextSyncRetry: 0, syncFailures: 0, syncToken: '*', tasks: [], projects: [], sections: [], labels: [], collaborators: [], reminders: [], completedInfo: [], user: {}, lastSync: 0, taskAdded() { ctx.added = true; }, taskUpdated(id) { ctx.updated = id; }, taskCompleted(id) { ctx.completed = id; }, operationFailed(message) { ctx.failed = message; } });
     ctx.root = ctx;
+    const Bar = vm.createContext({ Model, Date });
+    vm.runInContext(fs.readFileSync('ui/BarModel.js', 'utf8').replace(/^\.import.*$/gm, ''), Bar);
+    ctx.Bar = Bar;
+    const Notify = vm.createContext({ Model, Date });
+    vm.runInContext(fs.readFileSync('ui/NotifyModel.js', 'utf8').replace(/^\.import.*$/gm, ''), Notify);
+    ctx.sent = [];
+    Object.assign(ctx, { Notify, notifySettings: Notify.settings({}), notifying: true, loaded: true, startedAt: 0, shownAlerts: {}, snoozed: {}, projectMap: {}, sectionMap: {},
+        notifier: { running: true, write(line) { ctx.sent.push(JSON.parse(line)); } } });
     ctx.Bulk = Bulk; ctx.bulkRetry = null; ctx.taskActionFinished = () => { ctx.bulkFinished = true; };
     const source = fs.readFileSync('Service.qml', 'utf8');
     const functions = [...source.matchAll(/^    function .+?\{[\s\S]*?^    \}/gm)].map(m => m[0]).join('\n');
@@ -396,4 +404,79 @@ test('Failed completion discards a queued undo and leaves the previous completio
     assert.equal(s.completingTask, false);
     assert.equal(s.lastCompletion.task.id, 'older');
     assert.equal(wires.length, 1);
+});
+
+test('Due tasks are sent to the notifier once, with Complete and Snooze', () => {
+    const {s} = service();
+    const due = new Date(Date.now() - 60000);
+    const local = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:00`;
+    s.user = {id: 'me'};
+    s.tasks = [{id: 't1', content: 'Call **Ana**', project_id: 'p', priority: 1, due: {date: local(due)}}];
+    s.notifySettings = s.Notify.settings({notifications: {recap: false, deadlines: false}});
+    s.checkNotifications(false);
+    s.checkNotifications(false);
+    assert.equal(s.sent.length, 1);
+    assert.equal(s.sent[0].id, 'task:t1');
+    assert.equal(s.sent[0].title, 'Call Ana');
+    assert.deepEqual(s.sent[0].actions.map(a => a[0]), ['default', 'complete', 'snooze']);
+});
+test('The recap waits while you are away and is sent once a day', () => {
+    const {s} = service();
+    s.user = {id: 'me'};
+    s.notifySettings = s.Notify.settings({notifications: {recapTime: '00:00'}});
+    s.checkNotifications(true);
+    assert.equal(s.sent.length, 0);
+    s.checkNotifications(false);
+    s.checkNotifications(false);
+    assert.deepEqual(s.sent.map(r => [r.id, r.title, r.marker.startsWith('recap-')]), [['recap', 'Nothing due today', true]]);
+    s.notifyRecap(true);
+    assert.equal(s.sent[1].marker, '');
+});
+test('Notification buttons complete, snooze, or open the panel', () => {
+    const {s, wires} = service();
+    s.tasks = [{id: 't1', content: 'Call', project_id: 'p', priority: 1}];
+    s.answerNotification(JSON.stringify({id: 'task:t1', action: 'snooze'}));
+    assert.ok(s.snoozed.t1 > Date.now() + 14 * 60000);
+    s.answerNotification(JSON.stringify({id: 'task:t1', action: 'complete'}));
+    assert.match(wires.at(-1).url, /\/tasks\/t1\/close$/);
+    s.openPanel = () => { s.panelOpened = true; };
+    s.answerNotification(JSON.stringify({id: 'recap', action: 'default'}));
+    assert.equal(s.panelOpened, true);
+    s.answerNotification('not json');
+});
+test('Notification settings are saved with the view preferences', () => {
+    const {s} = service();
+    assert.equal(s.setNotification('recapTime', '7:30'), true);
+    assert.equal(s.preferences.notifications.recapTime, '07:30');
+    assert.equal(s.setNotification('recapTime', 'later'), false);
+    assert.equal(s.setNotification('unknown', true), false);
+    assert.equal(s.setNotification('overdueHours', 2), true);
+    assert.equal(s.Notify.settings(s.preferences).overdueHours, 2);
+});
+test('The bar mode is saved with the view preferences and rejects unknown modes', () => {
+    const {s} = service();
+    s.setBarMode('count');
+    assert.equal(s.preferences.barTask, 'count');
+    s.setBarMode('everything');
+    assert.equal(s.preferences.barTask, 'count');
+});
+test('Toggling the panel opens it on the focused monitor, or closes every open one', () => {
+    const {s} = service();
+    const widget = name => ({opened: false, QsWindow: {window: {screen: {name}}}, open() { this.opened = true; }, close() { this.opened = false; }});
+    s.widgets = [widget('DP-1'), widget('DP-2')];
+    s.Hyprland = {focusedMonitor: {name: 'DP-2'}};
+    s.togglePanel();
+    assert.deepEqual(s.widgets.map(w => w.opened), [false, true]);
+    s.togglePanel();
+    assert.deepEqual(s.widgets.map(w => w.opened), [false, false]);
+});
+test('Quick Add from a command closes the panel and opens the overlay', () => {
+    const {s} = service();
+    const panel = {opened: true, close() { this.opened = false; }};
+    s.widgets = [panel];
+    s.manifest = {id: 'crmne.todoist'};
+    s.shell = {summon(id, payload) { s.summoned = [id, payload]; }};
+    s.quickAdd();
+    assert.equal(panel.opened, false);
+    assert.deepEqual(s.summoned, ['crmne.todoist', '{}']);
 });

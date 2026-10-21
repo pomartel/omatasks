@@ -2,9 +2,12 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
+import Quickshell.Wayland
 import "Model.js" as Model
 import "ui/OrderModel.js" as Order
 import "ui/BulkModel.js" as Bulk
+import "ui/NotifyModel.js" as Notify
+import "ui/BarModel.js" as Bar
 
 Item {
     id: root
@@ -14,6 +17,7 @@ Item {
     property bool storageReady: false
     property bool preferencesLoaded: false
     property bool enableShortcuts: true
+    property bool enableNotifications: true
     property alias shortcut: shortcuts
     property bool loaded: false
     property bool loading: false
@@ -47,6 +51,17 @@ Item {
     property int syncFailures: 0
     property date now: clock.date
     property var widgets: []
+    property real startedAt: Date.now()
+    property var shownAlerts: ({})
+    property var snoozed: ({})
+    readonly property string barMode: Bar.mode(preferences.barTask || "count")
+    readonly property var barTasks: loaded ? Bar.selection(barMode, tasks, user.id, now.getTime()) : []
+    readonly property string barText: Bar.label(barTasks, now.getTime())
+    readonly property string barTitle: Bar.title(barTasks)
+    readonly property string barDetail: Bar.detail(barTasks, now.getTime())
+    readonly property var notifySettings: Notify.settings(preferences)
+    readonly property bool notifying: enableNotifications && configured && notifySettings.enabled
+    readonly property string notifierPath: decodeURIComponent(Qt.resolvedUrl("Notifier.py").toString().replace(/^file:\/\//, ""))
     // The bar uses a terminal font. Task text follows the desktop's UI font.
     readonly property string fontFamily: Qt.application.font.family
     readonly property bool configured: token.length > 0
@@ -88,6 +103,12 @@ Item {
     IpcHandler {
         target: "pomartel.omatasks"
         function togglePanel(): void { root.togglePanel(); }
+        function open(): void { root.openPanel(); }
+        function close(): void { root.closePanels(); }
+        function toggle(): void { root.togglePanel(); }
+        function show(): void { root.openPanel(); }
+        function hide(): void { root.closePanels(); }
+        function quickAdd(): void { root.quickAdd(); }
         function status(): string { return JSON.stringify({connected: root.configured, loaded: root.loaded, loading: root.loading, taskCount: root.tasks.length, hasError: !!root.error, selectedView: root.selectedView, transport: "curl", lastNetworkStatus: root.lastNetworkStatus, lastSync: root.lastSync, syncFailures: root.syncFailures}); }
     }
     function viewOptions(view) { return Object.assign({}, Model.DEFAULT_VIEW, view === "inbox" ? {assignee: "all"} : {}, preferences[view] || {}); }
@@ -95,6 +116,11 @@ Item {
         if (["today", "upcoming", "inbox"].indexOf(view) < 0 || view === selectedView) return;
         preferences = Object.assign({}, preferences, {selectedView: view});
         if (storageReady) settingsFile.setText(JSON.stringify(preferences));
+    }
+
+    function quickAdd() {
+        closePanels();
+        if (shell) shell.summon(manifest && manifest.id ? manifest.id : "crmne.todoist", "{}");
     }
     function setOption(view, key, value) {
         var next = Object.assign({}, preferences), options = viewOptions(view);
@@ -111,6 +137,21 @@ Item {
     function saveShortcut(value) {
         preferences = Object.assign({}, preferences, {quickAddShortcut: value});
         if (storageReady) settingsFile.setText(JSON.stringify(preferences));
+    }
+    function setBarMode(value) {
+        if (Bar.MODES.indexOf(value) < 0) return;
+        preferences = Object.assign({}, preferences, {barTask: value});
+        if (storageReady) settingsFile.setText(JSON.stringify(preferences));
+    }
+    function setNotification(key, value) {
+        var next = Object.assign({}, preferences), options = Notify.settings(preferences);
+        if (key === "recapTime") value = Notify.normalClock(value);
+        if (!(key in options) || value === "") return false;
+        options[key] = value;
+        next.notifications = options;
+        preferences = next;
+        if (storageReady) settingsFile.setText(JSON.stringify(next));
+        return true;
     }
     function setPanelSize(key, value) {
         if (key !== "panelWidth" && key !== "panelHeight") return;
@@ -407,6 +448,57 @@ Item {
         });
     }
 
+    function notify(request) {
+        if (!notifier.running) return false;
+        notifier.write(JSON.stringify(request) + "\n");
+        return true;
+    }
+    function notifyTask(alert, nowMs) {
+        var task = alert.task;
+        return notify({id: "task:" + task.id, marker: alert.key, urgent: alert.urgent, title: Model.plain(task.content),
+            body: Notify.taskBody(alert, nowMs, Model.projectPath(task.project_id, projectMap, task.section_id, sectionMap)),
+            actions: [["default", "Ouvrir"], ["complete", "Terminer"], ["snooze", "Reporter de 15 min"]]});
+    }
+    // `preview` sends the recap now, even if this morning's was already shown.
+    function notifyRecap(preview) {
+        var date = new Date(), summary = Notify.recap(tasks, projects, user.id, date);
+        return notify({id: "recap", marker: preview === true ? "" : "recap-" + Model.dateKey(date), title: summary.title, body: summary.body, actions: [["default", "Ouvrir"]]});
+    }
+    function checkNotifications(idle) {
+        if (!notifying || !loaded) return;
+        var nowMs = Date.now(), date = new Date(nowMs), options = notifySettings, shown = Object.assign({}, shownAlerts), rest = Object.assign({}, snoozed);
+        Notify.taskAlerts(tasks, reminders, user.id, options, nowMs, startedAt - 60000, shown, snoozed).forEach(function(alert) {
+            if (alert.kind === "snooze") delete rest[String(alert.task.id)];
+            if (notifyTask(alert, nowMs)) shown[alert.key] = nowMs;
+        });
+        // The recap waits until you are at the computer, so it is not missed
+        // behind a lock screen or while you are away.
+        if (!idle && Notify.recapDue(options, date)) {
+            var recapKey = "recap-" + Model.dateKey(date);
+            if (options.recap && !shown[recapKey] && notifyRecap()) shown[recapKey] = nowMs;
+            if (options.deadlines) Notify.deadlineAlerts(tasks, user.id, date).forEach(function(alert) {
+                if (!shown[alert.key] && notifyTask(alert, nowMs)) shown[alert.key] = nowMs;
+            });
+        }
+        // Forgets what is long past, so the set does not grow for as long as the shell runs.
+        for (var key in shown) if (nowMs - shown[key] > 2 * 86400000) delete shown[key];
+        shownAlerts = shown; snoozed = rest;
+    }
+    function answerNotification(line) {
+        var answer;
+        try { answer = JSON.parse(line); } catch (e) { return; }
+        var id = String(answer.id || ""), action = String(answer.action || "");
+        var taskId = id.indexOf("task:") === 0 ? id.slice(5) : "";
+        var task = tasks.filter(function(t) { return String(t.id) === taskId; })[0];
+        if (action === "complete" && task) {
+            if (!completeTask(task)) error = "Could not complete “" + Model.plain(task.content) + "” while another change is saving. Try again.";
+        } else if (action === "snooze" && task) {
+            var next = Object.assign({}, snoozed);
+            next[taskId] = Date.now() + Notify.SNOOZE_MS;
+            snoozed = next;
+        } else if (action === "default") openPanel();
+    }
+
     Process {
         id: initializeStorage
         command: ["sh", "-c", "umask 077; mkdir -p \"$1\" && chmod 700 \"$1\" && touch \"$1/token\" \"$1/views.json\" && chmod 600 \"$1/token\" \"$1/views.json\"", "todoist-storage", root.stateDir]
@@ -446,6 +538,21 @@ Item {
             root.connected();
         }
     }
+    Process {
+        id: notifier
+        command: ["/usr/bin/python3", root.notifierPath]
+        stdinEnabled: true
+        stdout: SplitParser { onRead: function(line) { root.answerNotification(line); } }
+        onExited: if (root.notifying) notifierRestart.start()
+    }
+    onNotifyingChanged: notifier.running = notifying
+    Component.onCompleted: notifier.running = notifying
+    Timer { id: notifierRestart; interval: 30000; onTriggered: if (root.notifying) notifier.running = true }
+    Timer {
+        interval: 15000; running: root.notifying && root.loaded; repeat: true; triggeredOnStart: true
+        onTriggered: root.checkNotifications(idleMonitor.isIdle)
+    }
+    IdleMonitor { id: idleMonitor; timeout: 120; respectInhibitors: true }
     SystemClock { id: clock; precision: SystemClock.Minutes; onDateChanged: root.refresh() }
     Timer { interval: 60000; running: root.configured; repeat: true; onTriggered: root.refresh() }
     Timer {

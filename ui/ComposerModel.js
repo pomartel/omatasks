@@ -104,11 +104,14 @@ function withoutTokens(text, tokens) {
     return text;
 }
 
-function spelling(kind, value) {
-    if (kind === "project") return "#" + escapeName(value.name);
-    if (kind === "section") return "/" + escapeName(value.name);
-    if (kind === "label") return "@" + escapeName(value);
-    if (kind === "assignee") return "+" + escapeName(value.name || value.full_name);
+// Names read as typed in the editor; quickText escapes them for Todoist,
+// whose Quick Add needs "#My\ Project" for a name with spaces.
+function spelling(kind, value, escaped) {
+    var name = escaped ? escapeName : String;
+    if (kind === "project") return "#" + name(value.name);
+    if (kind === "section") return "/" + name(value.name);
+    if (kind === "label") return "@" + name(value);
+    if (kind === "assignee") return "+" + name(value.name || value.full_name);
     if (kind === "priority") return "p" + value;
     if (kind === "deadline") return "{" + value + "}";
     if (kind === "reminder") return "!" + value;
@@ -137,7 +140,11 @@ function dateOffset(value, now, user) {
 }
 
 function quickText(draft) {
-    var text = draft.text.trim(), suffix = [], description = draft.description.trim();
+    var text = draft.text, suffix = [], description = draft.description.trim();
+    ((draft.parsed || {}).tokens || []).filter(function(t) { return ["project", "section", "label", "assignee"].indexOf(t.kind) >= 0; })
+        .sort(function(a, b) { return b.start - a.start; })
+        .forEach(function(t) { text = text.slice(0, t.start + 1) + spelling(t.kind, t.value, true).slice(1) + text.slice(t.end); });
+    text = text.trim();
     // Preserve Todoist's inline description syntax if the user pasted it.
     var split = text.indexOf(" // ");
     if (split >= 0) { description = [text.slice(split + 4), description].filter(Boolean).join("\n"); text = text.slice(0, split).trim(); }

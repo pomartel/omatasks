@@ -104,3 +104,15 @@ Licence [MIT](LICENSE), avec la [notice du parseur importé](LICENSE.EditParser)
 ## Intégration upstream du 3 octobre 2026
 
 Reconnaissance et surlignage des propriétés Quick Add dans les deux éditeurs, police native du bureau et correction des dates relatives anciennes. Les dates françaises, filtres locaux et détails par clic simple sont conservés. Source upstream : `55b6b631f2d6294f3466f589d30eccb35e1df46f`.
+
+## Intégration upstream du 21 octobre 2026
+
+Révision intégrée : `a20f58c5a3c986e2b144ee155ac0fefa078f669b`. Intégration en un commit linéaire, conformément aux règles du dépôt ; les commits du fork ne sont pas réécrits.
+
+Notifications Todoist, récapitulatif du matin, mode « Prochaine tâche » dans la barre et commandes de panneau intégrés. Le mode de barre reste sur le compteur par défaut. Les vues françaises, les raccourcis, les liens, la sélection persistante, l’annulation et le transport curl sont conservés.
+
+Les champs natifs Qt sont conservés pour les accents, les touches mortes, Compose, les méthodes de saisie, la sélection et l’annulation. Le remplacement upstream par un éditeur de touches personnalisé est volontairement écarté. Les champs natifs gardent donc le comportement Qt de lecture du presse-papiers ; la protection upstream qui supprime ces lectures automatiques n’est pas applicable à cette variante.
+
+`tests/check-french-input` vérifie la préédition et la validation de `ê`, `é` et `à` dans les vrais composants, avec des données synthétiques. Ce test requiert les outils de développement Qt 6 et un compilateur C++. Il ne remplace pas un essai physique du clavier.
+
+La documentation upstream est conservée dans [UPSTREAM.md](UPSTREAM.md) ; ses limitations de saisie ne concernent pas cette variante native.

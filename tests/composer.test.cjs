@@ -101,7 +101,7 @@ test('A pasted task previews every property and serializes once with typed proje
   assert.equal(parsed.reminder, '30 min before'); assert.equal(parsed.deadline, 'Friday');
   assert.equal(parsed.assignee.id, 'me'); assert.deepEqual(Array.from(parsed.labels), ['email', 'next']);
   assert.equal(parsed.tokens.length, 9);
-  assert.equal(draft.quickText(input({text, parsed, project: service.projects[0], priority: 3, due: 'today', labels: ['email'], deadline: 'Monday'})), text);
+  assert.equal(draft.quickText(input({text, parsed, project: service.projects[0], priority: 3, due: 'today', labels: ['email'], deadline: 'Monday'})), text.replace('#Client Work', '#Client\\ Work').replace('+Alex Smith', '+Alex\\ Smith'));
 });
 
 test('Escaped names, name boundaries, project scoping and metadata dates are recognized safely', () => {
@@ -112,7 +112,7 @@ test('Escaped names, name boundaries, project scoping and metadata dates are rec
   }
   const namedDates = {...service, projects: [{id: 'dates', name: 'Next Monday'}], labels: [{name: 'today'}]};
   assert.equal(draft.parse('Review #Next Monday @today {tomorrow} !14:00', namedDates, null).due, undefined);
-  assert.equal(draft.quickText(input({text: 'Review #Next Monday', due: 'today', parsed: draft.parse('Review #Next Monday', namedDates, null)})), 'today Review #Next Monday');
+  assert.equal(draft.quickText(input({text: 'Review #Next Monday', due: 'today', parsed: draft.parse('Review #Next Monday', namedDates, null)})), 'today Review #Next\\ Monday');
   assert.equal(draft.parse('Review #Client Workplace', service, null).project, undefined);
   assert.equal(draft.parse('Review #Archived', service, null).project, undefined);
   assert.equal(draft.parse('Review #Inbox /Review +Alex Smith', service, null).section, undefined);
@@ -121,11 +121,19 @@ test('Escaped names, name boundaries, project scoping and metadata dates are rec
   assert.equal(draft.parse('Review // tomorrow p1 #Client Work', service, null).tokens.length, 0);
 });
 
+test('Names picked or typed with spaces read plainly and reach Todoist escaped', () => {
+  for (const text of ['Buy tickets #Client Work /Review p1', 'Buy tickets #Client\\ Work /Review p1']) {
+    const parsed = draft.parse(text, service, null);
+    assert.equal(draft.quickText(input({text, parsed})), 'Buy tickets #Client\\ Work /Review p1');
+  }
+});
+
 test('Removing or replacing metadata preserves the rest of the title and description', () => {
   const text = 'Review tomorrow p1 #Client Work @email // Explain tomorrow p2';
   const parsed = draft.parse(text, service, null);
   assert.equal(draft.withoutTokens(text, parsed.tokens.filter(t => t.kind === 'priority')), 'Review tomorrow  #Client Work @email // Explain tomorrow p2');
-  assert.equal(draft.spelling('project', {name: 'Client Work'}), '#Client\\ Work');
+  assert.equal(draft.spelling('project', {name: 'Client Work'}), '#Client Work');
+  assert.equal(draft.spelling('project', {name: 'Client Work'}, true), '#Client\\ Work');
   assert.equal(draft.spelling('deadline', 'in 3 days'), '{in 3 days}');
 });
 

@@ -50,3 +50,13 @@ test('A date typed as "tomorrow" yesterday reads as today, so picking Tomorrow r
     const timed = {...task, due: {date: '2026-09-20T10:00:00', string: 'tomorrow at 10am', is_recurring: false}};
     assert.equal(edit.snapshot(timed, now).due, '2026-09-20 at 10am');
 });
+test('A date typed as "tomorrow" yesterday reads as today, so picking Tomorrow reschedules it', () => {
+    const stale = {...task, due: {date: '2026-09-15', string: 'tomorrow', is_recurring: false}};
+    const draft = edit.snapshot(stale, now);
+    assert.equal(draft.due, 'today');
+    assert.deepEqual(plain(edit.changes(stale, draft, now)), {update: {}, move: null});
+    draft.due = 'tomorrow';
+    assert.deepEqual(plain(edit.changes(stale, draft, now).update), {due: {string: 'tomorrow', lang: 'en'}});
+    const timed = {...task, due: {date: '2026-09-20T10:00:00', string: 'tomorrow at 10am', is_recurring: false}};
+    assert.equal(edit.snapshot(timed, now).due, '2026-09-20 at 10am');
+});
