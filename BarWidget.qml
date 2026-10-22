@@ -51,6 +51,7 @@ Panel {
         bar: root.bar
         labelVisible: false
         hasVisualContent: true
+        horizontalMargin: 6
         fixedWidth: vertical ? barSize : readout.implicitWidth + scaledHorizontalMargin * 2
         fixedHeight: vertical ? readout.implicitHeight + scaledVerticalPadding * 2 : barSize
         tooltipText: !root.service ? "" : root.service.error ? root.service.error
