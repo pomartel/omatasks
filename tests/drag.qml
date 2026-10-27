@@ -82,6 +82,15 @@ ShellRoot {
                 {tag: "large-font", width: 270, size: 20, text: "A larger title that wraps onto two lines"}
             ];
         }
+        function test_final_add_row_has_no_extra_bottom_space() {
+            service.tasks = service.tasks.slice(0, 1);
+            taskList.reset();
+            var list = findChild(taskList, "taskListView");
+            list.forceLayout();
+            tryVerify(function() { return findChild(taskList, "addTask_add") !== null; });
+            var add = findChild(taskList, "addTask_add");
+            compare(add.parent.height, add.y + add.height);
+        }
         function test_task_title_alignment(data) {
             var row = createTemporaryObject(alignmentRow, window.contentItem, {
                 width: data.width, service: service,

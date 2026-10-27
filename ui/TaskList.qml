@@ -351,8 +351,10 @@ FocusScope {
             Component {
                 id: addComponent
                 Item {
-                    implicitHeight: root.composerKey === rowLoader.modelData.key ? composerLoader.implicitHeight + Style.space(20) : Style.space(40)
+                    implicitHeight: root.composerKey === rowLoader.modelData.key ? composerLoader.implicitHeight + Style.space(20)
+                        : rowLoader.index === list.count - 1 ? addButton.y + addButton.implicitHeight : Style.space(40)
                     Action { fontFamily: root.fontFamily;
+                        id: addButton
                         visible: root.composerKey !== rowLoader.modelData.key
                         y: Style.space(5)
                         text: Fr.t("text.ajouter_une_tache")
