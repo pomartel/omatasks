@@ -89,6 +89,8 @@ Item {
         onDoubleClicked: function(mouse) { mouse.accepted = false; }
     }
     TaskCheck { fontFamily: root.fontFamily;
+        id: completion
+        objectName: "taskCompletion_" + root.task.id
         x: 0; y: Style.space(5)
         task: root.task
         enabled: !root.service.saving && !root.listDragging
@@ -104,13 +106,17 @@ Item {
             else root.selectionToggled(root.task);
         }
     }
+    FontMetrics { id: titleMetrics; font: title.font }
     Column {
         id: content
         anchors.left: parent.left; anchors.leftMargin: Style.space(31)
         anchors.right: parent.right; anchors.rightMargin: Style.space(3)
-        y: Style.space(9)
+        // Center the first line's capital letters on the completion circle.
+        y: completion.y + (completion.height + titleMetrics.capitalHeight) / 2 - title.baselineOffset
         spacing: Style.space(4)
         LinkLabel { font.family: root.fontFamily;
+            id: title
+            objectName: "taskTitle_" + root.task.id
             width: parent.width
             sourceText: root.task.content || ""
             wrapMode: Text.WordWrap

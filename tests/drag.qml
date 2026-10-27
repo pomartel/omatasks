@@ -8,6 +8,8 @@ import "plugin" as Plugin
 import "plugin/ui" as Tasks
 
 ShellRoot {
+    FontMetrics { id: alignmentMetrics }
+    Component { id: alignmentRow; Tasks.TaskRow {} }
     property var taskList: taskListLoader.item
     Component {
         id: restoredServiceComponent
@@ -73,6 +75,29 @@ ShellRoot {
         when: window.visible
         function cleanupTestCase() { console.log("DRAG UI RESULTS", qtest_results.passCount, "passed", qtest_results.failCount, "failed"); Qt.callLater(Qt.quit); }
         function cleanup() { console.log("TEST", qtest_results.functionName, qtest_results.failed ? "FAILED" : "PASSED"); }
+        function test_task_title_alignment_data() {
+            return [
+                {tag: "single-line", width: 430, size: 13, text: "Blog post: What's in your report?"},
+                {tag: "wrapped", width: 270, size: 13, text: "A longer task title that wraps onto two lines to check alignment"},
+                {tag: "large-font", width: 270, size: 20, text: "A larger title that wraps onto two lines"}
+            ];
+        }
+        function test_task_title_alignment(data) {
+            var row = createTemporaryObject(alignmentRow, window.contentItem, {
+                width: data.width, service: service,
+                task: {id: "alignment", content: data.text, description: "Description below the title", project_id: "inbox", priority: 1}
+            });
+            verify(row !== null);
+            var title = findChild(row, "taskTitle_alignment");
+            var circle = findChild(row, "taskCompletion_alignment");
+            title.font.pixelSize = data.size;
+            alignmentMetrics.font = title.font;
+            wait(0);
+            compare(title.lineCount, data.tag === "single-line" ? 1 : 2);
+            var textCenter = title.mapToItem(row, 0, title.baselineOffset - alignmentMetrics.capitalHeight / 2).y;
+            var circleCenter = circle.mapToItem(row, 0, circle.height / 2).y;
+            verify(Math.abs(textCenter - circleCenter) < 0.5, "First line must be centered on the completion circle");
+        }
         function init() {
             // Give each scenario fresh delegates, popup overlays and input state.
             taskListLoader.active = false;

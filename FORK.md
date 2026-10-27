@@ -36,6 +36,8 @@ pour supporter les changements de réseau et les reprises de veille. Les
   fenêtre webapp Todoist. Les champs non modifiés restent inchangés.
 - Compteur dans la barre par défaut, taille d’icône accordée à qs-yadm.
   Les nouveaux modes de barre et notifications upstream restent disponibles.
+- Première ligne du titre centrée sur le rond de complétion, selon les
+  métriques de la police, y compris pour les titres sur deux lignes.
 
 ## Raccourcis propres au fork
 
