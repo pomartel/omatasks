@@ -25,7 +25,7 @@ Item {
         id: process
         // -q must be first: ignore ~/.curlrc. No automatic retries or redirects
         // (writes may have succeeded, and auth must not go to another host).
-        command: ["curl", "-q", "--silent", "--connect-timeout", "10", "--max-time", "20",
+        command: ["curl", "-q", "--silent", "--connect-timeout", "10", "--max-time", "20", "--max-filesize", "16777216",
                   "--write-out", "\n%{http_code}\n%header{retry-after}", "--config", "-"]
         stdinEnabled: true
         onStarted: { write(root.input); root.input = ""; stdinEnabled = false; }

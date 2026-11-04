@@ -11,6 +11,7 @@ function config(method, url, payload, headers) {
     return lines.join('\n') + '\n';
 }
 function response(output, exitCode) {
+    if (exitCode === 63) return {status: 0, body: '', retryAfter: '', tooLarge: true};
     // The last two lines are curl's metadata, even when the body has newlines.
     var end = output.lastIndexOf('\n'), start = output.lastIndexOf('\n', end - 1);
     var status = Number(output.slice(start + 1, end));

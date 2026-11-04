@@ -34,6 +34,8 @@ test('QML transport recovers on a new connection after a dropped request without
             calls.push({url: req.url, body, auth: req.headers.authorization, id: req.headers['x-request-id']});
             if (req.url === '/drop') { req.socket.destroy(); return; }
             if (req.url === '/wait') return;
+            if (req.url === '/large') { res.writeHead(200, {'Content-Length': 17 * 1024 * 1024}); res.end(); return; }
+            if (req.url === '/chunked') { res.writeHead(200); for (let i = 0; i < 257; i++) res.write(Buffer.alloc(65536)); res.end(); return; }
             res.writeHead(200, {'Retry-After': '120', 'Content-Type': 'application/json'});
             res.end('{\n"ok":true\n}');
         });
@@ -58,8 +60,8 @@ test('QML transport recovers on a new connection after a dropped request without
     child.stdout.on('data', data => output += data); child.stderr.on('data', data => output += data);
     await new Promise((resolve, reject) => { child.on('error', reject); child.on('exit', resolve); });
     assert.match(output, /HTTP TRANSPORT PASSED/, output);
-    assert.deepEqual(calls.map(c => c.url), ['/echo', '/drop', '/echo', '/wait', '/echo']);
-    assert.equal(sockets.size, 5, 'Each request must use a fresh connection');
+    assert.deepEqual(calls.map(c => c.url), ['/echo', '/drop', '/echo', '/wait', '/echo', '/large', '/chunked']);
+    assert.equal(sockets.size, 7, 'Each request must use a fresh connection');
     for (const call of calls) {
         assert.equal(call.body, '@épreuve "citée"\nligne\\suite\t$(false)');
         assert.equal(call.auth, 'Bearer synthetic-token');

@@ -18,6 +18,9 @@ Le jeton et `views.json` sont dans `$XDG_CONFIG_HOME/omatasks-fr`
 Le transport curl crée une connexion par requête, avec un délai de 20 secondes,
 pour supporter les changements de réseau et les reprises de veille. Les
 écritures ne sont pas rejouées automatiquement par curl.
+Les réponses sont limitées à 16 Mio avec curl 8.4 ou plus récent, y compris
+quand le serveur n’annonce pas leur taille. Une réponse plus volumineuse
+interrompt la requête et affiche une erreur.
 
 ## Comportements conservés
 

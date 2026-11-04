@@ -223,6 +223,7 @@ Item {
         }).join("&");
         transport.send(method, Model.API_BASE + path, payload, headers, function(response) {
             if (entry.done || epoch !== generation) return;
+            if (response.tooLarge) { finish(null, Fr.t("error.response_too_large"), 0); return; }
             var status = response.status;
             if (status < 200 || status >= 300) {
                 if (status === 429) root.retryAfter = Date.now() + Math.max(60, Number(response.retryAfter) || 60) * 1000;
