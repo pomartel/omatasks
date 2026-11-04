@@ -66,20 +66,15 @@ Panel {
             anchors.centerIn: parent
             columns: button.vertical ? 1 : 2
             spacing: Style.space(5)
-            TextMetrics {
-                id: yadmIconMetrics
-                text: "Y"
-                font.family: button.fontFamily
-                font.pixelSize: Style.bar.iconFont
-                font.bold: true
-            }
+            verticalItemAlignment: Grid.AlignVCenter
             Item {
-                width: yadmIconMetrics.tightBoundingRect.height + Style.space(2)
-                height: label.implicitHeight
-                Tasks.TodoistIcon {
-                    color: button.foreground
-                    width: parent.width; height: width
-                    y: barDetail.baselineOffset + yadmIconMetrics.tightBoundingRect.y - Style.space(2) / 2
+                width: Style.bar.iconSize
+                height: Style.bar.iconCanvas
+                BarIconContent {
+                    anchors.fill: parent
+                    sourceComponent: Component {
+                        Tasks.TodoistIcon { color: button.foreground }
+                    }
                 }
             }
 
