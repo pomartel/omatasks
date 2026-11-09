@@ -471,7 +471,6 @@ FocusScope {
                     Action { fontFamily: root.fontFamily;
                         id: addButton
                         visible: root.composerKey !== rowLoader.modelData.key
-                        y: Style.space(5)
                         width: parent.width
                         leftAligned: true
                         text: Fr.t("text.ajouter_une_tache")

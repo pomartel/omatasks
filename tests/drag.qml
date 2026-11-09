@@ -92,6 +92,7 @@ ShellRoot {
             list.forceLayout();
             tryVerify(function() { return findChild(taskList, "addTask_add") !== null; });
             var add = findChild(taskList, "addTask_add");
+            compare(add.y, 0);
             compare(add.parent.height, add.y + add.height);
         }
         function test_task_title_alignment(data) {
