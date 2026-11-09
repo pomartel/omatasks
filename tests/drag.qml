@@ -385,15 +385,11 @@ ShellRoot {
                 Commons.Color.popups.text = text;
             }
         }
-        function test_view_display_options_are_available_in_settings() {
+        function test_view_display_options_are_not_exposed_in_settings() {
             verify(findChild(taskList, "displayButton") === null);
             taskList.view = "upcoming";
             taskList.settingsOpen = true;
-            var options = findChild(taskList, "viewDisplayOptions");
-            tryVerify(function() { return options !== null && options.visible; });
-            compare(options.view, "upcoming");
-            options.service.setOption(options.view, "sorting", "name");
-            compare(service.viewOptions("upcoming").sorting, "name");
+            tryVerify(function() { return findChild(taskList, "viewDisplayOptions") === null; });
         }
         function test_real_completion_then_keyboard_undo() {
             completionService.token = "fixture"; completionService.now = service.now;

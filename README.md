@@ -44,7 +44,7 @@ Click the **Todoist icon** in the bar. Setup appears **inside that panel**:
 2. Copy your API token. The panel links directly to [Developer settings](https://app.todoist.com/app/settings/integrations/developer).
 3. Paste the token into the password field with **Ctrl+V** and select **Connect**.
 
-The token is validated before being saved. It lives in `$XDG_CONFIG_HOME/omarchy-todoist/token` (normally `~/.config/omarchy-todoist/token`) with mode `0600`, inside a `0700` directory. It is sent to the credential writer through stdin and to Todoist through an HTTPS authorization header. It is never stored in `shell.json`, command arguments, or this repository. Display and notification preferences are stored in `views.json` beside it. Task data stays in memory.
+The token is validated before being saved. It lives in `$XDG_CONFIG_HOME/omarchy-todoist/token` (normally `~/.config/omarchy-todoist/token`) with mode `0600`, inside a `0700` directory. It is sent to the credential writer through stdin and to Todoist through an HTTPS authorization header. It is never stored in `shell.json`, command arguments, or this repository. Panel, bar, notification, and task-view state are stored in `views.json` beside it. Task data stays in memory.
 
 Temporary sync failures retry automatically after 5 seconds, with increasing delays up to five minutes. Cached tasks stay visible and your account stays connected. Use **Retry now** in the error banner to try immediately; Todoist rate limits still apply. Failed task changes retain their existing explicit retry behavior.
 
@@ -121,10 +121,7 @@ The layout follows Todoist’s [Quick Add design comparison](https://www.todoist
 - Complete tasks and subtasks from the detail popup, or choose **Edit** to change the title, description, project/section, date/recurrence, priority, labels, assignee, deadline, and reminders. **Save** writes the changes; **Cancel** discards the draft. Only changed fields are sent, preserving existing schedules and durations when you edit other fields. Deadlines accept Today, Tomorrow, Next week, or YYYY-MM-DD.
 - The detail popup links to the parent task, individual subtasks, and comments in Todoist when present.
 - Drag a task up or down to reorder it. The insertion line shows where it will land; hold near the top or bottom to scroll. **Escape** or dropping outside cancels. A successful drop selects **Manual** sorting for that tab and saves the order through Todoist's API. Failed saves restore the previous order and show an error.
-- Reordering stays within the displayed group. In Inbox it also stays within the same section and parent task. Filters preserve hidden tasks' positions. Today/Upcoming use Todoist's day order; Inbox uses project sibling order. Other clients show the saved order with **Manual** sorting in the corresponding view; their display preferences remain independent.
-- Use Settings to change grouping, sorting and filters for the selected view. **Smart** follows date/time → priority → deadline → manual order.
-- Project grouping uses the task's own project, with its section shown on the task row. Label grouping lists a task under each of its labels.
-- Today includes overdue tasks. Upcoming includes all scheduled tasks, grouped by date. The default assignee filter is **Me and unassigned**.
+- Reordering stays within the displayed group. In Inbox it also stays within the same section and parent task. Filters preserve hidden tasks' positions. Today/Upcoming use Todoist's day order; Inbox uses project sibling order. Other clients show the saved order with **Manual** sorting in the corresponding view.
 - The bar number counts today's and overdue tasks assigned to you or unassigned, independent of panel filters.
 - The bar also names what to do next among today's timed tasks: one starting within 15 minutes or under way ("Call Ana · in 12m", "· until 10:30"), then one you are late on ("· 1h 30m late"), otherwise the next one today ("· at 14:30"). "+1" means another task is due now or late. Hover for the full names. When the bar is too narrow, the name is shortened, then left out ("in 12m"), so the task never runs into the next part of the bar. Once no timed task is left today, the bar shows the number. Change this under **Settings → In the bar**: **Today's count** keeps only the number, and **Icon only** hides it. A vertical bar shows the number.
 
@@ -199,7 +196,7 @@ omarchy plugin remove crmne.todoist --yes
 ```
 
 Use **Settings → Disconnect** before removal if you also want to clear the saved
-API token. Otherwise the token and display preferences remain in
+API token. Otherwise the token and saved plugin preferences remain in
 `$XDG_CONFIG_HOME/omarchy-todoist` (normally `~/.config/omarchy-todoist`) for a later
 reinstall. The plugin unregisters its quick-add shortcut when it unloads.
 
@@ -219,7 +216,7 @@ omarchy plugin validate .
 
 Tests cover task selection, Smart/manual order, nested groups, time zones, incremental sync, request cancellation, recurring completion, retry IDs, and error handling. Reorder tests cover filtered tasks, duplicate label groups, sibling boundaries, fractional keys, batching, rollback, and retries. Text field tests cover editing, word deletion, selection, line wrapping, surrogate pairs, and clipboard cleaning, and fail if any QML file uses a Qt text input or reads the clipboard outside an explicit paste. Quick Add tests cover token boundaries, scoped pickers, escaped names, description serialization, and date precedence. Edit tests cover preserving recurring schedules, optional-field removal, project moves, deadline validation, reminder syntax, partial Sync failures, and retries. The service tests run its JavaScript methods with controlled HTTP responses; they do not modify a Todoist account. UI and credential-file behavior are checked in Quickshell.
 
-Implementation follows the [Todoist API v1 documentation](https://developer.todoist.com/api/v1/): form-encoded incremental Sync, JSON Quick Add, and the task close endpoint. The app's display preferences are local to this plugin.
+Implementation follows the [Todoist API v1 documentation](https://developer.todoist.com/api/v1/): form-encoded incremental Sync, JSON Quick Add, and the task close endpoint. The app's task-view state is local to this plugin.
 
 `./tools/render-preview` regenerates the release artwork and screenshots from the real QML components with sample data. It never accesses your account.
 
