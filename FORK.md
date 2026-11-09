@@ -33,7 +33,7 @@ interrompt la requête et affiche une erreur.
 - Interface française, dates françaises et anglaises lors des modifications,
   champs Qt natifs pour les accents, touches mortes, Compose et annulation.
   La restriction upstream de lecture du presse-papiers ne s’applique donc pas.
-- Clic simple pour ouvrir les détails ; survol pour le focus clavier ;
+- Clic simple pour modifier sur place ; `v` pour ouvrir les détails ; survol pour le focus clavier ;
   `Ctrl` + clic pour sélectionner plusieurs tâches. Suppression immédiate.
 - Liens HTTP/HTTPS et Markdown cliquables ; ouverture des tâches dans la
   fenêtre webapp Todoist. Les champs non modifiés restent inchangés.

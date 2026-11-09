@@ -153,8 +153,9 @@ FocusScope {
         showTask(task);
         Qt.callLater(function() { if (detailLoader.item) detailLoader.item.startEditing(); });
     }
-    function editTaskInPlace(task) {
-        var index = rows.findIndex(function(row) { return row.kind === "task" && String(row.task.id) === String(task.id); });
+    function editTaskInPlace(task, rowIndex) {
+        if (composerKey || service.saving) return;
+        var index = rowIndex === undefined ? rows.findIndex(function(row) { return row.kind === "task" && String(row.task.id) === String(task.id); }) : rowIndex;
         if (index < 0) return;
         clearSelection();
         heldRows = rows;
@@ -363,8 +364,9 @@ FocusScope {
                     dragging: root.dragIndex === rowLoader.index
                     listDragging: root.dragging
                     opacity: dragging ? 0.3 : 1
-                    onActivated: function(task) { root.showTask(task); }
+                    onActivated: function(task) { root.editTaskInPlace(task, rowLoader.index); }
                     onHighlighted: function(task) {
+                        if (root.composerKey) return;
                         root.clearSelection();
                         root.keyboardTaskId = String(task.id);
                         root.keyboardAddKey = "";

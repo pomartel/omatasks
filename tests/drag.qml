@@ -607,16 +607,17 @@ ShellRoot {
             verify(Math.abs(list.contentY - offset) < 50);
             compare(service.captured.length, 1);
         }
-        function test_click_highlights_and_opens_details_without_bulk_selection() {
+        function test_click_highlights_and_opens_inline_editor_without_bulk_selection() {
             taskList.keyboardAddKey = "add";
             mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
             compare(taskList.keyboardTaskId, "0");
             compare(taskList.keyboardAddKey, "");
             compare(taskList.selectedIds.length, 0);
-            verify(findChild(taskList, "taskDetailsPopup").opened);
-            compare(String(taskList.selectedTask.id), "0");
+            verify(!findChild(taskList, "taskDetailsPopup").opened);
+            tryVerify(function() { var input = findChild(taskList, "taskName"); return input && input.activeFocus; });
+            compare(findChild(taskList, "taskName").text, service.tasks[0].content);
             keyClick(Qt.Key_Escape);
-            tryCompare(findChild(taskList, "taskDetailsPopup"), "visible", false);
+            tryCompare(taskList, "composerKey", "");
             taskList.forceActiveFocus();
             keyClick(Qt.Key_Down); compare(taskList.keyboardTaskId, "1");
             keyClick(Qt.Key_Space); compare(service.completions.join(","), "1");
@@ -631,25 +632,32 @@ ShellRoot {
             mouseClick(first, 65, 12);
             compare(taskList.selectedIds.length, 0);
             compare(taskList.keyboardTaskId, "0");
-            var highlight = findChild(taskList, "taskHighlight_0");
-            compare(highlight.color, Style.hoverFillFor(Commons.Color.popups.text, Commons.Color.accent));
-            compare(highlight.opacity, 0.5);
-            verify(findChild(taskList, "taskDetailsPopup").opened);
+            tryVerify(function() { return findChild(taskList, "taskName") !== null; });
             keyClick(Qt.Key_Escape);
-            tryCompare(findChild(taskList, "taskDetailsPopup"), "visible", false);
+            tryCompare(taskList, "composerKey", "");
             compare(service.completions.length, 0);
-            mouseClick(second, 65, 12, Qt.LeftButton, Qt.ControlModifier);
-            mouseClick(first, 65, 12);
+            mouseClick(findChild(taskList, "taskPointer_1"), 65, 12, Qt.LeftButton, Qt.ControlModifier);
+            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
             compare(taskList.selectedIds.length, 0);
             compare(taskList.keyboardTaskId, "0");
         }
-        function test_click_opens_details_and_clears_selection() {
+        function test_click_opens_editor_and_clears_selection() {
             mouseClick(findChild(taskList, "taskPointer_0"), 65, 12); wait(80);
-            verify(findChild(taskList, "taskDetailsPopup").opened);
-            compare(String(taskList.selectedTask.id), "0");
+            verify(!findChild(taskList, "taskDetailsPopup").opened);
+            compare(findChild(taskList, "taskName").text, service.tasks[0].content);
             compare(taskList.selectedIds.length, 0);
             compare(service.completions.length, 0);
             compare(service.captured.length, 0);
+        }
+        function test_clicking_another_task_preserves_open_editor() {
+            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
+            tryVerify(function() { return findChild(taskList, "taskName") !== null; });
+            var input = findChild(taskList, "taskName");
+            input.text = "Modification en cours";
+            mouseClick(findChild(taskList, "taskPointer_1"), 65, 12);
+            compare(taskList.keyboardTaskId, "0");
+            compare(input.text, "Modification en cours");
+            verify(!findChild(taskList, "taskDetailsPopup").opened);
         }
         function test_ctrl_click_selects_and_toggles() {
             mouseClick(findChild(taskList, "taskPointer_0"), 65, 12, Qt.LeftButton, Qt.ControlModifier);
