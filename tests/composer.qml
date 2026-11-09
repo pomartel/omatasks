@@ -125,9 +125,17 @@ ShellRoot {
             var row = inlineList.rows.filter(function(r) { return r.kind === "add"; })[0]; verify(row !== undefined);
             inlineList.addAt(row.key, row.projectId); wait(80);
             var input = findChild(inlineList, "taskName"); verify(input !== null);
+            var circle = findChild(inlineList, "newTaskCompletion"); verify(circle !== null);
+            verify(findChild(inlineList, "taskDescription").visible);
+            compare(input.parent.inlineTask, true);
+            compare(input.font.bold, false);
+            var titlePosition = input.mapToItem(inlineList, input.positionToRectangle(0).x, input.baselineOffset);
+            var circlePosition = circle.mapToItem(inlineList, 0, 0);
+            compare(titlePosition.x - circlePosition.x, Style.space(31));
             compare(input.font.family, Qt.application.font.family);
             input.text = "Review tomorrow !!1 #Studio @next"; input.cursorPosition = input.length; wait(30);
             compare(findChild(inlineList, "dateChip").text, "tomorrow"); compare(findChild(inlineList, "priorityChip").text, "P1");
+            compare(circle.priorityColor, Qt.color("#ef615b"));
             verify(findChild(inlineList, "highlight_due") !== null);
             keyClick(Qt.Key_Escape); keyClick(Qt.Key_Return); compare(service.captured.length, 1); compare(service.captured[0].text, "Review tomorrow !!1 #Studio @next");
         }

@@ -37,7 +37,7 @@ ColumnLayout {
     property string deadline: ""
     property string reminder: ""
     property var assignee: null
-    property bool descriptionVisible: false
+    property bool descriptionVisible: inlineTask
     property string requestId: ""
     property string sentText: ""
     property bool submitting: false
@@ -119,7 +119,7 @@ ColumnLayout {
 
     function focusInput() { input.forceActiveFocus(); }
     function reset() {
-        input.text = ""; description.text = ""; descriptionVisible = false;
+        input.text = ""; description.text = ""; descriptionVisible = inlineTask;
         project = service.projectMap[initialProjectId] || null; section = null; taskLabels = [];
         priority = 0; due = initialDue; deadline = ""; reminder = ""; assignee = null;
         pickerKind = ""; activeToken = null; requestId = ""; message = "";

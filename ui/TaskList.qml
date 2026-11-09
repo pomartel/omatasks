@@ -466,7 +466,7 @@ FocusScope {
             Component {
                 id: addComponent
                 Item {
-                    implicitHeight: root.composerKey === rowLoader.modelData.key ? composerLoader.implicitHeight + Style.space(20)
+                    implicitHeight: root.composerKey === rowLoader.modelData.key ? composerLoader.implicitHeight
                         : rowLoader.index === list.count - 1 ? addButton.y + addButton.implicitHeight : Style.space(40)
                     Action { fontFamily: root.fontFamily;
                         id: addButton
@@ -486,16 +486,31 @@ FocusScope {
                     }
                     Loader {
                         id: composerLoader
-                        y: Style.space(10)
                         active: root.composerKey === rowLoader.modelData.key
                         width: parent.width
-                        sourceComponent: Composer {
-                            service: root.service
-                            initialProjectId: root.composerProject
-                            initialDue: root.view === "today" ? "aujourd’hui" : root.view === "upcoming" ? "demain" : ""
-                            onFinished: { root.composerKey = ""; list.forceActiveFocus(); }
-                            onCancelled: { root.composerKey = ""; list.forceActiveFocus(); }
-                            Component.onCompleted: Qt.callLater(focusInput)
+                        sourceComponent: Item {
+                            implicitHeight: newEditor.y + newEditor.implicitHeight + Style.space(10)
+                            TaskCheck {
+                                id: newCheck
+                                objectName: "newTaskCompletion"
+                                x: Style.space(4); y: Style.space(5)
+                                task: ({content: newEditor.text, priority: newEditor.shownPriority ? 5 - newEditor.shownPriority : 1})
+                                fontFamily: root.fontFamily
+                                enabled: false
+                            }
+                            FontMetrics { id: newMetrics; font: newEditor.titleFont }
+                            Composer {
+                                id: newEditor
+                                x: Style.space(35); width: parent.width - x - Style.space(3)
+                                y: newCheck.y + (newCheck.height + newMetrics.capitalHeight) / 2 - titleBaseline
+                                service: root.service
+                                inlineTask: true
+                                initialProjectId: root.composerProject
+                                initialDue: root.view === "today" ? "aujourd’hui" : root.view === "upcoming" ? "demain" : ""
+                                onFinished: { root.composerKey = ""; list.forceActiveFocus(); }
+                                onCancelled: { root.composerKey = ""; list.forceActiveFocus(); }
+                                Component.onCompleted: Qt.callLater(focusInput)
+                            }
                         }
                     }
                 }

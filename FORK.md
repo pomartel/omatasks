@@ -43,6 +43,8 @@ interrompt la requête et affiche une erreur.
   métriques de la police, y compris pour les titres sur deux lignes.
 - Dernière ligne « Ajouter une tâche » sans espace superflu sous le bouton,
   en conservant la marge du cadre.
+- Ajout et modification sur place alignés comme les lignes de tâches, avec le
+  rond, le nom et le champ de description visibles.
 
 ## Raccourcis propres au fork
 
