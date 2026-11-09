@@ -298,25 +298,23 @@ ShellRoot {
             compare(service.error, "");
             verify(!menu.visible);
         }
-        function test_imported_date_shortcuts() {
+        function test_letter_shortcuts_change_views_with_selection() {
             taskList.forceActiveFocus(); keyClick(Qt.Key_J);
-            keyClick(Qt.Key_D);
-            compare(service.captured[0].args.due.date,"2026-09-16");
-            keyClick(Qt.Key_I);
-            compare(service.captured[1].args.due,null);
-            keyClick(Qt.Key_A);
+            keyClick(Qt.Key_D); compare(taskList.view, "upcoming");
+            keyClick(Qt.Key_I); compare(taskList.view, "inbox");
+            keyClick(Qt.Key_A); compare(taskList.view, "today");
             tryCompare(findChild(taskList, "taskContextMenu"), "opened", false);
-            compare(service.captured[2].args.due.date,"2026-09-15");
-            compare(taskList.view,"today");
             keyClick(Qt.Key_A,Qt.ControlModifier);
             compare(taskList.selectedIds.length,24);
             keyClick(Qt.Key_D,Qt.ControlModifier); keyClick(Qt.Key_I,Qt.ControlModifier);
-            compare(service.captured.length,3);
+            compare(taskList.view, "today");
+            compare(service.captured.length,0);
         }
-        function test_date_shortcuts_without_a_task_do_nothing() {
+        function test_letter_shortcuts_change_views_without_selection() {
             taskList.forceActiveFocus();
-            keyClick(Qt.Key_A); keyClick(Qt.Key_D); keyClick(Qt.Key_I);
-            compare(taskList.view,"today");
+            keyClick(Qt.Key_D); compare(taskList.view,"upcoming");
+            keyClick(Qt.Key_I); compare(taskList.view,"inbox");
+            keyClick(Qt.Key_A); compare(taskList.view,"today");
             compare(service.captured.length,0);
         }
         function test_number_keys_schedule_selected_task() {
@@ -341,7 +339,7 @@ ShellRoot {
                 var help = findChild(taskList, "shortcutHelp");
                 tryCompare(help, "opened", true);
                 var caption = findChild(taskList, "shortcutHelpText");
-                verify(caption.text.indexOf("a / d / i : aujourd’hui / demain / sans date") >= 0);
+                verify(caption.text.indexOf("a / d / i : Aujourd’hui / Prochainement / Inbox") >= 0);
                 verify(caption.text.indexOf("Ctrl+a : tout sélectionner") >= 0);
                 verify(caption.text.indexOf("Ctrl+d") < 0);
                 verify(caption.text.indexOf("← / →") >= 0);

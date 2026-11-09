@@ -49,7 +49,7 @@ interrompt la requête et affiche une erreur.
 | Touche | Action |
 | --- | --- |
 | Tab / Maj+Tab ou ← / → | Parcourir les vues |
-| a / d / i | Planifier aujourd’hui, demain, ou retirer la date |
+| a / d / i | Ouvrir Aujourd’hui / Prochainement / Inbox |
 | 1 à 9 / 0 | Planifier dans 1 à 9 jours / retirer la date |
 | ↑ / ↓ ou k / j | Sélectionner une tâche ou l’ajout |
 | Entrée / v / e / Espace | Modifier sur place / détails / modifier dans les détails / terminer |
