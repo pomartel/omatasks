@@ -160,7 +160,6 @@ FocusScope {
         heldRows = rows;
         editRowIndex = index;
         composerKey = "edit:" + index;
-        Qt.callLater(function() { list.positionViewAtIndex(index, ListView.Contain); });
     }
     function openInTodoist(task) { service.openTodoist(task); }
     function handleShortcut(event) {
@@ -330,12 +329,23 @@ FocusScope {
             Component {
                 id: editComponent
                 Item {
-                    implicitHeight: editor.implicitHeight + Style.space(20)
+                    implicitHeight: editor.y + editor.implicitHeight + Style.space(10)
+                    TaskCheck {
+                        id: editingCheck
+                        objectName: "editingTaskCompletion"
+                        x: 0; y: Style.space(5)
+                        task: rowLoader.modelData.task
+                        fontFamily: root.fontFamily
+                        enabled: false
+                    }
+                    FontMetrics { id: editMetrics; font: editor.titleFont }
                     Composer {
                         id: editor
-                        y: Style.space(10); width: parent.width
+                        x: Style.space(31); width: parent.width - x - Style.space(3)
+                        y: editingCheck.y + (editingCheck.height + editMetrics.capitalHeight) / 2 - titleBaseline
                         service: root.service
                         editingTask: rowLoader.modelData.task
+                        inlineTask: true
                         onFinished: { root.composerKey = ""; list.forceActiveFocus(); }
                         onCancelled: { root.composerKey = ""; list.forceActiveFocus(); }
                         Component.onCompleted: Qt.callLater(focusInput)

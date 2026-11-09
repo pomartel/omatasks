@@ -15,6 +15,9 @@ ColumnLayout {
     required property var service
     readonly property string fontFamily: service.fontFamily
     property var editingTask: null
+    property bool inlineTask: false
+    readonly property real titleBaseline: input.baselineOffset
+    readonly property font titleFont: input.font
     property var originalTask: null
     property var pendingCommands: []
     property var commandCache: ({})
@@ -259,7 +262,7 @@ ColumnLayout {
         wrapMode: TextEdit.Wrap
         textFormat: TextEdit.PlainText
         padding: 0; color: Commons.Color.popups.text
-        font.family: root.fontFamily; font.pixelSize: Style.font.body; font.bold: true
+        font.family: root.fontFamily; font.pixelSize: Style.font.body; font.bold: !root.inlineTask
         placeholderText: Fr.t("text.nom_de_la_tache"); placeholderTextColor: Qt.rgba(Commons.Color.popups.text.r, Commons.Color.popups.text.g, Commons.Color.popups.text.b, 0.4)
         selectionColor: Commons.Color.accent; selectedTextColor: Commons.Color.popups.background
         // Keep a plain TextArea for cursor movement, selection, undo, paste

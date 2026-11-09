@@ -414,16 +414,24 @@ ShellRoot {
             return [{tag: "Return", key: Qt.Key_Return}, {tag: "Enter", key: Qt.Key_Enter}];
         }
         function test_enter_edits_selected_task_in_place(data) {
-            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(data.key);
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J);
+            var title = findChild(taskList, "taskTitle_0");
+            var circle = findChild(taskList, "taskCompletion_0");
+            var titlePosition = title.mapToItem(taskList, 0, title.baselineOffset);
+            var circlePosition = circle.mapToItem(taskList, 0, 0);
+            keyClick(data.key);
             var popup = findChild(taskList, "taskDetailsPopup");
             compare(popup.visible, false);
             tryVerify(function() { var input = findChild(taskList, "taskName"); return input && input.activeFocus; });
             var input = findChild(taskList, "taskName");
             compare(input.text, service.tasks[0].content);
             compare(input.cursorPosition, input.text.length);
-            var editor = input.parent;
-            compare(editor.y, Style.space(10));
-            compare(editor.parent.height - editor.y - editor.height, Style.space(10));
+            var editedPosition = input.mapToItem(taskList, 0, input.baselineOffset);
+            var editedCircle = findChild(taskList, "editingTaskCompletion").mapToItem(taskList, 0, 0);
+            verify(Math.abs(titlePosition.x - editedPosition.x) < 0.5);
+            verify(Math.abs(titlePosition.y - editedPosition.y) < 0.5);
+            compare(editedCircle.x, circlePosition.x);
+            compare(editedCircle.y, circlePosition.y);
             keyClick(Qt.Key_Tab);
             var description = findChild(taskList, "taskDescription");
             tryCompare(description, "activeFocus", true);
