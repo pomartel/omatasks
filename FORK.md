@@ -49,14 +49,14 @@ interrompt la requête et affiche une erreur.
 | Touche | Action |
 | --- | --- |
 | Tab / Maj+Tab ou ← / → | Parcourir les vues |
-| a / d / i | Ouvrir Aujourd’hui / Prochainement / Inbox |
+| a / p / i | Ouvrir Aujourd’hui / Prochainement / Inbox |
 | 1 à 9 / 0 | Planifier dans 1 à 9 jours / retirer la date |
 | ↑ / ↓ ou k / j | Sélectionner une tâche ou l’ajout |
 | Entrée / v / e / Espace | Modifier sur place / détails / modifier dans les détails / terminer |
 | u | Annuler la dernière complétion dans la session |
 | o / x | Ouvrir dans Todoist / supprimer immédiatement |
 | Ctrl+a | Sélectionner toutes les tâches visibles |
-| q / r / p / ? | Ajouter / actualiser / réglages / aide |
+| q / r / , / ? | Ajouter / actualiser / réglages / aide |
 
 `Alt+Space` ouvre l’ajout rapide ; son raccourci reste configurable sans
 écraser une autre liaison. Les champs de saisie gardent leurs touches natives.

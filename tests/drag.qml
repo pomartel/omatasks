@@ -274,7 +274,7 @@ ShellRoot {
             keyClick(Qt.Key_Tab); compare(taskList.view,"inbox");
             keyClick(Qt.Key_Backtab); compare(taskList.view,"upcoming");
             keyClick(Qt.Key_Backtab); compare(taskList.view,"today");
-            keyClick(Qt.Key_P); compare(taskList.settingsOpen,true);
+            keyClick(Qt.Key_Comma); compare(taskList.settingsOpen,true);
             keyClick(Qt.Key_Escape); compare(taskList.settingsOpen,false);
         }
         function test_delete_shortcut_hides_menu_and_retries_errors() {
@@ -300,19 +300,19 @@ ShellRoot {
         }
         function test_letter_shortcuts_change_views_with_selection() {
             taskList.forceActiveFocus(); keyClick(Qt.Key_J);
-            keyClick(Qt.Key_D); compare(taskList.view, "upcoming");
+            keyClick(Qt.Key_P); compare(taskList.view, "upcoming");
             keyClick(Qt.Key_I); compare(taskList.view, "inbox");
             keyClick(Qt.Key_A); compare(taskList.view, "today");
             tryCompare(findChild(taskList, "taskContextMenu"), "opened", false);
             keyClick(Qt.Key_A,Qt.ControlModifier);
             compare(taskList.selectedIds.length,24);
-            keyClick(Qt.Key_D,Qt.ControlModifier); keyClick(Qt.Key_I,Qt.ControlModifier);
+            keyClick(Qt.Key_P,Qt.ControlModifier); keyClick(Qt.Key_I,Qt.ControlModifier);
             compare(taskList.view, "today");
             compare(service.captured.length,0);
         }
         function test_letter_shortcuts_change_views_without_selection() {
             taskList.forceActiveFocus();
-            keyClick(Qt.Key_D); compare(taskList.view,"upcoming");
+            keyClick(Qt.Key_P); compare(taskList.view,"upcoming");
             keyClick(Qt.Key_I); compare(taskList.view,"inbox");
             keyClick(Qt.Key_A); compare(taskList.view,"today");
             compare(service.captured.length,0);
@@ -339,7 +339,8 @@ ShellRoot {
                 var help = findChild(taskList, "shortcutHelp");
                 tryCompare(help, "opened", true);
                 var caption = findChild(taskList, "shortcutHelpText");
-                verify(caption.text.indexOf("a / d / i : Aujourd’hui / Prochainement / Inbox") >= 0);
+                verify(caption.text.indexOf("a / p / i : Aujourd’hui / Prochainement / Inbox") >= 0);
+                verify(caption.text.indexOf(", : ouvrir / fermer les réglages") >= 0);
                 verify(caption.text.indexOf("Ctrl+a : tout sélectionner") >= 0);
                 verify(caption.text.indexOf("Ctrl+d") < 0);
                 verify(caption.text.indexOf("← / →") >= 0);
@@ -503,9 +504,10 @@ ShellRoot {
             tryVerify(function() { return findChild(taskList,"taskName") !== null });
             var input=findChild(taskList,"taskName");
             tryCompare(input,"activeFocus",true);
-            keyClick(Qt.Key_A); keyClick(Qt.Key_D); keyClick(Qt.Key_I);
+            keyClick(Qt.Key_A); keyClick(Qt.Key_P); keyClick(Qt.Key_I); keyClick(Qt.Key_Comma);
             keyClick(Qt.Key_1);
             compare(taskList.view,"today");
+            compare(taskList.settingsOpen, false);
             compare(service.captured.length,0);
             input.text="Réviser demain à 17h p1"; keyClick(Qt.Key_Return);
             compare(service.captured.length,1);

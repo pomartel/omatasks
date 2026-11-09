@@ -241,15 +241,15 @@ FocusScope {
         if (focused && focused.cursorPosition !== undefined) return;
         var ctrl = !!(event.modifiers & Qt.ControlModifier), key = event.key;
         var task = keyboardTask(), tabs = ["today", "upcoming", "inbox"];
-        if (key === Qt.Key_P) { settingsOpen = !settingsOpen; event.accepted = true; return; }
+        if (!(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)) && key === Qt.Key_Comma) { settingsOpen = !settingsOpen; event.accepted = true; return; }
         if (setupVisible) {
             if (key === Qt.Key_T) { service.openTodoist(); event.accepted = true; }
             return;
         }
         if (key === Qt.Key_Tab || key === Qt.Key_Backtab || key === Qt.Key_Left || key === Qt.Key_Right) {
             view = tabs[(tabs.indexOf(view) + ((event.modifiers & Qt.ShiftModifier) || key === Qt.Key_Backtab || key === Qt.Key_Left ? 2 : 1)) % 3];
-        } else if (!(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)) && [Qt.Key_A, Qt.Key_D, Qt.Key_I].indexOf(key) >= 0) {
-            view = key === Qt.Key_A ? "today" : key === Qt.Key_D ? "upcoming" : "inbox";
+        } else if (!(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)) && [Qt.Key_A, Qt.Key_P, Qt.Key_I].indexOf(key) >= 0) {
+            view = key === Qt.Key_A ? "today" : key === Qt.Key_P ? "upcoming" : "inbox";
         } else if (task && !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)) && key >= Qt.Key_0 && key <= Qt.Key_9) {
             if (!event.isAutoRepeat) service.applyTaskAction([String(task.id)], "date", key === Qt.Key_0 ? "" : key - Qt.Key_0);
         } else if (ctrl && key === Qt.Key_A) {
