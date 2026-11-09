@@ -420,6 +420,14 @@ ShellRoot {
             tryVerify(function() { var input = findChild(taskList, "taskName"); return input && input.activeFocus; });
             var input = findChild(taskList, "taskName");
             compare(input.text, service.tasks[0].content);
+            compare(input.cursorPosition, input.text.length);
+            keyClick(Qt.Key_Tab);
+            var description = findChild(taskList, "taskDescription");
+            tryCompare(description, "activeFocus", true);
+            compare(taskList.view, "today");
+            keyClick(Qt.Key_Backtab);
+            tryCompare(input, "activeFocus", true);
+            compare(input.cursorPosition, input.text.length);
             input.text = "Updated task"; keyClick(Qt.Key_Return);
             compare(service.captured.length, 1);
             compare(service.captured[0].args.content, "Updated task");

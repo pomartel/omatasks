@@ -73,7 +73,7 @@ ColumnLayout {
     function loadTask() {
         originalTask = JSON.parse(JSON.stringify(editingTask));
         var data = Edit.snapshot(originalTask, service.now);
-        input.text = data.text; description.text = data.description; descriptionVisible = true;
+        input.text = data.text; input.cursorPosition = input.text.length; description.text = data.description; descriptionVisible = true;
         project = service.projectMap[data.projectId] || {id: data.projectId, name: Fr.t("text.projet")};
         section = service.sectionMap[data.sectionId] || null;
         taskLabels = data.labels; priority = data.priority; due = data.due; deadline = data.deadline;
@@ -286,6 +286,11 @@ ColumnLayout {
         onFontChanged: Qt.callLater(root.updateHighlights)
         Keys.onPressed: function(event) {
             root.handleKey(event);
+            if (!event.accepted && (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab)) {
+                var forward = event.key !== Qt.Key_Backtab && !(event.modifiers & Qt.ShiftModifier);
+                input.nextItemInFocusChain(forward).forceActiveFocus(forward ? Qt.TabFocusReason : Qt.BacktabFocusReason);
+                event.accepted = true;
+            }
             if (!event.accepted && !(event.modifiers & Qt.ShiftModifier) && (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)) { root.submit(); event.accepted = true; }
         }
     }
