@@ -329,12 +329,17 @@ FocusScope {
             }
             Component {
                 id: editComponent
-                Composer {
-                    service: root.service
-                    editingTask: rowLoader.modelData.task
-                    onFinished: { root.composerKey = ""; list.forceActiveFocus(); }
-                    onCancelled: { root.composerKey = ""; list.forceActiveFocus(); }
-                    Component.onCompleted: Qt.callLater(focusInput)
+                Item {
+                    implicitHeight: editor.implicitHeight + Style.space(20)
+                    Composer {
+                        id: editor
+                        y: Style.space(10); width: parent.width
+                        service: root.service
+                        editingTask: rowLoader.modelData.task
+                        onFinished: { root.composerKey = ""; list.forceActiveFocus(); }
+                        onCancelled: { root.composerKey = ""; list.forceActiveFocus(); }
+                        Component.onCompleted: Qt.callLater(focusInput)
+                    }
                 }
             }
             Component {

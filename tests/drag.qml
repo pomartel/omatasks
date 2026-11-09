@@ -421,6 +421,9 @@ ShellRoot {
             var input = findChild(taskList, "taskName");
             compare(input.text, service.tasks[0].content);
             compare(input.cursorPosition, input.text.length);
+            var editor = input.parent;
+            compare(editor.y, Style.space(10));
+            compare(editor.parent.height - editor.y - editor.height, Style.space(10));
             keyClick(Qt.Key_Tab);
             var description = findChild(taskList, "taskDescription");
             tryCompare(description, "activeFocus", true);
