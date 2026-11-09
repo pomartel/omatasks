@@ -559,6 +559,15 @@ ShellRoot {
         function test_focused_add_button_opens_composer_data() {
             return [{tag: "Return", key: Qt.Key_Return}, {tag: "Enter", key: Qt.Key_Enter}, {tag: "Space", key: Qt.Key_Space}];
         }
+        function test_add_button_is_clickable_across_the_row() {
+            service.tasks = service.tasks.slice(0, 1);
+            var add = findChild(taskList, "addTask_add");
+            tryVerify(function() { return add !== null && add.visible; });
+            compare(add.width, add.parent.width);
+            mouseClick(add, add.width - Style.space(8), add.height / 2);
+            compare(taskList.composerKey, "add");
+            tryVerify(function() { var input = findChild(taskList, "taskName"); return input && input.activeFocus; });
+        }
         function test_focused_add_button_opens_composer(data) {
             taskList.keyboardTaskId = "23";
             findChild(taskList, "taskListView").positionViewAtEnd();
