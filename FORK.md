@@ -50,6 +50,7 @@ interrompt la requête et affiche une erreur.
 | --- | --- |
 | Tab / Maj+Tab ou ← / → | Parcourir les vues |
 | a / d / i | Planifier aujourd’hui, demain, ou retirer la date |
+| 1 à 9 / 0 | Planifier dans 1 à 9 jours / retirer la date |
 | ↑ / ↓ ou k / j | Sélectionner une tâche ou l’ajout |
 | Entrée / v / e / Espace | Modifier sur place / détails / modifier dans les détails / terminer |
 | u | Annuler la dernière complétion dans la session |

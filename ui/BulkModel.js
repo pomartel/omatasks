@@ -24,7 +24,8 @@ function roots(selected, tasks) {
 }
 function scheduledDate(value, now) {
     var date = new Date(now);
-    if (value === "tomorrow") date.setDate(date.getDate() + 1);
+    if (typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 9) date.setDate(date.getDate() + value);
+    else if (value === "tomorrow") date.setDate(date.getDate() + 1);
     else if (value === "weekend") date.setDate(date.getDate() + ((6 - date.getDay() + 7) % 7 || 7));
     else if (value === "nextweek") date.setDate(date.getDate() + ((8 - date.getDay()) % 7 || 7));
     return Model.dateKey(date);

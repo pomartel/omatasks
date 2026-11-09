@@ -39,6 +39,15 @@ test('Quick dates retain recurrence, time and timezone; removal clears the sched
     assert.equal(bulk.scheduledDate('nextweek', now), '2026-09-21');
     assert.equal(bulk.scheduledDate('nextweek', new Date(2026, 8, 21)), '2026-09-28');
 });
+test('Numbered dates cross month and year boundaries while retaining schedule details', () => {
+    const endOfYear = new Date(2026, 11, 30, 12);
+    for (let days = 1; days <= 9; days++) {
+        const expected = new Date(2026, 11, 30 + days, 12);
+        const day = `${expected.getFullYear()}-${String(expected.getMonth() + 1).padStart(2, '0')}-${String(expected.getDate()).padStart(2, '0')}`;
+        const due = bulk.commands(tasks, ['parent'], 'date', days, endOfYear)[0].args.due;
+        assert.deepEqual(plain(due), {...tasks[0].due, date: `${day}T08:00:00Z`});
+    }
+});
 test('Bulk custom dates, deadlines and reminders validate input and preserve unrelated fields', () => {
     assert.deepEqual(plain(bulk.commands(tasks, ['parent'], 'customDate', 'every Monday', now)[0].args), {id: 'parent', due: {string: 'every Monday', timezone: 'Europe/Berlin'}});
     assert.deepEqual(plain(bulk.commands(tasks, ['parent'], 'deadline', 'tomorrow', now)[0].args), {id: 'parent', deadline: {date: '2026-09-17'}});

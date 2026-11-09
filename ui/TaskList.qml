@@ -250,6 +250,8 @@ FocusScope {
             view = tabs[(tabs.indexOf(view) + ((event.modifiers & Qt.ShiftModifier) || key === Qt.Key_Backtab || key === Qt.Key_Left ? 2 : 1)) % 3];
         } else if (!ctrl && [Qt.Key_A, Qt.Key_D, Qt.Key_I].indexOf(key) >= 0 && task) {
             service.applyTaskAction([String(task.id)], "date", key === Qt.Key_A ? "today" : key === Qt.Key_D ? "tomorrow" : "");
+        } else if (task && !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)) && key >= Qt.Key_0 && key <= Qt.Key_9) {
+            if (!event.isAutoRepeat) service.applyTaskAction([String(task.id)], "date", key === Qt.Key_0 ? "" : key - Qt.Key_0);
         } else if (ctrl && key === Qt.Key_A) {
             selectedIds = Bulk.visibleIds(rows);
         } else if (!ctrl && [Qt.Key_J, Qt.Key_Down, Qt.Key_K, Qt.Key_Up].indexOf(key) >= 0) {

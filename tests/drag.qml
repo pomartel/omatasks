@@ -319,6 +319,21 @@ ShellRoot {
             compare(taskList.view,"today");
             compare(service.captured.length,0);
         }
+        function test_number_keys_schedule_selected_task() {
+            service.now = new Date(2026, 11, 30, 12);
+            var tasks = service.tasks.slice();
+            tasks[0] = Object.assign({}, tasks[0], {due: {date: "2026-12-30"}});
+            service.tasks = tasks;
+            taskList.keyboardTaskId = "0"; taskList.forceActiveFocus();
+            for (var day = 1; day <= 9; day++) keyClick(Qt.Key_0 + day);
+            compare(service.captured.length, 9);
+            compare(service.captured[0].args.due.date, "2026-12-31");
+            compare(service.captured[1].args.due.date, "2027-01-01");
+            compare(service.captured[8].args.due.date, "2027-01-08");
+            keyClick(Qt.Key_0); compare(service.captured[9].args.due, null);
+            keyClick(Qt.Key_1, Qt.ControlModifier); keyClick(Qt.Key_2, Qt.AltModifier);
+            compare(service.captured.length, 10);
+        }
         function test_help_shortcuts_and_theme_changes() {
             var originalBackground = Commons.Color.popups.background, originalText = Commons.Color.popups.text, originalAccent = Commons.Color.accent;
             try {
@@ -491,6 +506,7 @@ ShellRoot {
             var input=findChild(taskList,"taskName");
             tryCompare(input,"activeFocus",true);
             keyClick(Qt.Key_A); keyClick(Qt.Key_D); keyClick(Qt.Key_I);
+            keyClick(Qt.Key_1);
             compare(taskList.view,"today");
             compare(service.captured.length,0);
             input.text="Réviser demain à 17h p1"; keyClick(Qt.Key_Return);
