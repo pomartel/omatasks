@@ -426,7 +426,7 @@ ShellRoot {
             var input = findChild(taskList, "taskName");
             compare(input.text, service.tasks[0].content);
             compare(input.cursorPosition, input.text.length);
-            var editedPosition = input.mapToItem(taskList, 0, input.baselineOffset);
+            var editedPosition = input.mapToItem(taskList, input.positionToRectangle(0).x, input.baselineOffset);
             var editedCircle = findChild(taskList, "editingTaskCompletion").mapToItem(taskList, 0, 0);
             verify(Math.abs(titlePosition.x - editedPosition.x) < 0.5);
             verify(Math.abs(titlePosition.y - editedPosition.y) < 0.5);

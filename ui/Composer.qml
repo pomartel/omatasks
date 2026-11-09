@@ -287,6 +287,9 @@ ColumnLayout {
         onContentHeightChanged: Qt.callLater(root.updateHighlights)
         onWidthChanged: Qt.callLater(root.updateHighlights)
         onFontChanged: Qt.callLater(root.updateHighlights)
+        Binding { target: input; property: "leftPadding"; value: 0; when: root.inlineTask }
+        Binding { target: input; property: "rightPadding"; value: 0; when: root.inlineTask }
+        Binding { target: input; property: "renderType"; value: TextEdit.NativeRendering; when: root.inlineTask }
         Keys.onPressed: function(event) {
             root.handleKey(event);
             if (!event.accepted && (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab)) {
