@@ -122,7 +122,7 @@ The layout follows Todoist’s [Quick Add design comparison](https://www.todoist
 - The detail popup links to the parent task, individual subtasks, and comments in Todoist when present.
 - Drag a task up or down to reorder it. The insertion line shows where it will land; hold near the top or bottom to scroll. **Escape** or dropping outside cancels. A successful drop selects **Manual** sorting for that tab and saves the order through Todoist's API. Failed saves restore the previous order and show an error.
 - Reordering stays within the displayed group. In Inbox it also stays within the same section and parent task. Filters preserve hidden tasks' positions. Today/Upcoming use Todoist's day order; Inbox uses project sibling order. Other clients show the saved order with **Manual** sorting in the corresponding view; their display preferences remain independent.
-- Use the display button for grouping and sorting. **Smart** follows date/time → priority → deadline → manual order.
+- Use Settings to change grouping, sorting and filters for the selected view. **Smart** follows date/time → priority → deadline → manual order.
 - Project grouping uses the task's own project, with its section shown on the task row. Label grouping lists a task under each of its labels.
 - Today includes overdue tasks. Upcoming includes all scheduled tasks, grouped by date. The default assignee filter is **Me and unassigned**.
 - The bar number counts today's and overdue tasks assigned to you or unassigned, independent of panel filters.
@@ -131,7 +131,7 @@ The layout follows Todoist’s [Quick Add design comparison](https://www.todoist
   <img src="screenshots/bar.png" alt="The bar naming the next task: Review the homepage designs, at 10:00" width="420">
 
 - **Ctrl+Tab / Ctrl+Shift+Tab** switches tabs. **Tab** moves between controls. **Escape** closes the current editor, menu, or panel.
-- Middle-click the bar widget, or use **Display → Refresh**, to refresh immediately. Background sync runs every minute.
+- Middle-click the bar widget, or use **Settings → Refresh**, to refresh immediately. Background sync runs every minute.
 - Open the panel or Quick Add from a key or a script with `omarchy-shell crmne.todoist`:
 
   | Command | Does |
@@ -143,13 +143,12 @@ The layout follows Todoist’s [Quick Add design comparison](https://www.todoist
   For example, in Hyprland: `o.bind("SUPER + SHIFT + T", "Tasks", "omarchy-shell crmne.todoist toggle")`.
 
 <details>
-<summary>Task menu, details, and display options</summary>
+<summary>Task menu and details</summary>
 
 <img src="screenshots/multi-selection.png" alt="Two selected tasks with the bulk action context menu" width="456">
 
 <img src="screenshots/task-details.png" alt="Task details with completion, editing, date, duration, priority, and labels" width="560">
 
-<img src="screenshots/display.png" alt="Grouping, sorting, and filters in the Display menu" width="340">
 
 </details>
 

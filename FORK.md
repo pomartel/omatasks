@@ -45,6 +45,7 @@ interrompt la requête et affiche une erreur.
   en conservant la marge du cadre.
 - Ajout et modification sur place alignés comme les lignes de tâches, avec le
   rond, le nom et le champ de description visibles.
+- Regroupement, tri et filtres de la vue courante accessibles dans les réglages.
 
 ## Raccourcis propres au fork
 

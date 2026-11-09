@@ -14,6 +14,14 @@ ColumnLayout {
         visible: root.service.configured
         Layout.fillWidth: true
         spacing: Style.space(8)
+        Label { font.family: root.fontFamily; text: Fr.t("text.affichage") + " · " + (root.service.selectedView === "today" ? Fr.t("text.aujourdhui") : root.service.selectedView === "upcoming" ? Fr.t("text.prochainement") : Fr.t("text.inbox")); font.bold: true }
+        DisplayOptions { objectName: "viewDisplayOptions"; Layout.fillWidth: true; service: root.service; view: root.service.selectedView }
+    }
+    Rectangle { visible: root.service.configured; Layout.fillWidth: true; height: 1; color: Commons.Color.popups.text; opacity: 0.12 }
+    ColumnLayout {
+        visible: root.service.configured
+        Layout.fillWidth: true
+        spacing: Style.space(8)
         Label { font.family: root.fontFamily; text: Fr.t("text.panneau_et_barre"); font.bold: true }
         RowLayout {
             Layout.fillWidth: true

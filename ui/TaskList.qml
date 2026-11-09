@@ -40,7 +40,7 @@ FocusScope {
     readonly property var options: service.viewOptions(view)
     readonly property var rows: dragRows || heldRows || Model.viewRows(service.tasks, service.projects, service.collaborators, options, view, service.user.id, service.now)
     readonly property bool setupVisible: !service.configured || settingsOpen
-    readonly property real preferredHeight: Math.min(Style.space(service.panelHeight), setupVisible ? setup.implicitHeight + Style.space(68) : Math.max(display.opened || details.opened || taskMenu.visible ? Style.space(440) : Style.space(110), list.contentHeight + header.height + status.height + selectionBar.height + Style.space(8)))
+    readonly property real preferredHeight: Math.min(Style.space(service.panelHeight), setupVisible ? setup.implicitHeight + Style.space(68) : Math.max(details.opened || taskMenu.visible ? Style.space(440) : Style.space(110), list.contentHeight + header.height + status.height + selectionBar.height + Style.space(8)))
     signal closeRequested()
 
     function updateListModel() {
@@ -77,10 +77,9 @@ FocusScope {
         if (selectedIds.indexOf(String(task.id)) < 0) selectedIds = [String(task.id)];
         taskMenu.tasks = service.tasks.filter(function(t) { return root.selectedIds.indexOf(String(t.id)) >= 0; });
         taskMenu.location = point;
-        display.close();
         taskMenu.open();
     }
-    function reset() { clickTimer.stop(); pendingEdit = null; completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; helpOpen = false; clearSelection(); settingsOpen = false; display.close(); details.close(); }
+    function reset() { clickTimer.stop(); pendingEdit = null; completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; helpOpen = false; clearSelection(); settingsOpen = false; details.close(); }
     function completeTask(task) {
         if (service.saving) return;
         var ids = Bulk.visibleIds(rows), id = String(task.id), index = ids.indexOf(id);
@@ -136,7 +135,7 @@ FocusScope {
         if (target) service.reorderTasks(view, String(source.task.id), String(target.task.id), after, source.groupKey);
         cancelDrag();
     }
-    Keys.onEscapePressed: { if (dragging) cancelDrag(); else if (taskMenu.visible) { if (!taskMenu.busy) taskMenu.close(); } else if (display.opened) display.close(); else if (details.opened && detailLoader.item) detailLoader.item.dismissEditor(); else if (composerKey) { composerKey = ""; forceActiveFocus(); } else if (selectedIds.length) clearSelection(); else if (settingsOpen) settingsOpen = false; else if (keyboardTaskId || keyboardAddKey) { keyboardTaskId = ""; keyboardAddKey = ""; } else closeRequested(); }
+    Keys.onEscapePressed: { if (dragging) cancelDrag(); else if (taskMenu.visible) { if (!taskMenu.busy) taskMenu.close(); } else if (details.opened && detailLoader.item) detailLoader.item.dismissEditor(); else if (composerKey) { composerKey = ""; forceActiveFocus(); } else if (selectedIds.length) clearSelection(); else if (settingsOpen) settingsOpen = false; else if (keyboardTaskId || keyboardAddKey) { keyboardTaskId = ""; keyboardAddKey = ""; } else closeRequested(); }
     function keyboardTask() {
         return service.tasks.find(function(t) { return String(t.id) === keyboardTaskId; }) || null;
     }
@@ -235,7 +234,7 @@ FocusScope {
         } else service.refresh(true);
     }
     function handleShortcut(event) {
-        if (dragging || composerKey || details.visible || display.visible || taskMenu.visible || helpOpen) return;
+        if (dragging || composerKey || details.visible || taskMenu.visible || helpOpen) return;
         // Text controls own their keystrokes, including settings fields.
         var focused = Window.activeFocusItem;
         if (focused && focused.cursorPosition !== undefined) return;
@@ -311,7 +310,6 @@ FocusScope {
                 onClicked: { root.view = modelData.id; root.settingsOpen = false; }
             }
         }
-        Action { fontFamily: root.fontFamily; id: displayButton; objectName: "displayButton"; iconName: "display"; iconSize: Style.space(17); tip: Fr.t("text.affichage"); selected: display.opened; enabled: root.service.configured; onClicked: display.opened ? display.close() : display.open() }
         Action { fontFamily: root.fontFamily; iconName: "settings"; iconSize: Style.space(17); tip: Fr.t("text.reglages"); selected: root.settingsOpen; onClicked: root.settingsOpen = !root.settingsOpen }
     }
     ColumnLayout {
@@ -449,7 +447,7 @@ FocusScope {
                         root.forceActiveFocus();
                     }
                     onHoverHighlighted: function(task) {
-                        if (root.dragging || root.service.saving || root.composerKey || root.setupVisible || details.visible || display.visible || taskMenu.visible || root.helpOpen) return;
+                        if (root.dragging || root.service.saving || root.composerKey || root.setupVisible || details.visible || taskMenu.visible || root.helpOpen) return;
                         var focused = Window.activeFocusItem;
                         if (focused && focused.cursorPosition !== undefined) return;
                         root.keyboardTaskId = String(task.id);
@@ -592,30 +590,6 @@ FocusScope {
         service: root.service
         onCompleted: root.clearSelection()
         onEditRequested: function(task) { root.showTask(task); Qt.callLater(function() { if (detailLoader.item) detailLoader.item.startEditing(); }); }
-    }
-    C.Popup {
-        id: display
-        objectName: "displayPopup"
-        palette.window: Commons.Color.popups.background
-        palette.windowText: Commons.Color.popups.text
-        palette.base: Commons.Color.popups.background
-        palette.text: Commons.Color.popups.text
-        palette.button: Commons.Color.popups.background
-        palette.buttonText: Commons.Color.popups.text
-        palette.highlight: Commons.Color.accent
-        palette.highlightedText: Commons.Color.popups.background
-        parent: displayButton
-        x: displayButton.width - width; y: displayButton.height + Style.space(8)
-        width: Math.min(root.width, Style.space(340))
-        height: Math.min(root.height - y, displayOptions.implicitHeight + padding * 2)
-        padding: Style.space(16)
-        focus: true
-        closePolicy: C.Popup.CloseOnEscape | C.Popup.CloseOnPressOutsideParent
-        background: Rectangle { color: Commons.Color.popups.background; border.width: 1; border.color: Commons.Color.popups.border; radius: Style.cornerRadius }
-        contentItem: C.ScrollView {
-            clip: true; contentWidth: availableWidth
-            DisplayOptions { id: displayOptions; width: parent.width; service: root.service; view: root.view }
-        }
     }
     C.Popup {
         id: details

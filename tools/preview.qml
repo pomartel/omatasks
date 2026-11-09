@@ -135,14 +135,13 @@ ShellRoot {
             }
             if (phase === 8) {
                 capture.findChild(taskList, "taskDetailsPopup").close();
-                capture.findChild(taskList, "displayPopup").open();
+                taskList.settingsOpen = true;
             }
             if (phase === 9) {
-                var menu = capture.findChild(taskList, "displayPopup");
-                menu.contentItem.parent.grabToImage(function(result) { result.saveToFile(dir + "/screenshots/display.png"); });
+                panel.grabToImage(function(result) { result.saveToFile(dir + "/screenshots/display.png"); });
             }
             if (phase === 10) {
-                capture.findChild(taskList, "displayPopup").close();
+                taskList.settingsOpen = false;
                 selectionWindow.visible = true;
             }
             if (phase === 11) {

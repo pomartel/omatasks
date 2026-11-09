@@ -365,13 +365,11 @@ ShellRoot {
                 taskList.helpOpen = false;
             }
         }
-        function test_detail_and_display_follow_theme() {
+        function test_details_follow_theme() {
             var background = Commons.Color.popups.background, text = Commons.Color.popups.text;
             try {
-                for (var name of ["taskDetailsPopup", "displayPopup"]) {
-                    if (name === "taskDetailsPopup") taskList.showTask(service.tasks[0]);
-                    else findChild(taskList, "displayButton").clicked();
-                    var popup = findChild(taskList, name);
+                    taskList.showTask(service.tasks[0]);
+                    var popup = findChild(taskList, "taskDetailsPopup");
                     tryCompare(popup, "opened", true);
                     for (var dark of [false, true]) {
                         Commons.Color.popups.background = dark ? "#131c2f" : "#ffffff";
@@ -379,15 +377,23 @@ ShellRoot {
                         compare(popup.background.color, Commons.Color.popups.background);
                         compare(popup.palette.window, Commons.Color.popups.background);
                         compare(popup.palette.text, Commons.Color.popups.text);
-                        if (name === "displayPopup") compare(popup.contentItem.palette.text, Commons.Color.popups.text);
                     }
                     popup.close();
                     tryCompare(popup, "opened", false);
-                }
             } finally {
                 Commons.Color.popups.background = background;
                 Commons.Color.popups.text = text;
             }
+        }
+        function test_view_display_options_are_available_in_settings() {
+            verify(findChild(taskList, "displayButton") === null);
+            taskList.view = "upcoming";
+            taskList.settingsOpen = true;
+            var options = findChild(taskList, "viewDisplayOptions");
+            tryVerify(function() { return options !== null && options.visible; });
+            compare(options.view, "upcoming");
+            options.service.setOption(options.view, "sorting", "name");
+            compare(service.viewOptions("upcoming").sorting, "name");
         }
         function test_real_completion_then_keyboard_undo() {
             completionService.token = "fixture"; completionService.now = service.now;
