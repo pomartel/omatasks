@@ -24,6 +24,8 @@ FocusScope {
     property int editRowIndex: -1
     property var inlineEditor: null
     property var pendingEdit: null
+    property string shortcutDeleteSignature: ""
+    property bool shortcutDeleteInFlight: false
     property var heldRows: null
     property var selectedTask: null
     property var selectedIds: []
@@ -212,6 +214,26 @@ FocusScope {
         }
     }
     function openInTodoist(task) { service.openTodoist(task); }
+    function deleteByShortcut(task) {
+        if (service.saving || service.connecting) return;
+        var id = String(task.id);
+        var ids = selectedIds.indexOf(id) >= 0 ? selectedIds.slice() : [id];
+        shortcutDeleteSignature = JSON.stringify([ids.slice().sort(), "delete", null]);
+        shortcutDeleteInFlight = true;
+        if (!service.applyTaskAction(ids, "delete", null)) {
+            shortcutDeleteInFlight = false;
+            if (!service.error) service.error = Fr.t("text.attendez_la_fin_de_loperation_en_cours");
+        }
+    }
+    function retryError() {
+        if (service.bulkRetry && service.bulkRetry.signature === shortcutDeleteSignature) {
+            shortcutDeleteInFlight = true;
+            if (!service.retryTaskAction()) {
+                shortcutDeleteInFlight = false;
+                if (!service.error) service.error = Fr.t("text.veuillez_patienter_avant_de_reessayer");
+            }
+        } else service.refresh(true);
+    }
     function handleShortcut(event) {
         if (dragging || composerKey || details.visible || display.visible || taskMenu.visible || helpOpen) return;
         // Text controls own their keystrokes, including settings fields.
@@ -226,8 +248,10 @@ FocusScope {
         }
         if (key === Qt.Key_Tab || key === Qt.Key_Backtab || key === Qt.Key_Left || key === Qt.Key_Right) {
             view = tabs[(tabs.indexOf(view) + ((event.modifiers & Qt.ShiftModifier) || key === Qt.Key_Backtab || key === Qt.Key_Left ? 2 : 1)) % 3];
-        } else if (!ctrl && [Qt.Key_A, Qt.Key_D, Qt.Key_I].indexOf(key) >= 0 && task) {
-            service.applyTaskAction([String(task.id)], "date", key === Qt.Key_A ? "today" : key === Qt.Key_D ? "tomorrow" : "");
+        } else if (!ctrl && [Qt.Key_D, Qt.Key_I].indexOf(key) >= 0 && task) {
+            service.applyTaskAction([String(task.id)], "date", key === Qt.Key_D ? "tomorrow" : "");
+        } else if (!ctrl && task && key === Qt.Key_A) {
+            openTaskMenu(task, Qt.point(0, header.height));
         } else if (ctrl && key === Qt.Key_A) {
             selectedIds = Bulk.visibleIds(rows);
         } else if (!ctrl && [Qt.Key_J, Qt.Key_Down, Qt.Key_K, Qt.Key_Up].indexOf(key) >= 0) {
@@ -248,7 +272,7 @@ FocusScope {
         } else if (!ctrl && task && key === Qt.Key_O) {
             openInTodoist(task);
         } else if (!ctrl && task && key === Qt.Key_X) {
-            openTaskMenu(task, Qt.point(0, header.height)); taskMenu.run("delete", null);
+            if (!event.isAutoRepeat) deleteByShortcut(task);
         } else if (!ctrl && key === Qt.Key_Q) {
             var add = rows.filter(function(r) { return r.kind === "add"; }).pop();
             if (add) addAt(add.key, add.projectId);
@@ -310,7 +334,7 @@ FocusScope {
             visible: root.service.configured && root.service.error !== ""
             text: root.service.loading ? Fr.t("text.nouvel_essai") : Fr.t("text.reessayer")
             enabled: !root.service.loading && !root.service.saving && !root.service.connecting
-            onClicked: root.service.refresh(true)
+            onClicked: root.retryError()
         }
     }
     RowLayout {
@@ -608,8 +632,14 @@ FocusScope {
     }
     Connections {
         target: root.service
+        function onTaskActionFinished() {
+            if (root.shortcutDeleteInFlight) { root.shortcutDeleteInFlight = false; root.shortcutDeleteSignature = ""; root.clearSelection(); }
+        }
+        function onOperationFailed(message) {
+            if (root.shortcutDeleteInFlight) root.shortcutDeleteInFlight = false;
+            root.completionFocus = null;
+        }
         function onTaskCompleted(taskId) { root.focusAfterCompletion(taskId); }
-        function onOperationFailed(message) { root.completionFocus = null; }
         function onTasksChanged() {
             if (!root.selectedTask) return;
             var current = root.service.tasks.find(function(t) { return String(t.id) === String(root.selectedTask.id); });

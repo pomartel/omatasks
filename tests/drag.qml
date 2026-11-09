@@ -277,6 +277,27 @@ ShellRoot {
             keyClick(Qt.Key_P); compare(taskList.settingsOpen,true);
             keyClick(Qt.Key_Escape); compare(taskList.settingsOpen,false);
         }
+        function test_delete_shortcut_hides_menu_and_retries_errors() {
+            service.deferRequest = true;
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_X);
+            var menu = findChild(taskList, "taskContextMenu");
+            verify(!menu.visible);
+            compare(service.pendingRequest.commands[0].type, "item_delete");
+            service.pendingRequest.callback(null, "Connection lost");
+            verify(!menu.visible);
+            verify(service.error.indexOf("Connection lost") >= 0);
+            var firstId = service.captured[0].uuid;
+            var retry = findChild(taskList, "retrySync");
+            verify(retry.visible); wait(100); mouseClick(retry);
+            compare(service.captured.length, 2);
+            compare(service.captured[1].uuid, firstId);
+            verify(!menu.visible);
+            var request = service.pendingRequest, statuses = {};
+            request.commands.forEach(function(command) { statuses[command.uuid] = "ok"; });
+            request.callback({sync_token: "fixture", sync_status: statuses}, "");
+            compare(service.error, "");
+            verify(!menu.visible);
+        }
         function test_imported_date_shortcuts() {
             taskList.forceActiveFocus(); keyClick(Qt.Key_J);
             keyClick(Qt.Key_D);
@@ -284,12 +305,15 @@ ShellRoot {
             keyClick(Qt.Key_I);
             compare(service.captured[1].args.due,null);
             keyClick(Qt.Key_A);
-            compare(service.captured[2].args.due.date,"2026-09-15");
+            tryCompare(findChild(taskList, "taskContextMenu"), "opened", true);
+            compare(findChild(taskList, "taskContextMenu").taskIds.join(","), "0");
+            keyClick(Qt.Key_Escape);
+            tryCompare(findChild(taskList, "taskContextMenu"), "opened", false);
             compare(taskList.view,"today");
             keyClick(Qt.Key_A,Qt.ControlModifier);
             compare(taskList.selectedIds.length,24);
             keyClick(Qt.Key_D,Qt.ControlModifier); keyClick(Qt.Key_I,Qt.ControlModifier);
-            compare(service.captured.length,3);
+            compare(service.captured.length,2);
         }
         function test_date_shortcuts_without_a_task_do_nothing() {
             taskList.forceActiveFocus();
@@ -304,7 +328,8 @@ ShellRoot {
                 var help = findChild(taskList, "shortcutHelp");
                 tryCompare(help, "opened", true);
                 var caption = findChild(taskList, "shortcutHelpText");
-                verify(caption.text.indexOf("a / d / i : aujourd’hui / demain / sans date") >= 0);
+                verify(caption.text.indexOf("a : ouvrir le menu d’actions") >= 0);
+                verify(caption.text.indexOf("d / i : demain / sans date") >= 0);
                 verify(caption.text.indexOf("Ctrl+a : tout sélectionner") >= 0);
                 verify(caption.text.indexOf("Ctrl+d") < 0);
                 verify(caption.text.indexOf("← / →") >= 0);
