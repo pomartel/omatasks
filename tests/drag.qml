@@ -417,6 +417,9 @@ ShellRoot {
             return [{tag: "Return", key: Qt.Key_Return}, {tag: "Enter", key: Qt.Key_Enter}];
         }
         function test_enter_edits_selected_task_in_place(data) {
+            var tasks = service.tasks.slice();
+            tasks[0] = Object.assign({}, tasks[0], {duration: {amount: 30, unit: "minute"}});
+            service.tasks = tasks;
             taskList.forceActiveFocus(); keyClick(Qt.Key_J);
             var title = findChild(taskList, "taskTitle_0");
             var circle = findChild(taskList, "taskCompletion_0");
@@ -427,6 +430,7 @@ ShellRoot {
             compare(popup.visible, false);
             tryVerify(function() { var input = findChild(taskList, "taskName"); return input && input.activeFocus; });
             var input = findChild(taskList, "taskName");
+            verify(findChild(taskList, "taskDuration") === null);
             compare(input.text, service.tasks[0].content);
             compare(input.cursorPosition, input.text.length);
             var editedPosition = input.mapToItem(taskList, input.positionToRectangle(0).x, input.baselineOffset);
@@ -445,6 +449,7 @@ ShellRoot {
             input.text = "Updated task"; keyClick(Qt.Key_Return);
             compare(service.captured.length, 1);
             compare(service.captured[0].args.content, "Updated task");
+            verify(service.captured[0].args.duration === undefined);
             // The fixture completes requests synchronously, before Composer sets submitting.
             service.taskUpdated("0");
             tryCompare(taskList, "composerKey", "");

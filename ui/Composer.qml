@@ -362,16 +362,9 @@ ColumnLayout {
         Action { fontFamily: root.fontFamily; text: Fr.t("text.responsable"); enabled: root.shownProject !== null && root.shownProject.is_shared === true; onClicked: { more.visible = false; root.openPicker("assignee"); } }
     }
     ColumnLayout {
-        visible: root.editing
+        visible: root.editing && root.existingReminders.length > 0
         Layout.fillWidth: true
         spacing: Style.space(8)
-        RowLayout {
-            Layout.fillWidth: true
-            Label { font.family: root.fontFamily; text: Fr.t("text.duree"); Layout.fillWidth: true }
-            UI.TextField { font.family: root.fontFamily; objectName: "taskDuration"; Layout.preferredWidth: Style.space(60); text: root.duration; validator: IntValidator { bottom: 0; top: 100000 } onTextEdited: root.duration = text; enabled: !root.submitting }
-            UI.Dropdown { fontFamily: root.fontFamily; Layout.preferredWidth: Style.space(95); showLabel: false; value: root.durationUnit; options: [{value: "minute", label: Fr.t("text.minutes")}, {value: "day", label: Fr.t("text.jours")}]; onChanged: function(value) { root.durationUnit = value; } enabled: !root.submitting }
-        }
-        Label { font.family: root.fontFamily; text: Fr.t("text.0_aucune_duree"); opacity: 0.45; font.pixelSize: Style.font.caption }
         Repeater {
             model: root.existingReminders
             Chip { fontFamily: root.fontFamily; required property var modelData; text: Edit.reminderText(modelData); iconName: "bell"; maximumWidth: root.width; removable: !modelData.notify_uid || String(modelData.notify_uid) === String(root.service.user.id); enabled: !root.submitting; onClicked: if (removable) { root.replacingReminder = String(modelData.id); root.openPicker("reminder"); } onRemoved: root.removedReminders = root.removedReminders.concat([String(modelData.id)]) }
