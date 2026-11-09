@@ -29,6 +29,8 @@ ShellRoot {
         property var captured: []
         property var completions: []
         property bool failNext: false
+        property bool deferRequest: false
+        property var pendingRequest: null
         function applyToken(value) {}
         property bool manualRefresh: false
         function refresh(manual) { manualRefresh = manual === true; }
@@ -36,6 +38,7 @@ ShellRoot {
         function request(method, path, body, credential, callback, requestId) {
             if (path !== "/sync" || !body.commands) throw new Error("Unexpected request");
             captured = captured.concat(body.commands);
+            if (deferRequest) { pendingRequest = {commands: body.commands, callback: callback}; return; }
             if (failNext) { failNext = false; callback(null, "Connection lost"); return; }
             var statuses = {};
             body.commands.forEach(function(c) { statuses[c.uuid] = "ok"; });
@@ -118,7 +121,7 @@ ShellRoot {
             service.user = {id: "me"}; service.preferences = {};
             service.projects = [{id: "inbox", name: "Inbox", inbox_project: true}];
             service.tasks = Array.from({length: 24}, function(_, i) { return {id: String(i), content: "Task " + (i + 1) + " with a useful description", description: "Description of the task to check dragging and layout.", priority: 1, project_id: "inbox", day_order: i, due: {date: "2026-09-15"}}; });
-            service.captured = []; service.completions = []; service.failNext = false; taskList.view = "today"; taskList.reset(); taskList.anchors.bottomMargin = 18;
+            service.captured = []; service.completions = []; service.failNext = false; service.deferRequest = false; service.pendingRequest = null; taskList.view = "today"; taskList.reset(); taskList.anchors.bottomMargin = 18;
             var list = findChild(taskList, "taskListView"); list.positionViewAtBeginning();
             tryCompare(findChild(taskList, "taskDetailsPopup"), "visible", false);
             list.forceActiveFocus();
@@ -642,22 +645,85 @@ ShellRoot {
             compare(taskList.keyboardTaskId, "0");
         }
         function test_click_opens_editor_and_clears_selection() {
-            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12); wait(80);
+            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
+            tryVerify(function() { return findChild(taskList, "taskName") !== null; });
             verify(!findChild(taskList, "taskDetailsPopup").opened);
             compare(findChild(taskList, "taskName").text, service.tasks[0].content);
             compare(taskList.selectedIds.length, 0);
             compare(service.completions.length, 0);
             compare(service.captured.length, 0);
         }
-        function test_clicking_another_task_preserves_open_editor() {
+        function test_clicking_another_task_saves_before_switching() {
+            service.deferRequest = true;
             mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
             tryVerify(function() { return findChild(taskList, "taskName") !== null; });
             var input = findChild(taskList, "taskName");
             input.text = "Modification en cours";
             mouseClick(findChild(taskList, "taskPointer_1"), 65, 12);
+            tryVerify(function() { return service.pendingRequest !== null; });
             compare(taskList.keyboardTaskId, "0");
             compare(input.text, "Modification en cours");
-            verify(!findChild(taskList, "taskDetailsPopup").opened);
+            compare(service.captured[0].args.content, "Modification en cours");
+            var request = service.pendingRequest, statuses = {};
+            request.commands.forEach(function(command) { statuses[command.uuid] = "ok"; });
+            request.callback({sync_token: "fixture", sync_status: statuses}, "");
+            tryCompare(taskList, "keyboardTaskId", "1");
+            tryVerify(function() { var next = findChild(taskList, "taskName"); return next && next.activeFocus && next.text === service.tasks[1].content; });
+        }
+        function test_clicking_another_task_without_changes_switches_immediately() {
+            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
+            tryVerify(function() { return findChild(taskList, "taskName") !== null; });
+            mouseClick(findChild(taskList, "taskPointer_1"), 65, 12);
+            tryCompare(taskList, "keyboardTaskId", "1");
+            tryVerify(function() { var input = findChild(taskList, "taskName"); return input && input.activeFocus && input.text === service.tasks[1].content; });
+            compare(service.captured.length, 0);
+        }
+        function test_failed_save_keeps_current_editor() {
+            service.deferRequest = true;
+            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
+            tryVerify(function() { return findChild(taskList, "taskName") !== null; });
+            var input = findChild(taskList, "taskName"); input.text = "Modification en cours";
+            mouseClick(findChild(taskList, "taskPointer_1"), 65, 12);
+            tryVerify(function() { return service.pendingRequest !== null; });
+            service.pendingRequest.callback(null, "Connection lost");
+            compare(taskList.keyboardTaskId, "0");
+            compare(input.text, "Modification en cours");
+            compare(input.parent.message, "Connection lost");
+            compare(taskList.pendingEdit, null);
+            tryCompare(input, "activeFocus", true);
+        }
+        function test_empty_title_keeps_current_editor() {
+            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
+            tryVerify(function() { return findChild(taskList, "taskName") !== null; });
+            var input = findChild(taskList, "taskName"); input.text = "";
+            mouseClick(findChild(taskList, "taskPointer_1"), 65, 12);
+            wait(Qt.styleHints.mouseDoubleClickInterval + 100);
+            compare(taskList.keyboardTaskId, "0");
+            compare(taskList.pendingEdit, null);
+            compare(input.text, "");
+            compare(service.captured.length, 0);
+        }
+        function test_double_click_completes_without_opening_editor() {
+            var pointer = findChild(taskList, "taskPointer_0");
+            mouseDoubleClickSequence(pointer, 65, 12);
+            compare(service.completions.join(","), "0");
+            wait(Qt.styleHints.mouseDoubleClickInterval + 50);
+            verify(findChild(taskList, "taskName") === null);
+        }
+        function test_double_click_saves_open_editor_before_completing_other_task() {
+            service.deferRequest = true;
+            mouseClick(findChild(taskList, "taskPointer_0"), 65, 12);
+            tryVerify(function() { return findChild(taskList, "taskName") !== null; });
+            findChild(taskList, "taskName").text = "Modification en cours";
+            var pointer = findChild(taskList, "taskPointer_1");
+            mouseDoubleClickSequence(pointer, 65, 12);
+            tryVerify(function() { return service.pendingRequest !== null; });
+            compare(service.completions.length, 0);
+            var request = service.pendingRequest, statuses = {};
+            request.commands.forEach(function(command) { statuses[command.uuid] = "ok"; });
+            request.callback({sync_token: "fixture", sync_status: statuses}, "");
+            tryCompare(service, "completions", ["1"]);
+            compare(taskList.composerKey, "");
         }
         function test_ctrl_click_selects_and_toggles() {
             mouseClick(findChild(taskList, "taskPointer_0"), 65, 12, Qt.LeftButton, Qt.ControlModifier);

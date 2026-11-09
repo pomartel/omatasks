@@ -16,6 +16,7 @@ Item {
     property bool selected: false
     property bool bulkSelected: false
     signal activated(var task)
+    signal doubleActivated(var task)
     signal highlighted(var task)
     signal hoverHighlighted(var task)
     signal selectionToggled(var task)
@@ -86,7 +87,10 @@ Item {
             else if (mouse.modifiers & Qt.ControlModifier) root.selectionToggled(root.task);
             else { root.highlighted(root.task); root.activated(root.task); }
         }
-        onDoubleClicked: function(mouse) { mouse.accepted = false; }
+        onDoubleClicked: function(mouse) {
+            if (mouse.button === Qt.LeftButton && !(mouse.modifiers & Qt.ControlModifier)) { mouse.accepted = true; root.doubleActivated(root.task); }
+            else mouse.accepted = false;
+        }
     }
     TaskCheck { fontFamily: root.fontFamily;
         id: completion

@@ -70,6 +70,7 @@ ColumnLayout {
     onParsedChanged: Qt.callLater(updateHighlights)
     signal finished()
     signal cancelled()
+    signal submissionFailed()
     spacing: Style.space(10)
     Component.onCompleted: if (editing) loadTask()
 
@@ -94,7 +95,7 @@ ColumnLayout {
             if (parsed.projectName) { draft.projectId = Inline.resolveProject(service.projects, parsed.projectName); if (draft.projectId !== originalTask.project_id) draft.sectionId = ""; }
             change = Edit.changes(originalTask, draft, service.now);
             if (change.update.due && parsed.update.due_lang) change.update.due.lang = parsed.update.due_lang;
-        } catch (e) { message = e.message; return; }
+        } catch (e) { message = e.message; submissionFailed(); return; }
         var specs = [], id = String(originalTask.id);
         if (change.move) specs.push({type: "item_move", args: Object.assign({id: id}, change.move)});
         if (Object.keys(change.update).length) specs.push({type: "item_update", args: Object.assign({id: id}, change.update)});
@@ -113,7 +114,7 @@ ColumnLayout {
         });
         sentText = signature; message = "";
         submitting = service.updateTask(id, pendingCommands);
-        if (!submitting) message = service.error || Fr.t("text.attendez_la_fin_de_loperation_en_cours");
+        if (!submitting) { message = service.error || Fr.t("text.attendez_la_fin_de_loperation_en_cours"); submissionFailed(); }
     }
 
     function focusInput() { input.forceActiveFocus(); }
@@ -242,7 +243,8 @@ ColumnLayout {
         else if (event.key === Qt.Key_Down && input.activeFocus) { descriptionVisible = true; description.forceActiveFocus(); event.accepted = true; }
     }
     function submit() {
-        if (!input.text.trim() || submitting) return;
+        if (!input.text.trim()) { submissionFailed(); focusInput(); return; }
+        if (submitting) return;
         if (editing) { submitEdit(); return; }
         var text = Draft.quickText({text: input.text, description: description.text, project: project,
             section: section, labels: taskLabels, priority: priority, due: due,
@@ -443,6 +445,6 @@ ColumnLayout {
         target: root.service
         function onTaskAdded() { if (root.submitting) { root.submitting = false; root.reset(); root.finished(); } }
         function onTaskUpdated(taskId) { if (root.editing && root.submitting && String(root.editingTask.id) === taskId) { root.submitting = false; root.finished(); } }
-        function onOperationFailed(message) { if (root.submitting) { root.submitting = false; root.message = message; root.focusInput(); } }
+        function onOperationFailed(message) { if (root.submitting) { root.submitting = false; root.message = message; root.submissionFailed(); root.focusInput(); } }
     }
 }

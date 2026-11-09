@@ -22,6 +22,8 @@ FocusScope {
     property string composerKey: ""
     property string composerProject: ""
     property int editRowIndex: -1
+    property var inlineEditor: null
+    property var pendingEdit: null
     property var heldRows: null
     property var selectedTask: null
     property var selectedIds: []
@@ -76,7 +78,7 @@ FocusScope {
         display.close();
         taskMenu.open();
     }
-    function reset() { completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; helpOpen = false; clearSelection(); settingsOpen = false; display.close(); details.close(); }
+    function reset() { clickTimer.stop(); pendingEdit = null; completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; helpOpen = false; clearSelection(); settingsOpen = false; display.close(); details.close(); }
     function completeTask(task) {
         if (service.saving) return;
         var ids = Bulk.visibleIds(rows), id = String(task.id), index = ids.indexOf(id);
@@ -154,13 +156,60 @@ FocusScope {
         Qt.callLater(function() { if (detailLoader.item) detailLoader.item.startEditing(); });
     }
     function editTaskInPlace(task, rowIndex) {
-        if (composerKey || service.saving) return;
+        if (composerKey) {
+            if (!inlineEditor || editRowIndex < 0) return;
+            var target = rows[rowIndex];
+            if (!target || target.kind !== "task") return;
+            pendingEdit = {id: String(task.id), groupKey: target.groupKey, action: "edit"};
+            if (!inlineEditor.submitting) inlineEditor.submit();
+            return;
+        }
+        if (service.saving) return;
         var index = rowIndex === undefined ? rows.findIndex(function(row) { return row.kind === "task" && String(row.task.id) === String(task.id); }) : rowIndex;
         if (index < 0) return;
         clearSelection();
         heldRows = rows;
         editRowIndex = index;
         composerKey = "edit:" + index;
+    }
+    function activateTask(task, rowIndex) {
+        clickTimer.taskId = String(task.id);
+        clickTimer.groupKey = rows[rowIndex].groupKey;
+        clickTimer.restart();
+    }
+    function doubleActivateTask(task, rowIndex) {
+        clickTimer.stop();
+        if (composerKey && inlineEditor && editRowIndex >= 0) {
+            pendingEdit = {id: String(task.id), groupKey: rows[rowIndex].groupKey, action: "complete"};
+            if (!inlineEditor.submitting) inlineEditor.submit();
+        } else if (!composerKey) completeTask(task);
+    }
+    function finishInlineEdit() {
+        var next = pendingEdit, currentView = view;
+        pendingEdit = null;
+        composerKey = "";
+        list.forceActiveFocus();
+        if (!next) return;
+        Qt.callLater(function() {
+            if (!root.visible || root.view !== currentView || root.composerKey) return;
+            var index = root.rows.findIndex(function(row) { return row.kind === "task" && String(row.task.id) === next.id && row.groupKey === next.groupKey; });
+            if (index < 0) index = root.rows.findIndex(function(row) { return row.kind === "task" && String(row.task.id) === next.id; });
+            if (index < 0) return;
+            if (next.action === "complete") { root.completeTask(root.rows[index].task); return; }
+            root.keyboardTaskId = next.id;
+            root.keyboardAddKey = "";
+            root.editTaskInPlace(root.rows[index].task, index);
+        });
+    }
+    Timer {
+        id: clickTimer
+        interval: Qt.styleHints.mouseDoubleClickInterval
+        property string taskId: ""
+        property string groupKey: ""
+        onTriggered: {
+            var index = root.rows.findIndex(function(row) { return row.kind === "task" && String(row.task.id) === clickTimer.taskId && row.groupKey === clickTimer.groupKey; });
+            if (index >= 0) root.editTaskInPlace(root.rows[index].task, index);
+        }
     }
     function openInTodoist(task) { service.openTodoist(task); }
     function handleShortcut(event) {
@@ -211,9 +260,9 @@ FocusScope {
         event.accepted = true;
     }
     Keys.onPressed: function(event) { handleShortcut(event); }
-    onViewChanged: { service.selectView(view); completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
+    onViewChanged: { clickTimer.stop(); pendingEdit = null; service.selectView(view); completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
     onSetupVisibleChanged: if (setupVisible) { cancelDrag(); clearSelection(); }
-    onVisibleChanged: if (!visible) { completionFocus = null; cancelDrag(); clearSelection(); }
+    onVisibleChanged: if (!visible) { clickTimer.stop(); pendingEdit = null; completionFocus = null; cancelDrag(); clearSelection(); }
     onComposerKeyChanged: if (!composerKey) { editRowIndex = -1; heldRows = null; }
 
     RowLayout {
@@ -347,9 +396,11 @@ FocusScope {
                         service: root.service
                         editingTask: rowLoader.modelData.task
                         inlineTask: true
-                        onFinished: { root.composerKey = ""; list.forceActiveFocus(); }
-                        onCancelled: { root.composerKey = ""; list.forceActiveFocus(); }
-                        Component.onCompleted: Qt.callLater(focusInput)
+                        onFinished: root.finishInlineEdit()
+                        onCancelled: { root.pendingEdit = null; root.composerKey = ""; list.forceActiveFocus(); }
+                        onSubmissionFailed: root.pendingEdit = null
+                        Component.onCompleted: { root.inlineEditor = editor; Qt.callLater(focusInput); }
+                        Component.onDestruction: if (root.inlineEditor === editor) root.inlineEditor = null
                     }
                 }
             }
@@ -364,7 +415,8 @@ FocusScope {
                     dragging: root.dragIndex === rowLoader.index
                     listDragging: root.dragging
                     opacity: dragging ? 0.3 : 1
-                    onActivated: function(task) { root.editTaskInPlace(task, rowLoader.index); }
+                    onActivated: function(task) { root.activateTask(task, rowLoader.index); }
+                    onDoubleActivated: function(task) { root.doubleActivateTask(task, rowLoader.index); }
                     onHighlighted: function(task) {
                         if (root.composerKey) return;
                         root.clearSelection();
