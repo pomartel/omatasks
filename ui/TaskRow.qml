@@ -95,14 +95,14 @@ Item {
     TaskCheck { fontFamily: root.fontFamily;
         id: completion
         objectName: "taskCompletion_" + root.task.id
-        x: 0; y: Style.space(5)
+        x: Style.space(4); y: Style.space(5)
         task: root.task
         enabled: !root.service.saving && !root.listDragging
         onClicked: root.completeTask()
     }
     MouseArea {
         // Modified clicks on the completion circle select instead of completing.
-        x: 0; y: Style.space(5); width: Style.space(26); height: Style.space(28)
+        x: Style.space(4); y: Style.space(5); width: Style.space(26); height: Style.space(28)
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onPressed: function(mouse) { if (mouse.button === Qt.LeftButton && !(mouse.modifiers & Qt.ControlModifier)) mouse.accepted = false; }
         onClicked: function(mouse) {
@@ -113,7 +113,7 @@ Item {
     FontMetrics { id: titleMetrics; font: title.font }
     Column {
         id: content
-        anchors.left: parent.left; anchors.leftMargin: Style.space(31)
+        anchors.left: parent.left; anchors.leftMargin: Style.space(35)
         anchors.right: parent.right; anchors.rightMargin: Style.space(3)
         // Center the first line's capital letters on the completion circle.
         y: completion.y + (completion.height + titleMetrics.capitalHeight) / 2 - title.baselineOffset

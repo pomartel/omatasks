@@ -383,7 +383,7 @@ FocusScope {
                     TaskCheck {
                         id: editingCheck
                         objectName: "editingTaskCompletion"
-                        x: 0; y: Style.space(5)
+                        x: Style.space(4); y: Style.space(5)
                         task: rowLoader.modelData.task
                         fontFamily: root.fontFamily
                         enabled: false
@@ -391,7 +391,7 @@ FocusScope {
                     FontMetrics { id: editMetrics; font: editor.titleFont }
                     Composer {
                         id: editor
-                        x: Style.space(31); width: parent.width - x - Style.space(3)
+                        x: Style.space(35); width: parent.width - x - Style.space(3)
                         y: editingCheck.y + (editingCheck.height + editMetrics.capitalHeight) / 2 - titleBaseline
                         service: root.service
                         editingTask: rowLoader.modelData.task
@@ -493,7 +493,7 @@ FocusScope {
     Rectangle {
         objectName: "taskDropMarker"
         visible: root.dragging && root.dropIndex >= 0
-        x: Style.space(31); y: root.dropY - 1
+        x: Style.space(35); y: root.dropY - 1
         width: root.width - x; height: Style.space(2)
         color: Commons.Color.accent; z: 2
     }
