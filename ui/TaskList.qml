@@ -21,6 +21,7 @@ FocusScope {
     property bool settingsOpen: false
     property string composerKey: ""
     property string composerProject: ""
+    property int editRowIndex: -1
     property var heldRows: null
     property var selectedTask: null
     property var selectedIds: []
@@ -152,6 +153,15 @@ FocusScope {
         showTask(task);
         Qt.callLater(function() { if (detailLoader.item) detailLoader.item.startEditing(); });
     }
+    function editTaskInPlace(task) {
+        var index = rows.findIndex(function(row) { return row.kind === "task" && String(row.task.id) === String(task.id); });
+        if (index < 0) return;
+        clearSelection();
+        heldRows = rows;
+        editRowIndex = index;
+        composerKey = "edit:" + index;
+        Qt.callLater(function() { list.positionViewAtIndex(index, ListView.Contain); });
+    }
     function openInTodoist(task) { service.openTodoist(task); }
     function handleShortcut(event) {
         if (dragging || composerKey || details.visible || display.visible || taskMenu.visible || helpOpen) return;
@@ -177,6 +187,8 @@ FocusScope {
             var selectedAdd = rows.find(function(r) { return r.kind === "add" && r.key === keyboardAddKey; });
             if (selectedAdd) addAt(selectedAdd.key, selectedAdd.projectId);
         } else if (!ctrl && task && [Qt.Key_Return, Qt.Key_Enter].indexOf(key) >= 0) {
+            editTaskInPlace(task);
+        } else if (!ctrl && task && key === Qt.Key_V) {
             showTask(task);
         } else if (!ctrl && task && key === Qt.Key_E) {
             editKeyboardTask(task);
@@ -202,7 +214,7 @@ FocusScope {
     onViewChanged: { service.selectView(view); completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
     onSetupVisibleChanged: if (setupVisible) { cancelDrag(); clearSelection(); }
     onVisibleChanged: if (!visible) { completionFocus = null; cancelDrag(); clearSelection(); }
-    onComposerKeyChanged: if (!composerKey) heldRows = null
+    onComposerKeyChanged: if (!composerKey) { editRowIndex = -1; heldRows = null; }
 
     RowLayout {
         id: header
@@ -306,13 +318,23 @@ FocusScope {
             required property int index
             width: list.width - Style.space(4)
             height: item ? item.implicitHeight : 0
-            sourceComponent: modelData.kind === "group" ? groupComponent : modelData.kind === "task" ? taskComponent : addComponent
+            sourceComponent: modelData.kind === "group" ? groupComponent : modelData.kind === "task" ? (root.editRowIndex === index ? editComponent : taskComponent) : addComponent
             Component {
                 id: groupComponent
                 Item {
                     implicitHeight: Style.space(40)
                     Label { font.family: root.fontFamily; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.bottomMargin: Style.space(9); text: rowLoader.modelData.title; font.bold: true; color: text === Fr.t("text.en_retard") ? "#ef615b" : Commons.Color.popups.text }
                     Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Commons.Color.popups.text; opacity: 0.12 }
+                }
+            }
+            Component {
+                id: editComponent
+                Composer {
+                    service: root.service
+                    editingTask: rowLoader.modelData.task
+                    onFinished: { root.composerKey = ""; list.forceActiveFocus(); }
+                    onCancelled: { root.composerKey = ""; list.forceActiveFocus(); }
+                    Component.onCompleted: Qt.callLater(focusInput)
                 }
             }
             Component {

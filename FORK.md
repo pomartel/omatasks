@@ -51,7 +51,7 @@ interrompt la requête et affiche une erreur.
 | Tab / Maj+Tab ou ← / → | Parcourir les vues |
 | a / d / i | Planifier aujourd’hui, demain, ou retirer la date |
 | ↑ / ↓ ou k / j | Sélectionner une tâche ou l’ajout |
-| Entrée / e / Espace | Détails / modification / terminer |
+| Entrée / v / e / Espace | Modifier sur place / détails / modifier dans les détails / terminer |
 | u | Annuler la dernière complétion dans la session |
 | o / x | Ouvrir dans Todoist / supprimer immédiatement |
 | Ctrl+a | Sélectionner toutes les tâches visibles |

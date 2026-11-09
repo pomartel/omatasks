@@ -381,7 +381,7 @@ ShellRoot {
             completionService.tasks = [{id: "completed", content: "Synthetic task", priority: 1, project_id: "inbox", due: {date: "2026-09-15"}}];
             completionService.captured = []; completionService.lastCompletion = null;
             taskList.service = completionService;
-            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_Return);
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_V);
             tryVerify(function() { return findChild(taskList, "taskDetailScroll") !== null; });
             findChild(taskList, "taskDetailScroll").parent.complete();
             tryCompare(completionService, "saving", false);
@@ -399,8 +399,8 @@ ShellRoot {
             keyClick(Qt.Key_Space);
             compare(service.completions.join(","), "0");
         }
-        function test_enter_opens_details_and_u_undoes_without_selection() {
-            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_Return);
+        function test_v_opens_details_and_u_undoes_without_selection() {
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_V);
             tryCompare(findChild(taskList, "taskDetailsPopup"), "visible", true);
             verify(findChild(taskList, "taskName") === null);
             findChild(taskList, "taskDetailsPopup").close();
@@ -409,6 +409,32 @@ ShellRoot {
             taskList.forceActiveFocus(); keyClick(Qt.Key_U);
             compare(service.captured[0].type, "item_uncomplete");
             compare(service.lastCompletion, null);
+        }
+        function test_enter_edits_selected_task_in_place_data() {
+            return [{tag: "Return", key: Qt.Key_Return}, {tag: "Enter", key: Qt.Key_Enter}];
+        }
+        function test_enter_edits_selected_task_in_place(data) {
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(data.key);
+            var popup = findChild(taskList, "taskDetailsPopup");
+            compare(popup.visible, false);
+            tryVerify(function() { var input = findChild(taskList, "taskName"); return input && input.activeFocus; });
+            var input = findChild(taskList, "taskName");
+            compare(input.text, service.tasks[0].content);
+            input.text = "Updated task"; keyClick(Qt.Key_Return);
+            compare(service.captured.length, 1);
+            compare(service.captured[0].args.content, "Updated task");
+            // The fixture completes requests synchronously, before Composer sets submitting.
+            service.taskUpdated("0");
+            tryCompare(taskList, "composerKey", "");
+            compare(taskList.keyboardTaskId, "0");
+        }
+        function test_inline_edit_escape_restores_row() {
+            taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_Return);
+            tryVerify(function() { var input = findChild(taskList, "taskName"); return input && input.activeFocus; });
+            keyClick(Qt.Key_Escape);
+            tryCompare(taskList, "composerKey", "");
+            compare(taskList.keyboardTaskId, "0");
+            compare(service.captured.length, 0);
         }
         function test_editor_shortcut_and_typing() {
             taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_E);
