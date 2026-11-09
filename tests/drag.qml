@@ -305,15 +305,13 @@ ShellRoot {
             keyClick(Qt.Key_I);
             compare(service.captured[1].args.due,null);
             keyClick(Qt.Key_A);
-            tryCompare(findChild(taskList, "taskContextMenu"), "opened", true);
-            compare(findChild(taskList, "taskContextMenu").taskIds.join(","), "0");
-            keyClick(Qt.Key_Escape);
             tryCompare(findChild(taskList, "taskContextMenu"), "opened", false);
+            compare(service.captured[2].args.due.date,"2026-09-15");
             compare(taskList.view,"today");
             keyClick(Qt.Key_A,Qt.ControlModifier);
             compare(taskList.selectedIds.length,24);
             keyClick(Qt.Key_D,Qt.ControlModifier); keyClick(Qt.Key_I,Qt.ControlModifier);
-            compare(service.captured.length,2);
+            compare(service.captured.length,3);
         }
         function test_date_shortcuts_without_a_task_do_nothing() {
             taskList.forceActiveFocus();
@@ -328,8 +326,7 @@ ShellRoot {
                 var help = findChild(taskList, "shortcutHelp");
                 tryCompare(help, "opened", true);
                 var caption = findChild(taskList, "shortcutHelpText");
-                verify(caption.text.indexOf("a : ouvrir le menu d’actions") >= 0);
-                verify(caption.text.indexOf("d / i : demain / sans date") >= 0);
+                verify(caption.text.indexOf("a / d / i : aujourd’hui / demain / sans date") >= 0);
                 verify(caption.text.indexOf("Ctrl+a : tout sélectionner") >= 0);
                 verify(caption.text.indexOf("Ctrl+d") < 0);
                 verify(caption.text.indexOf("← / →") >= 0);

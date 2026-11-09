@@ -49,7 +49,7 @@ interrompt la requête et affiche une erreur.
 | Touche | Action |
 | --- | --- |
 | Tab / Maj+Tab ou ← / → | Parcourir les vues |
-| a / d / i | Ouvrir le menu d’actions / planifier demain / retirer la date |
+| a / d / i | Planifier aujourd’hui, demain, ou retirer la date |
 | ↑ / ↓ ou k / j | Sélectionner une tâche ou l’ajout |
 | Entrée / v / e / Espace | Modifier sur place / détails / modifier dans les détails / terminer |
 | u | Annuler la dernière complétion dans la session |
