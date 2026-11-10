@@ -39,6 +39,8 @@ interrompt la requête et affiche une erreur.
   fenêtre webapp Todoist. Les champs non modifiés restent inchangés.
 - Compteur dans la barre par défaut, taille d’icône accordée à qs-yadm.
   Les nouveaux modes de barre et notifications upstream restent disponibles.
+- Les noms de tâches affichés dans la barre sont traités comme du texte brut,
+  afin qu’une balise d’image ne déclenche pas de requête réseau.
 - Première ligne du titre centrée sur le rond de complétion, selon les
   métriques de la police, y compris pour les titres sur deux lignes.
 - Dernière ligne « Ajouter une tâche » sans espace superflu sous le bouton,
@@ -80,6 +82,7 @@ des évolutions upstream. `EditParser.js` porte le parseur de modification,
 
 ```sh
 node --test tests/*.test.cjs
+tests/check-bar
 tests/check-drag
 tests/check-composer
 tests/check-french-input

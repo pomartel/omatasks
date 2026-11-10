@@ -46,6 +46,7 @@ Item {
         Connections { target: root; function onColorChanged() { canvas.requestPaint(); } function onNameChanged() { canvas.requestPaint(); } }
     }
     Text {
+        textFormat: Text.PlainText
         visible: root.name === "today"
         anchors.horizontalCenter: parent.horizontalCenter
         y: parent.height * 0.39
