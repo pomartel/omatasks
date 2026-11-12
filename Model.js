@@ -49,22 +49,28 @@ function dueLabel(task, now, view, grouping) {
 function plain(text) {
     return String(text || "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/\s+/g, " ").trim();
 }
+function links(text) {
+    var source = String(text || ""), found = [], match;
+    var pattern = /\[([^\]\n]+)\]\((https?:\/\/(?:[^\s()]|\([^\s()]*\))+)\)|(https?:\/\/[^\s<>"\[\]]+)/gi;
+    while ((match = pattern.exec(source))) {
+        var url = match[2] || match[3].replace(/[.,;:!?]+$/, "");
+        if (!match[2]) while (url.endsWith(")") && (url.match(/\)/g) || []).length > (url.match(/\(/g) || []).length) url = url.slice(0, -1);
+        found.push({index: match.index, end: pattern.lastIndex, url: url, label: match[1] || url, suffix: match[3] ? match[3].slice(url.length) : ""});
+    }
+    return found;
+}
+function firstTaskLink(task) {
+    var found = links(task.content).concat(links(task.description));
+    return found.length ? found[0].url : "";
+}
 function linkText(text) {
     function escape(value) { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
     function anchor(url, label) { return '<a href="' + escape(url) + '"><u>' + escape(label) + '</u></a>'; }
     var source = String(text || ""), result = "", end = 0;
-    var pattern = /\[([^\]\n]+)\]\((https?:\/\/(?:[^\s()]|\([^\s()]*\))+)\)|(https?:\/\/[^\s<>"\[\]]+)/gi;
-    var match;
-    while ((match = pattern.exec(source))) {
-        result += escape(source.slice(end, match.index));
-        if (match[2]) result += anchor(match[2], match[1]);
-        else {
-            var url = match[3].replace(/[.,;:!?]+$/, "");
-            while (url.endsWith(")") && (url.match(/\)/g) || []).length > (url.match(/\(/g) || []).length) url = url.slice(0, -1);
-            result += anchor(url, url) + escape(match[3].slice(url.length));
-        }
-        end = pattern.lastIndex;
-    }
+    links(source).forEach(function(link) {
+        result += escape(source.slice(end, link.index)) + anchor(link.url, link.label) + escape(link.suffix);
+        end = link.end;
+    });
     return (result + escape(source.slice(end))).replace(/\n/g, "<br>");
 }
 function asArray(items) { return Array.isArray(items) ? items : items && typeof items === "object" ? Object.keys(items).map(function(k) { return items[k]; }).filter(function(x) { return x && typeof x === "object"; }) : []; }

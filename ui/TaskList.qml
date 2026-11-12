@@ -213,6 +213,7 @@ FocusScope {
         }
     }
     function openInTodoist(task) { service.openTodoist(task); }
+    function openTaskLink(url) { Qt.openUrlExternally(url); }
     function deleteByShortcut(task) {
         if (service.saving || service.connecting) return;
         var id = String(task.id);
@@ -258,6 +259,9 @@ FocusScope {
         } else if (!ctrl && keyboardAddKey && [Qt.Key_Return, Qt.Key_Enter, Qt.Key_Space].indexOf(key) >= 0) {
             var selectedAdd = rows.find(function(r) { return r.kind === "add" && r.key === keyboardAddKey; });
             if (selectedAdd) addAt(selectedAdd.key, selectedAdd.projectId);
+        } else if (ctrl && !(event.modifiers & (Qt.AltModifier | Qt.MetaModifier | Qt.ShiftModifier)) && task && [Qt.Key_Return, Qt.Key_Enter].indexOf(key) >= 0) {
+            var url = Model.firstTaskLink(task);
+            if (url && !event.isAutoRepeat) openTaskLink(url);
         } else if (!ctrl && task && [Qt.Key_Return, Qt.Key_Enter].indexOf(key) >= 0) {
             editTaskInPlace(task);
         } else if (!ctrl && task && key === Qt.Key_V) {

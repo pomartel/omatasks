@@ -69,7 +69,7 @@ ShellRoot {
         Loader {
             id: taskListLoader
             anchors.fill: parent
-            sourceComponent: Tasks.TaskList { property string openedTask: ""; function openInTodoist(task) { openedTask = String(task.id); } anchors.fill: parent; anchors.margins: 18; service: service }
+            sourceComponent: Tasks.TaskList { property string openedTask: ""; property string openedLink: ""; function openInTodoist(task) { openedTask = String(task.id); } function openTaskLink(url) { openedLink = url; } anchors.fill: parent; anchors.margins: 18; service: service }
         }
     }
     TestCase {
@@ -78,6 +78,21 @@ ShellRoot {
         when: window.visible
         function cleanupTestCase() { console.log("DRAG UI RESULTS", qtest_results.passCount, "passed", qtest_results.failCount, "failed"); Qt.callLater(Qt.quit); }
         function cleanup() { console.log("TEST", qtest_results.functionName, qtest_results.failed ? "FAILED" : "PASSED"); }
+        function test_ctrl_enter_opens_selected_task_link() {
+            var task = Object.assign({}, service.tasks[0], {content: "[Example](https://example.com)", description: "https://other.test"});
+            service.tasks = [task];
+            taskList.reset(); taskList.keyboardTaskId = String(task.id); taskList.openedLink = ""; taskList.forceActiveFocus();
+            keyClick(Qt.Key_Return, Qt.ControlModifier);
+            compare(taskList.openedLink, "https://example.com");
+            taskList.openedLink = "";
+            service.tasks = [Object.assign({}, task, {content: "No link", description: "See https://description.test."})];
+            keyClick(Qt.Key_Enter, Qt.ControlModifier);
+            compare(taskList.openedLink, "https://description.test");
+            taskList.openedLink = "";
+            service.tasks = [Object.assign({}, task, {content: "No link", description: ""})];
+            keyClick(Qt.Key_Return, Qt.ControlModifier);
+            compare(taskList.openedLink, "");
+        }
         function test_task_title_alignment_data() {
             return [
                 {tag: "single-line", width: 430, size: 13, text: "Blog post: What's in your report?"},

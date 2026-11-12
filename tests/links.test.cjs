@@ -15,3 +15,8 @@ test('task content cannot inject markup or non-web links', () => {
     assert.equal(model.linkText('[Run](javascript:alert(1))'), '[Run](javascript:alert(1))');
     assert.equal(model.linkText('one\ntwo'), 'one<br>two');
 });
+test('first task link follows the same rules as displayed links', () => {
+    assert.equal(model.firstTaskLink({content: '[Site](https://example.com/wiki/Test_(one)) then https://other.test', description: 'https://description.test'}), 'https://example.com/wiki/Test_(one)');
+    assert.equal(model.firstTaskLink({content: 'No link', description: 'See https://example.com/path).'}), 'https://example.com/path');
+    assert.equal(model.firstTaskLink({content: '[Run](javascript:alert(1))'}), '');
+});
