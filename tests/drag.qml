@@ -76,22 +76,26 @@ ShellRoot {
         id: checks
         name: "TodoistDrag"
         when: window.visible
+        SignalSpy { id: closeSpy; target: taskList; signalName: "closeRequested" }
         function cleanupTestCase() { console.log("DRAG UI RESULTS", qtest_results.passCount, "passed", qtest_results.failCount, "failed"); Qt.callLater(Qt.quit); }
         function cleanup() { console.log("TEST", qtest_results.functionName, qtest_results.failed ? "FAILED" : "PASSED"); }
         function test_ctrl_enter_opens_selected_task_link() {
             var task = Object.assign({}, service.tasks[0], {content: "[Example](https://example.com)", description: "https://other.test"});
             service.tasks = [task];
-            taskList.reset(); taskList.keyboardTaskId = String(task.id); taskList.openedLink = ""; taskList.forceActiveFocus();
+            taskList.reset(); taskList.keyboardTaskId = String(task.id); taskList.openedLink = ""; taskList.forceActiveFocus(); closeSpy.clear();
             keyClick(Qt.Key_Return, Qt.ControlModifier);
             compare(taskList.openedLink, "https://example.com");
+            compare(closeSpy.count, 1);
             taskList.openedLink = "";
             service.tasks = [Object.assign({}, task, {content: "No link", description: "See https://description.test."})];
             keyClick(Qt.Key_Enter, Qt.ControlModifier);
             compare(taskList.openedLink, "https://description.test");
+            compare(closeSpy.count, 2);
             taskList.openedLink = "";
             service.tasks = [Object.assign({}, task, {content: "No link", description: ""})];
             keyClick(Qt.Key_Return, Qt.ControlModifier);
             compare(taskList.openedLink, "");
+            compare(closeSpy.count, 2);
         }
         function test_task_title_alignment_data() {
             return [

@@ -261,7 +261,7 @@ FocusScope {
             if (selectedAdd) addAt(selectedAdd.key, selectedAdd.projectId);
         } else if (ctrl && !(event.modifiers & (Qt.AltModifier | Qt.MetaModifier | Qt.ShiftModifier)) && task && [Qt.Key_Return, Qt.Key_Enter].indexOf(key) >= 0) {
             var url = Model.firstTaskLink(task);
-            if (url && !event.isAutoRepeat) openTaskLink(url);
+            if (url && !event.isAutoRepeat) { openTaskLink(url); closeRequested(); }
         } else if (!ctrl && task && [Qt.Key_Return, Qt.Key_Enter].indexOf(key) >= 0) {
             editTaskInPlace(task);
         } else if (!ctrl && task && key === Qt.Key_V) {
