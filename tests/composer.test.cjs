@@ -51,6 +51,16 @@ test('French dates and explicit sans date override the current view default', ()
     assert.equal(draft.quickText(input({text:'Réviser '+value,due:'aujourd’hui'})), 'Réviser '+value);
   }
 });
+test('auj is recognized and expanded only as a date before Quick Add', () => {
+  for (const [text, expected] of [['Appeler auj', 'Appeler aujourd’hui'], ['Appeler AUJ à 17h', 'Appeler aujourd’hui à 17h'], ['auj #Client Work @email', 'aujourd’hui #Client\\ Work @email']]) {
+    const parsed = draft.parse(text, service, null);
+    assert.ok(parsed.due);
+    assert.equal(draft.quickText(input({text, parsed})), expected);
+  }
+  assert.equal(draft.dateToken('Lire aujourdhui'), null);
+  assert.equal(draft.dateToken('Visiter https://example.com/auj'), null);
+  assert.equal(draft.dateOffset('auj à 17h', new Date(), {}), 0);
+});
 test('Date and priority pickers expose French labels with French relative dates', () => {
   const dates = draft.choices('due','',service,null);
   assert.equal(dates[0].label,'Aujourd’hui'); assert.equal(dates[0].value,'aujourd’hui');

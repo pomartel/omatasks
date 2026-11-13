@@ -46,7 +46,7 @@ function parse(task, draft, currentDate) {
   })
   var days = "monday|tuesday|wednesday|thursday|friday|saturday|sunday|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche"
   var months = "january|february|march|april|may|june|july|august|september|october|november|december|janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre"
-  var dates = "sans date|aucune date|no date|après-demain|apres-demain|day after tomorrow|aujourd['’]hui|demain|today|tomorrow|tonight|ce soir"
+  var dates = "sans date|aucune date|no date|après-demain|apres-demain|day after tomorrow|aujourd['’]hui|auj|demain|today|tomorrow|tonight|ce soir"
     + "|(?:every!? (?:other )?(?:[0-9]+ )?(?:days?|weeks?|months?|years?|weekdays?|" + days + ")s?)"
     + "|(?:(?:tous les|toutes les|chaque) (?:[0-9]+ )?(?:jours?|semaines?|mois|ans?|" + days + ")s?)"
     + "|(?:next|this) (?:week|month|" + days + ")"
@@ -73,7 +73,7 @@ function parse(task, draft, currentDate) {
         date = task.due && task.due.is_recurring && task.due.string
           ? task.due.string.replace(/\s+(?:(?:at|à)\s+)?\d{1,2}(?:(?::\d{2}|\s*h(?:\s*\d{2})?)(?:\s*(?:am|pm))?|\s*(?:am|pm))?\s*$/i, "") : currentDate
       }
-      var due = [date, time].filter(Boolean).join(" ")
+      var due = [date.replace(/^auj(?=\s|$)/i, "aujourd’hui"), time].filter(Boolean).join(" ")
       update.due_string = due
       update.due_lang = /aujourd|demain|soir|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|prochain|dans|tous|toutes|chaque|janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre|(?:^|\s)à\s|\dh/i.test(due) ? "fr" : "en"
       hints.push(Fr.t("parser.date", due))

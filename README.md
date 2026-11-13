@@ -115,6 +115,7 @@ The layout follows Todoist’s [Quick Add design comparison](https://www.todoist
 ## Using the panel
 
 - Opening the panel shows Today and highlights the first visible task, if any.
+- In date expressions, `auj` is understood as `aujourd’hui`, including with a time such as `auj à 17h`.
 - Click a task's circle to complete it. Todoist advances recurring tasks to their next occurrence.
 - Click a task to edit it in place. Clicking another task saves the current edit before opening the next one. Double-click a task to complete it, or select it and press **v** to view its full details, including subtask progress. Long text wraps, and only vertical scrolling is enabled.
 - With a task highlighted, **Ctrl+Enter** opens its first web link in the browser and closes the panel, looking in the title first and then the description.

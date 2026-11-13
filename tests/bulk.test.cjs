@@ -16,6 +16,11 @@ const tasks = [
     {id: 'grandchild', parent_id: 'child', content: 'Grandchild', project_id: 'work'},
     {id: 'another', content: 'Another task', project_id: 'work'}
 ];
+test('Custom dates and deadlines accept auj', () => {
+    const due = bulk.commands(tasks, ['another'], 'customDate', 'auj à 17h', now)[0].args.due;
+    assert.deepEqual(plain(due), {string: 'aujourd’hui à 17h', lang: 'fr'});
+    assert.equal(bulk.commands(tasks, ['another'], 'deadline', 'auj', now)[0].args.deadline.date, '2026-09-16');
+});
 test('Selection uses task IDs across duplicate label groups and ignores non-task rows', () => {
     const rows = [{kind: 'group'}, {kind: 'task', task: tasks[0]}, {kind: 'task', task: tasks[0]}, {kind: 'add'}, {kind: 'task', task: tasks[1]}];
     assert.deepEqual(plain(bulk.visibleIds(rows)), ['parent', 'child']);

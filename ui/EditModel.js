@@ -21,8 +21,9 @@ function snapshot(task, now) {
     };
 }
 function dateKey(date) { return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0"); }
+function normalizeDate(value) { return String(value).replace(/^auj(?=\s|$)/i, "aujourd’hui"); }
 function deadlineDate(value, now) {
-    var input = value.trim().toLowerCase(), date = new Date(now);
+    var input = normalizeDate(value.trim()).toLowerCase(), date = new Date(now);
     if (!input) return "";
     if (["today", "aujourd’hui", "aujourd'hui"].indexOf(input) >= 0) return dateKey(date);
     if (["tomorrow", "demain", "next week", "la semaine prochaine"].indexOf(input) >= 0) { date.setDate(date.getDate() + (["tomorrow", "demain"].indexOf(input) >= 0 ? 1 : 7)); return dateKey(date); }
@@ -42,8 +43,8 @@ function changes(task, draft, now) {
     // Send only changed fields. In particular, editing a title must not
     // reinterpret an old 'tomorrow' string or reset a recurring schedule.
     if (draft.due !== original.due) {
-        args.due = draft.due.trim() ? {string: draft.due.trim()} : null;
-        if (args.due) args.due.lang = /demain|aujourd|prochaine|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|tous|chaque|dans|à/.test(draft.due.toLowerCase()) ? "fr" : "en";
+        args.due = draft.due.trim() ? {string: normalizeDate(draft.due.trim())} : null;
+        if (args.due) args.due.lang = /demain|aujourd|prochaine|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|tous|chaque|dans|à/.test(args.due.string.toLowerCase()) ? "fr" : "en";
         if (args.due && task.due && task.due.timezone) args.due.timezone = task.due.timezone;
     }
     if (draft.deadline !== original.deadline) args.deadline = draft.deadline.trim() ? {date: deadlineDate(draft.deadline, now)} : null;

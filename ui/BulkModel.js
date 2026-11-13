@@ -71,7 +71,8 @@ function commands(tasks, ids, action, value, now) {
             }
         } else if (action === "customDate") {
             if (!String(value || "").trim()) throw new Error(Fr.t("text.indiquez_une_date"));
-            args.due = {string: value.trim()};
+            args.due = {string: Edit.normalizeDate(value.trim())};
+            if (/^aujourd’hui(?:\s|$)/i.test(args.due.string)) args.due.lang = "fr";
             if ((task.due || {}).timezone) args.due.timezone = task.due.timezone;
         } else if (action === "deadline") args.deadline = value ? {date: Edit.deadlineDate(value, now)} : null;
         else throw new Error(Fr.t("text.action_inconnue"));

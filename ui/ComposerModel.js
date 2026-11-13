@@ -4,6 +4,7 @@
 function escapeName(name) {
     return String(name).replace(/\\/g, "\\\\").replace(/\s/g, "\\ ");
 }
+function normalizeDate(value) { return String(value).replace(/^auj(?=\s|$)/i, "aujourd’hui"); }
 
 // Recognition is a local English preview. The original expression is always
 // sent to Todoist's Quick Add endpoint, which uses the official clients' parser.
@@ -24,7 +25,7 @@ function dateTokens(text, excluded) {
     var recurringDay = "(?:(?:(?:first|last|" + ordinal + ") )?(?:workday|weekday|" + day + ")|" + calendar + "|" + number + ")";
     var recurrence = "(?:(?:every!?|ev!?) (?:(?:other|\\d+) )?(?:day|weekday|workday|week|month|year|hour|minute|" + recurringDay + ")s?(?:, ?" + recurringDay + "s?)*|daily|weekly|monthly|yearly|annually|everyday)";
     var rule = recurrence + "(?: (?:(?:starting|from|until|ending) " + relative + "|for \\d+ (?:days?|weeks?|months?)|on (?:the )?" + number + "))*";
-    var french = "(?:sans date|aujourd['’]hui|après-demain|apres-demain|demain|ce soir|(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)(?: prochain)?|(?:la )?semaine prochaine|dans \\d+ (?:jours?|semaines?|heures?|minutes?)|(?:tous les|chaque) (?:jours?|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche))(?: (?:à )?\\d{1,2}(?::\\d{2}|\\s*h(?:\\s*\\d{2})?)?)?";
+    var french = "(?:sans date|aujourd['’]hui|auj|après-demain|apres-demain|demain|ce soir|(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)(?: prochain)?|(?:la )?semaine prochaine|dans \\d+ (?:jours?|semaines?|heures?|minutes?)|(?:tous les|chaque) (?:jours?|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche))(?: (?:à )?\\d{1,2}(?::\\d{2}|\\s*h(?:\\s*\\d{2})?)?)?";
     var scheduled = "(?:" + french + "|" + rule + "|" + relative + ")(?: (?:at )?(?:" + time + "|(?:[01]?\\d|2[0-3])(?=\\s|$)|(?:[01]\\d|2[0-3])[0-5]\\d))?";
     var pattern = new RegExp("(?:^|\\s)(" + scheduled + "|(?:at )?" + time + ")(?![\\w/-])", "ig"), match, result = [];
     while ((match = pattern.exec(source))) {
@@ -123,7 +124,7 @@ function spelling(kind, value, escaped) {
 // Scheduling still belongs to Todoist, including account-specific grammar.
 function dateOffset(value, now, user) {
     var text = value.toLowerCase(), day = null, date = new Date(now.getFullYear(), now.getMonth(), now.getDate()), match;
-    if (/^(today|tod|tonight)\b/.test(text)) return 0;
+    if (/^(today|tod|tonight|auj|aujourd['’]hui)(?=\s|$)/.test(text)) return 0;
     if (/^(tomorrow|tom|tmr)\b/.test(text)) return 1;
     if (/^yesterday\b/.test(text)) return -1;
     match = /^(?:in |after |\+)?(\d+) (days?|weeks?)\b/.exec(text);
@@ -142,9 +143,9 @@ function dateOffset(value, now, user) {
 
 function quickText(draft) {
     var text = draft.text, suffix = [], description = draft.description.trim();
-    ((draft.parsed || {}).tokens || []).filter(function(t) { return ["project", "section", "label", "assignee"].indexOf(t.kind) >= 0; })
+    ((draft.parsed || {}).tokens || []).filter(function(t) { return ["project", "section", "label", "assignee", "due"].indexOf(t.kind) >= 0; })
         .sort(function(a, b) { return b.start - a.start; })
-        .forEach(function(t) { text = text.slice(0, t.start + 1) + spelling(t.kind, t.value, true).slice(1) + text.slice(t.end); });
+        .forEach(function(t) { text = t.kind === "due" ? text.slice(0, t.start) + normalizeDate(text.slice(t.start, t.end)) + text.slice(t.end) : text.slice(0, t.start + 1) + spelling(t.kind, t.value, true).slice(1) + text.slice(t.end); });
     text = text.trim();
     // Preserve Todoist's inline description syntax if the user pasted it.
     var split = text.indexOf(" // ");
@@ -157,7 +158,7 @@ function quickText(draft) {
     if (draft.assignee && !typed.assignee) suffix.push("+" + escapeName(draft.assignee.name || draft.assignee.full_name));
     // Put the contextual/manual default first so Todoist can override it with
     // dates our preview doesn't recognize (including other account languages).
-    if (draft.due && !typed.due && (draft.parsed || !dateToken(text))) text = draft.due + " " + text;
+    if (draft.due && !typed.due && (draft.parsed || !dateToken(text))) text = normalizeDate(draft.due) + " " + text;
     if (draft.deadline && !typed.deadline) suffix.push("{" + draft.deadline.replace(/[{}]/g, "") + "}");
     if (draft.reminder && !typed.reminder) suffix.push("!" + draft.reminder);
     return [text].concat(suffix).join(" ") + (description ? " // " + description : "");

@@ -195,7 +195,7 @@ ColumnLayout {
     function updateHighlights() { highlightSpans = highlightRects(); }
     function setDate(value) {
         removeTyped("due");
-        due = value;
+        due = Draft.normalizeDate(value);
     }
     function choose(row) {
         if (!row) return;
@@ -218,7 +218,7 @@ ColumnLayout {
         if (kind === "label" && taskLabels.indexOf(row.value) < 0) taskLabels = taskLabels.concat([row.value]);
         if (kind === "priority") priority = row.value;
         if (kind === "due") setDate(row.value);
-        if (kind === "deadline") deadline = row.value;
+        if (kind === "deadline") deadline = Draft.normalizeDate(row.value);
         if (kind === "reminder") {
             if (replacingReminder && removedReminders.indexOf(replacingReminder) < 0) removedReminders = removedReminders.concat([replacingReminder]);
             replacingReminder = ""; reminder = row.value;

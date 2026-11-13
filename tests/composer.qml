@@ -70,6 +70,13 @@ ShellRoot {
             composer.closePicker(); keyClick(Qt.Key_Return);
             compare(service.captured.length, 1); compare(service.captured[0].text, text);
         }
+        function test_auj_is_recognized_and_sent_as_today() {
+            enter("Appeler auj à 17h");
+            compare(composer.shownDate, "auj à 17h");
+            verify(findChild(composer, "highlight_due") !== null);
+            composer.submit();
+            compare(service.captured[0].text, "Appeler aujourd’hui à 17h");
+        }
         function test_priority_without_trailing_space() {
             enter("Review p1"); compare(composer.shownPriority, 1); compare(composer.pickerKind, "");
             keyClick(Qt.Key_Backspace); compare(composer.shownPriority, 0);
