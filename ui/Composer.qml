@@ -34,6 +34,7 @@ ColumnLayout {
     property var taskLabels: []
     property int priority: 0
     property string due: initialDue
+    property bool dateChosen: false
     property string deadline: ""
     property string reminder: ""
     property var assignee: null
@@ -61,7 +62,7 @@ ColumnLayout {
     readonly property var inbox: service.projects.find(function(p) { return p.inbox_project; }) || null
     readonly property var inlineEdit: {
         if (!editing || !originalTask) return null;
-        try { return Inline.parse(originalTask, input.text, Model.dueDay(originalTask)); } catch (e) { return null; }
+        try { return Inline.parse(originalTask, input.text, Model.dueDay(originalTask), dateChosen); } catch (e) { return null; }
     }
     readonly property string projectName: inlineEdit && inlineEdit.projectName ? inlineEdit.projectName : shownProject ? shownProject.name : Fr.t("text.inbox")
     readonly property var typedDate: parsed.tokens.filter(function(t) { return t.kind === "due"; }).slice(-1)[0] || null
@@ -88,7 +89,7 @@ ColumnLayout {
     function submitEdit() {
         var change;
         try {
-            var parsed = Inline.parse(originalTask, input.text, Model.dueDay(originalTask));
+            var parsed = Inline.parse(originalTask, input.text, Model.dueDay(originalTask), dateChosen);
             var draft = {text: parsed.update.content, description: description.text, projectId: String((project || {}).id || ""), sectionId: String((section || {}).id || ""), labels: taskLabels, priority: priority || 4, due: due, deadline: deadline, assigneeId: String((assignee || {}).id || ""), duration: duration, durationUnit: durationUnit};
             if (parsed.update.priority !== undefined) draft.priority = 5 - parsed.update.priority;
             if (parsed.update.due_string !== undefined) draft.due = parsed.update.due_string === "no date" ? "" : parsed.update.due_string;
@@ -121,7 +122,7 @@ ColumnLayout {
     function reset() {
         input.text = ""; description.text = ""; descriptionVisible = inlineTask;
         project = service.projectMap[initialProjectId] || null; section = null; taskLabels = [];
-        priority = 0; due = initialDue; deadline = ""; reminder = ""; assignee = null;
+        priority = 0; due = initialDue; dateChosen = false; deadline = ""; reminder = ""; assignee = null;
         pickerKind = ""; activeToken = null; requestId = ""; message = "";
     }
     function closePicker() { pickerKind = ""; activeToken = null; }
@@ -194,7 +195,8 @@ ColumnLayout {
     }
     function updateHighlights() { highlightSpans = highlightRects(); }
     function setDate(value) {
-        removeTyped("due");
+        if (editing) dateChosen = true;
+        else removeTyped("due");
         due = value;
     }
     function choose(row) {

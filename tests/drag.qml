@@ -531,6 +531,20 @@ ShellRoot {
             compare(taskList.keyboardTaskId, "0");
             compare(service.captured.length, 0);
         }
+        function test_edit_date_picker_keeps_date_words_in_title() {
+            taskList.keyboardTaskId = "0"; taskList.forceActiveFocus(); keyClick(Qt.Key_Return);
+            tryVerify(function() { return findChild(taskList, "taskName") !== null; });
+            var input = findChild(taskList, "taskName");
+            var editor = input.parent;
+            input.text = "Appeler demain";
+            editor.setDate("");
+            compare(input.text, "Appeler demain");
+            compare(editor.shownDate, "");
+            editor.submit();
+            compare(service.captured.length, 1);
+            compare(service.captured[0].args.content, "Appeler demain");
+            compare(service.captured[0].args.due, null);
+        }
         function test_editor_shortcut_and_typing() {
             taskList.forceActiveFocus(); keyClick(Qt.Key_J); keyClick(Qt.Key_E);
             tryVerify(function() { return findChild(taskList,"taskName") !== null });

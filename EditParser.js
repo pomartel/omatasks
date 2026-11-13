@@ -1,7 +1,7 @@
 .import "i18n/Fr.js" as Fr
 // Recognize inline edit syntax without creating a temporary Todoist task.
 // Todoist interprets due_string; this module only separates metadata from text.
-function parse(task, draft, currentDate) {
+function parse(task, draft, currentDate, preserveDates) {
   var text = String(draft || "").trim(), original = String(task.content || "")
   var consumed = [], protectedSpans = [], update = {}, projectName = "", hints = []
   function overlaps(start, end, spans) {
@@ -40,6 +40,7 @@ function parse(task, draft, currentDate) {
     hints.push("p" + m[2])
   })
   var date = "", time = ""
+  if (!preserveDates) {
   collect(/(^|\s)(?:date|due):"((?:\\.|[^"\\])+)"/gi, function(m) {
     if (date) throw new Error(Fr.t("text.indiquez_une_seule_date"))
     date = m[2].replace(/\\(.)/g, "$1")
@@ -78,6 +79,7 @@ function parse(task, draft, currentDate) {
       update.due_lang = /aujourd|demain|soir|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|prochain|dans|tous|toutes|chaque|janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre|(?:^|\s)à\s|\dh/i.test(due) ? "fr" : "en"
       hints.push(Fr.t("parser.date", due))
     }
+  }
   }
   consumed.sort(function(a,b) { return a[0] - b[0] })
   var content = "", pos = 0
