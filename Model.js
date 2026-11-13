@@ -47,15 +47,33 @@ function dueLabel(task, now, view, grouping) {
     return text;
 }
 function plain(text) {
-    return String(text || "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/\s+/g, " ").trim();
+    var source = String(text || "");
+    links(source).reverse().forEach(function(link) {
+        if (link.named) source = source.slice(0, link.index) + link.label + source.slice(link.end);
+    });
+    return source.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/\s+/g, " ").trim();
 }
 function links(text) {
     var source = String(text || ""), found = [], match;
-    var pattern = /\[([^\]\n]+)\]\((https?:\/\/(?:[^\s()]|\([^\s()]*\))+)\)|(https?:\/\/[^\s<>"\[\]]+)/gi;
+    var pattern = /\[|https?:\/\/[^\s<>"\[\]]+/gi;
     while ((match = pattern.exec(source))) {
-        var url = match[2] || match[3].replace(/[.,;:!?]+$/, "");
-        if (!match[2]) while (url.endsWith(")") && (url.match(/\)/g) || []).length > (url.match(/\(/g) || []).length) url = url.slice(0, -1);
-        found.push({index: match.index, end: pattern.lastIndex, url: url, label: match[1] || url, suffix: match[3] ? match[3].slice(url.length) : ""});
+        if (match[0] === "[") {
+            var depth = 1, pos = pattern.lastIndex;
+            while (pos < source.length && depth && source[pos] !== "\n") {
+                if (source[pos] === "[") depth++;
+                else if (source[pos] === "]") depth--;
+                pos++;
+            }
+            var target = !depth && pos > match.index + 2 && /^\((https?:\/\/(?:[^\s()]|\([^\s()]*\))+)\)/i.exec(source.slice(pos));
+            if (target) {
+                pattern.lastIndex = pos + target[0].length;
+                found.push({index: match.index, end: pattern.lastIndex, url: target[1], label: source.slice(match.index + 1, pos - 1), suffix: "", named: true});
+            }
+            continue;
+        }
+        var url = match[0].replace(/[.,;:!?]+$/, "");
+        while (url.endsWith(")") && (url.match(/\)/g) || []).length > (url.match(/\(/g) || []).length) url = url.slice(0, -1);
+        found.push({index: match.index, end: pattern.lastIndex, url: url, label: url, suffix: match[0].slice(url.length), named: false});
     }
     return found;
 }
