@@ -205,10 +205,10 @@ ShellRoot {
             panel.destroy();
             restored.destroy();
         }
-        function test_reopening_preserves_last_tab_data() {
+        function test_reopening_shows_today_data() {
             return [{tag: "today", view: "today"}, {tag: "upcoming", view: "upcoming"}, {tag: "inbox", view: "inbox"}];
         }
-        function test_reopening_preserves_last_tab(data) {
+        function test_reopening_shows_today(data) {
             mouseClick(findChild(taskList, "viewTab_" + data.view));
             compare(taskList.view, data.view);
             taskList.keyboardTaskId = "0";
@@ -218,14 +218,24 @@ ShellRoot {
             taskList.settingsOpen = true;
             taskList.visible = false;
             taskList.visible = true;
-            taskList.reset();
-            compare(taskList.view, data.view);
-            compare(findChild(taskList, "viewTab_" + data.view).selected, true);
-            compare(taskList.keyboardTaskId, "");
+            taskList.openPanel();
+            compare(taskList.view, "today");
+            compare(findChild(taskList, "viewTab_today").selected, true);
+            compare(taskList.keyboardTaskId, "0");
             compare(taskList.keyboardAddKey, "");
             compare(taskList.selectedIds.length, 0);
             compare(taskList.helpOpen, false);
             compare(taskList.settingsOpen, false);
+        }
+        function test_opening_with_no_tasks_and_delayed_loading() {
+            service.tasks = [];
+            service.loaded = true;
+            taskList.openPanel();
+            compare(taskList.keyboardTaskId, "");
+            service.loaded = false;
+            taskList.openPanel();
+            service.tasks = [{id: "later", content: "Later", priority: 1, project_id: "inbox", due: {date: "2026-09-15"}}];
+            tryCompare(taskList, "keyboardTaskId", "later");
         }
         function test_only_selected_tab_has_a_filled_background() {
             var today = findChild(taskList, "viewTab_today");

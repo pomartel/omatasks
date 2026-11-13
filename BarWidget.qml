@@ -43,7 +43,7 @@ Panel {
         textRoom = Math.max(0, label.width + Bar.sectionGap(region, boxes) - Style.space(16));
     }
     Timer { interval: 2000; running: root.service !== null && root.service.barText !== "" && !button.vertical; repeat: true; triggeredOnStart: true; onTriggered: root.measureRoom() }
-    onOpenedChanged: if (opened && service) { taskList.reset(); if (Date.now() - service.lastSync > 15000) service.refresh(); }
+    onOpenedChanged: if (opened && service) { taskList.openPanel(); if (Date.now() - service.lastSync > 15000) service.refresh(); }
 
     WidgetButton {
         id: button

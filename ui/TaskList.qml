@@ -16,6 +16,7 @@ FocusScope {
     property string view: service.selectedView
     property string keyboardTaskId: ""
     property string keyboardAddKey: ""
+    property bool initialSelectionPending: false
     property var completionFocus: null
     property bool helpOpen: false
     property bool settingsOpen: false
@@ -56,6 +57,7 @@ FocusScope {
         selectedIds = selectedIds.filter(function(id) { return visible.indexOf(id) >= 0; });
         if (visible.indexOf(keyboardTaskId) < 0) keyboardTaskId = "";
         if (!rows.some(function(r) { return r.kind === "add" && r.key === keyboardAddKey; })) keyboardAddKey = "";
+        selectFirstOnOpen();
     }
     Component.onCompleted: updateListModel()
 
@@ -80,6 +82,19 @@ FocusScope {
         taskMenu.open();
     }
     function reset() { clickTimer.stop(); pendingEdit = null; completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; helpOpen = false; clearSelection(); settingsOpen = false; details.close(); }
+    function openPanel() {
+        reset();
+        view = "today";
+        list.positionViewAtBeginning();
+        initialSelectionPending = true;
+        selectFirstOnOpen();
+    }
+    function selectFirstOnOpen() {
+        if (!initialSelectionPending) return;
+        var first = rows.find(function(row) { return row.kind === "task"; });
+        if (first) { keyboardTaskId = String(first.task.id); initialSelectionPending = false; }
+        else if (service.loaded) initialSelectionPending = false;
+    }
     function completeTask(task) {
         if (service.saving) return;
         var ids = Bulk.visibleIds(rows), id = String(task.id), index = ids.indexOf(id);
@@ -286,10 +301,10 @@ FocusScope {
         } else return;
         event.accepted = true;
     }
-    Keys.onPressed: function(event) { handleShortcut(event); }
-    onViewChanged: { clickTimer.stop(); pendingEdit = null; service.selectView(view); completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
+    Keys.onPressed: function(event) { initialSelectionPending = false; handleShortcut(event); }
+    onViewChanged: { initialSelectionPending = false; clickTimer.stop(); pendingEdit = null; service.selectView(view); completionFocus = null; keyboardTaskId = ""; keyboardAddKey = ""; cancelDrag(); clearSelection(); composerKey = ""; list.positionViewAtBeginning(); }
     onSetupVisibleChanged: if (setupVisible) { cancelDrag(); clearSelection(); }
-    onVisibleChanged: if (!visible) { clickTimer.stop(); pendingEdit = null; completionFocus = null; cancelDrag(); clearSelection(); }
+    onVisibleChanged: if (!visible) { initialSelectionPending = false; clickTimer.stop(); pendingEdit = null; completionFocus = null; cancelDrag(); clearSelection(); }
     onComposerKeyChanged: if (!composerKey) { editRowIndex = -1; heldRows = null; }
 
     RowLayout {
